@@ -1,0 +1,2 @@
+<?xml version="1.0" encoding="utf-8"?>
+<merger version="3"><dataSet config="main"><source path="/Users/wuxianchuang/AndroidStudioProjects/rela/rela_android/RelaVideoDemo/gpuimage/assets"/><source path="/Users/wuxianchuang/AndroidStudioProjects/rela/rela_android/RelaVideoDemo/gpuimage/build/generated/assets/shaders/debug"/></dataSet><dataSet config="debug"><source path="/Users/wuxianchuang/AndroidStudioProjects/rela/rela_android/RelaVideoDemo/gpuimage/src/debug/assets"/></dataSet></merger>

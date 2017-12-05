@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="vod_upload_with_bos">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/../app/libs/vod_upload_with_bos.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

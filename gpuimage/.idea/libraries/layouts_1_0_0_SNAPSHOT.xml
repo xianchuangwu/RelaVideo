@@ -1,0 +1,12 @@
+<component name="libraryTable">
+  <library name="layouts-1.0.0-SNAPSHOT">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/../app/build/intermediates/exploded-aar/org.lucasr.twowayview/layouts/1.0.0-SNAPSHOT/jars/classes.jar!/" />
+      <root url="file://$PROJECT_DIR$/../app/build/intermediates/exploded-aar/org.lucasr.twowayview/layouts/1.0.0-SNAPSHOT/res" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.lucasr.twowayview/layouts/1.0.0-SNAPSHOT/290f5819f346ad43da88c43d7c333269a608ba2a/layouts-1.0.0-SNAPSHOT-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/../Five_New_Android.iml" filepath="$PROJECT_DIR$/../Five_New_Android.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../Pushlib/Pushlib.iml" filepath="$PROJECT_DIR$/../Pushlib/Pushlib.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../app/app.iml" filepath="$PROJECT_DIR$/../app/app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../bdmedialib/bdmedialib.iml" filepath="$PROJECT_DIR$/../bdmedialib/bdmedialib.iml" />
+      <module fileurl="file://$PROJECT_DIR$/gpuimage.iml" filepath="$PROJECT_DIR$/gpuimage.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../playerlib/playerlib.iml" filepath="$PROJECT_DIR$/../playerlib/playerlib.iml" />
+    </modules>
+  </component>
+</project>

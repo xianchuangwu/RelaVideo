@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="bdplayer">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/../bdmedialib/libs/bdplayer.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

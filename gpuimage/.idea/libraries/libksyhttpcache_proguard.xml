@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="libksyhttpcache-proguard">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/../app/libs/libksyhttpcache-proguard.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
