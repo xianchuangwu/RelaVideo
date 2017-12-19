@@ -7,7 +7,6 @@
 
     <!-- 调用camera API需要权限 -->
     <uses-permission android:name="android.permission.CAMERA" />
-
     <uses-permission android:name="android.permission.FLASHLIGHT" />
 
     <!-- 录制功能需要音频录制和视频录制权限 -->
@@ -16,15 +15,28 @@
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
 
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+
     <application
         android:name=".BaseApplication"
         android:allowBackup="true"
         android:label="@string/app_name"
         android:supportsRtl="true">
-        <activity
-            android:name=".surface.VideoRecoderActivity"
-            android:screenOrientation="portrait"
-            android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
+        <service
+            android:name=".service.ScanningVideoService"
+            android:enabled="true"
+            android:exported="true" />
+
+        <activity android:name=".surface.GalleryActivity" />
+        <activity android:name=".surface.RecordingActivity" />
+        <activity android:name=".surface.PreviewActivity" />
+        <activity android:name=".surface.EditActivity" />
+        <activity android:name=".surface.MusicActivity" />
+        <activity android:name=".surface.CutActivity" />
     </application>
 
 </manifest>

@@ -1,4 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="white">#ffffff</color>
+
+    <color name="progress_dialog">#00000000</color>
+    <color name="black">#000000</color>
+    <color name="gallery_red">#fc3636</color>
+    <color name="gallery_video_gray">#e0e0e0</color>
+    <color name="rela_color">#4ababc</color>
+    <color name="black_gray">#616161</color>
 </resources>

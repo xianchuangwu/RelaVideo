@@ -3,16 +3,17 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="video.com.relavideolibrary.surface.VideoRecoderActivity">
+    android:background="@color/black"
+    tools:context="video.com.relavideolibrary.surface.RecordingActivity">
 
-    <SurfaceView
-        android:id="@+id/surfaceView"
+    <RelativeLayout
+        android:id="@+id/glSurfaceView_container"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
     <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="44dp">
+        android:layout_height="@dimen/dp_toolbar">
 
         <RelativeLayout
             android:id="@+id/cancel"
@@ -52,6 +53,7 @@
                 android:padding="12dp">
 
                 <ImageView
+                    android:id="@+id/beautiful_icon"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:scaleType="centerInside"
@@ -81,14 +83,15 @@
         android:layout_marginTop="12dp">
 
         <video.com.relavideolibrary.view.RoundCornersImageView
+            android:id="@+id/gallery"
             android:layout_width="40dp"
             android:layout_height="40dp"
             android:layout_centerVertical="true"
             android:layout_marginLeft="32dp"
-            android:background="@color/white" />
+            android:src="@mipmap/ic_default" />
 
         <ImageView
-            android:id="@+id/recoder"
+            android:id="@+id/recording"
             android:layout_width="60dp"
             android:layout_height="60dp"
             android:layout_centerInParent="true"
