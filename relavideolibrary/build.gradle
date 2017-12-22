@@ -14,7 +14,7 @@ android {
 
         // 此处很重要，指定APP只使用 armeabi-v7a和arm64-v8a的库
         ndk {
-            abiFilters 'armeabi-v7a','arm64-v8a'
+            abiFilters 'armeabi-v7a', 'arm64-v8a'
         }
     }
     buildTypes {
@@ -26,7 +26,7 @@ android {
 
     sourceSets.main {
         jniLibs.srcDirs 'src/main/libs' // 动态库和jar的存放路径
-        jni.srcDirs = [] // This prevents the auto generation of Android.mk
+        assets.srcDirs = ['assets']
     }
 }
 
@@ -37,6 +37,7 @@ dependencies {
     })
     compile 'com.android.support:recyclerview-v7:26.1.0'
     compile 'com.android.support:cardview-v7:25.3.1'
+    compile 'com.android.support:design:23.1.1'
     compile 'com.android.support:appcompat-v7:26.1.0'
     compile 'com.android.support.constraint:constraint-layout:1.0.2'
     testCompile 'junit:junit:4.12'
@@ -47,4 +48,7 @@ dependencies {
     compile 'com.ksyun.media:libksyplayer-java:2.1.2'
     compile 'com.ksyun.media:libksyplayer-armv7a:2.1.2'
     compile 'com.ksyun.media:libksyplayer-arm64:2.1.2'
+    compile 'com.airbnb.android:lottie:2.0.0-beta4'
+    implementation files('libs/libksyhttpcache.jar')
+    compile 'com.googlecode.mp4parser:isoparser:1.1.20'
 }

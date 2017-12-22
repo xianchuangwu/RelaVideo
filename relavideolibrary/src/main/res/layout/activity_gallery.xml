@@ -5,17 +5,56 @@
     android:layout_height="match_parent"
     tools:context="video.com.relavideolibrary.surface.GalleryActivity">
 
+    <View
+        android:id="@+id/translucent_view"
+        android:layout_width="match_parent"
+        android:layout_height="24dp"
+        android:background="@color/rela_color" />
+
+    <RelativeLayout
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/dp_toolbar"
+        android:layout_below="@id/translucent_view"
+        android:background="@color/rela_color">
+
+        <TextView
+            android:id="@+id/cancel"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:paddingLeft="17dp"
+            android:paddingRight="17dp"
+            android:text="@string/cancel"
+            android:textColor="@color/white"
+            android:textSize="15sp" />
+
+        <TextView
+            android:id="@+id/title"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_centerInParent="true"
+            android:gravity="center"
+            android:paddingLeft="17dp"
+            android:paddingRight="17dp"
+            android:text="@string/photo"
+            android:textColor="@color/white"
+            android:textSize="15sp" />
+    </RelativeLayout>
+
     <android.support.v7.widget.RecyclerView
         android:id="@+id/recycler"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent"
+        android:layout_below="@id/toolbar" />
 
     <RelativeLayout
         android:id="@+id/btn_container"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
-        android:padding="12dp">
+        android:padding="12dp"
+        android:visibility="invisible">
 
         <Button
             android:id="@+id/preview"

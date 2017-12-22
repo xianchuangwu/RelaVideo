@@ -13,5 +13,5 @@ import video.com.relavideolibrary.model.FilterBean;
 
 public interface FilterDataCallback {
 
-    List<FilterBean> onComplete();
+    List<FilterBean> getFilterData();
 }

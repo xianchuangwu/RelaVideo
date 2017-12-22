@@ -15,4 +15,9 @@
     <string name="gallery_select_time_tips">已选总长 </string>
     <string name="gallery_last_time_tips">剩余可用 </string>
     <string name="original_film">原片</string>
+    <string name="add_bgm">添加背景音乐</string>
+    <string name="trimming_progress">正在修剪视频</string>
+    <string name="short_seconds">sec</string>
+    <string name="megabyte">MB</string>
+    <string name="kilobyte">KB</string>
 </resources>

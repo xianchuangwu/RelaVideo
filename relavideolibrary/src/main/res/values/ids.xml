@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <item name="preview_video_id" type="id" />
+    <item name="edit_video_id" type="id" />
+    <item name="cut_video_id" type="id" />
+</resources>

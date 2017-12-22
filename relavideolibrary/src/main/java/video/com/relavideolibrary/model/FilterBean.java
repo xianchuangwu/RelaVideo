@@ -15,4 +15,6 @@ public class FilterBean {
 
     @RawRes
     public int filterId;
+
+    public boolean selected = false;
 }

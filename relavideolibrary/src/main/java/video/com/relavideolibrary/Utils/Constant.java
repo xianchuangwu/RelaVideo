@@ -25,5 +25,17 @@ public class Constant {
         public static final int RESULT_CODE_GALLERY_OK = 0x02;
         public static final int RESULT_CODE_GALLERY_CANCEL = 0x03;
         public static final int REQUEST_CODE_GALLERY = 0x04;
+        public static final int REQUEST_CODE_PREVIEW = 0x05;
+        public static final int REQUEST_CODE_MUSIC = 0x06;
+        public static final int REQUEST_CODE_CUT = 0x07;
+    }
+
+    public static class BundleConstants {
+        public static final String WAVE_DATA_URL = "wave_data_url";
+        public static final String MUSIC_NAME = "music_name";
+        public static final String AUDIO_URL = "audio_url";
+    }
+
+    public static final class BroadcastAction {
     }
 }

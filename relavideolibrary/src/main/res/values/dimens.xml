@@ -2,4 +2,6 @@
 <resources>
 
     <dimen name="dp_toolbar">44dp</dimen>
+    <dimen name="progress_video_line_height">2dp</dimen>
+    <dimen name="frames_video_height">40dip</dimen>
 </resources>

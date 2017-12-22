@@ -13,7 +13,7 @@
         android:label="Tests for jp.co.cyberagent.android.gpuimage.test"
         android:targetPackage="jp.co.cyberagent.android.gpuimage.test" />
 
-    <application>
+    <application android:debuggable="true" >
         <uses-library android:name="android.test.runner" />
     </application>
 

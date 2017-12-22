@@ -1,6 +1,7 @@
 package video.com.relavideolibrary.surface;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.graphics.BitmapFactory;
 import android.graphics.SurfaceTexture;
 import android.media.MediaPlayer;
@@ -13,14 +14,17 @@ import android.os.Message;
 import android.support.annotation.RawRes;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.Surface;
 import android.view.TextureView;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
 
 import com.ksyun.media.player.IMediaPlayer;
+import com.ksyun.media.player.KSYMediaPlayer;
 
 import java.io.IOException;
 import java.lang.ref.WeakReference;
@@ -29,27 +33,28 @@ import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 
+import google.grafika.gles.GlUtil;
+import google.grafika.gles.WindowSurface;
+import google.grafika.gles.EglCore;
 import jp.co.cyberagent.android.gpuimage.GPUImageFilter;
 import jp.co.cyberagent.android.gpuimage.GPUImageFilterGroup;
 import jp.co.cyberagent.android.gpuimage.GPUImageLookupFilter;
 import video.com.relavideolibrary.BaseActivity;
 import video.com.relavideolibrary.R;
 import video.com.relavideolibrary.RelaVideoSDK;
+import video.com.relavideolibrary.Utils.Constant;
 import video.com.relavideolibrary.adapter.FilterAdapter;
-import video.com.relavideolibrary.baidu.IRenderView;
-import video.com.relavideolibrary.baidu.TextureRenderView;
-import video.com.relavideolibrary.baidu.egl.EglCore;
-import video.com.relavideolibrary.baidu.egl.GlUtil;
-import video.com.relavideolibrary.baidu.egl.WindowSurface;
-import video.com.relavideolibrary.filter.GPUImageExtRotationTexFilter;
+import baidu.filter.GPUImageExtRotationTexFilter;
 import video.com.relavideolibrary.interfaces.FilterDataCallback;
 import video.com.relavideolibrary.manager.VideoManager;
+import baidu.measure.IRenderView;
+import baidu.measure.TextureRenderView;
 import video.com.relavideolibrary.model.FilterBean;
+import video.com.relavideolibrary.thread.EditVideoThread;
 
 public class EditActivity extends BaseActivity implements TextureView.SurfaceTextureListener
-        , FilterAdapter.OnItemClickListener, View.OnClickListener {
+        , FilterAdapter.OnItemClickListener, View.OnClickListener, EditVideoThread.EditVideoListener {
 
     public static final String TAG = "EditActivity";
 
@@ -58,6 +63,11 @@ public class EditActivity extends BaseActivity implements TextureView.SurfaceTex
     private RenderThread mRenderThread;
 
     private ImageView filter_image;
+
+    private ImageView play;
+
+    private TextView music_name;
+
     private RecyclerView filter_recyclerView;
 
     @Override
@@ -65,21 +75,27 @@ public class EditActivity extends BaseActivity implements TextureView.SurfaceTex
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_edit);
         findViewById(R.id.cancel).setOnClickListener(this);
+        findViewById(R.id.next).setOnClickListener(this);
+        findViewById(R.id.cut_img).setOnClickListener(this);
+        findViewById(R.id.music_img).setOnClickListener(this);
+        music_name = findViewById(R.id.music_name);
         filter_recyclerView = findViewById(R.id.filter_recycler);
         filter_image = findViewById(R.id.filter_image);
+        play = findViewById(R.id.play);
         filter_image.setOnClickListener(this);
         filter_image.setTag(true);
 
         initVideoView();
         initFilterList();
+        createRenderThread();
     }
 
 
     private void initFilterList() {
 
-        FilterDataCallback callback = RelaVideoSDK.getCallback();
+        FilterDataCallback callback = RelaVideoSDK.getFilterDataCallback();
         if (callback != null) {
-            ArrayList<FilterBean> list = (ArrayList<FilterBean>) callback.onComplete();
+            ArrayList<FilterBean> list = (ArrayList<FilterBean>) callback.getFilterData();
             FilterAdapter filterAdapter = new FilterAdapter(R.layout.item_filter_list
                     , filter_recyclerView
                     , list);
@@ -93,31 +109,24 @@ public class EditActivity extends BaseActivity implements TextureView.SurfaceTex
     private void initVideoView() {
         RelativeLayout video_container = findViewById(R.id.video_container);
         textureView = new TextureRenderView(this);
+        textureView.setId(R.id.edit_video_id);
         RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(-1, -1);
         layoutParams.addRule(RelativeLayout.CENTER_IN_PARENT);
         video_container.addView(textureView, layoutParams);
         textureView.setAspectRatio(IRenderView.AR_ASPECT_FIT_PARENT);
         textureView.setSurfaceTextureListener(this);
+        textureView.setOnClickListener(this);
     }
 
-    @Override
-    protected void onResume() {
-        Log.i(TAG, "onResume BEGIN");
-        super.onResume();
-
+    private void createRenderThread() {
         mRenderThread = new RenderThread(this);
         mRenderThread.setName("TexFromCam Render");
         mRenderThread.start();
         mRenderThread.waitUntilReady();
-
-        Log.i(TAG, "onResume END");
     }
 
-    @Override
-    protected void onPause() {
-        Log.i(TAG, "onPause BEGIN");
-        super.onPause();
-
+    private void destroyRenderThread() {
+        if (mRenderThread == null) return;
         RenderHandler rh = mRenderThread.getHandler();
         rh.sendMediaPlayerRelease();
         rh.sendShutdown();
@@ -128,7 +137,54 @@ public class EditActivity extends BaseActivity implements TextureView.SurfaceTex
             throw new RuntimeException("join was interrupted", ie);
         }
         mRenderThread = null;
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (mRenderThread != null) {
+            RenderHandler mRenderThreadHandler = mRenderThread.getHandler();
+            mRenderThreadHandler.sendResume();
+            play.setVisibility(View.INVISIBLE);
+        }
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        if (mRenderThread != null) {
+            RenderHandler mRenderThreadHandler = mRenderThread.getHandler();
+            mRenderThreadHandler.sendPause();
+            play.setVisibility(View.VISIBLE);
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        destroyRenderThread();
         Log.i(TAG, "onPause END");
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == Constant.IntentCode.REQUEST_CODE_MUSIC && resultCode == Activity.RESULT_OK) {
+            music_name.setText(VideoManager.getInstance().getMusicBean().name);
+            music_name.setVisibility(View.VISIBLE);
+            if (filter_recyclerView.getVisibility() != View.GONE)
+                filter_recyclerView.setVisibility(View.GONE);
+
+            if (mRenderThread != null) {
+                RenderHandler mRenderThreadHandler = mRenderThread.getHandler();
+                mRenderThreadHandler.sendRestartVideo();
+            }
+        } else if (requestCode == Constant.IntentCode.REQUEST_CODE_CUT && resultCode == Activity.RESULT_OK) {
+            if (mRenderThread != null) {
+                RenderHandler mRenderThreadHandler = mRenderThread.getHandler();
+                mRenderThreadHandler.sendReloadVideo();
+            }
+        }
     }
 
     @Override
@@ -188,12 +244,48 @@ public class EditActivity extends BaseActivity implements TextureView.SurfaceTex
             if (isShow) {
                 filter_image.setImageResource(R.mipmap.ic_filter);
                 filter_recyclerView.setVisibility(View.GONE);
+                String name = VideoManager.getInstance().getMusicBean().name;
+                if (!TextUtils.isEmpty(name)) {
+                    music_name.setVisibility(View.VISIBLE);
+                    music_name.setText(name);
+                }
             } else {
                 filter_image.setImageResource(R.mipmap.ic_filter_seleted);
                 filter_recyclerView.setVisibility(View.VISIBLE);
+                music_name.setVisibility(View.GONE);
             }
             v.setTag(!isShow);
+        } else if (id == R.id.music_img) {
+            startActivityForResult(new Intent(this, MusicActivity.class), Constant.IntentCode.REQUEST_CODE_MUSIC);
+        } else if (id == R.id.cut_img) {
+            startActivityForResult(new Intent(this, CutActivity.class), Constant.IntentCode.REQUEST_CODE_CUT);
+        } else if (id == R.id.edit_video_id) {
+            if (play.getVisibility() == View.INVISIBLE) {
+                play.setVisibility(View.VISIBLE);
+                if (mRenderThread != null) {
+                    RenderHandler mRenderThreadHandler = mRenderThread.getHandler();
+                    mRenderThreadHandler.sendPause();
+                }
+            } else {
+                play.setVisibility(View.INVISIBLE);
+                if (mRenderThread != null) {
+                    RenderHandler mRenderThreadHandler = mRenderThread.getHandler();
+                    mRenderThreadHandler.sendResume();
+                }
+            }
+        } else if (id == R.id.next) {
+            new EditVideoThread(this).start();
         }
+    }
+
+    @Override
+    public void onEditVideoSuccess(String path) {
+
+    }
+
+    @Override
+    public void onEditVideoError(String message) {
+
     }
 
     private static class RenderHandler extends Handler {
@@ -205,6 +297,10 @@ public class EditActivity extends BaseActivity implements TextureView.SurfaceTex
         private static final int MSG_RELEASE_PLAYER = 8;
         private static final int MSG_REDRAW = 9;
         private static final int MSG_SWITCH_FILTER = 10;
+        private static final int MSG_RESEUME_START_PLAY = 12;
+        private static final int MSG_PAUSE_STOP_PLAY = 13;
+        private static final int MSG_RELOAD_VIDEO = 14;
+        private static final int MSG_RESTART_VIDEO = 15;
 
         // This shouldn't need to be a weak ref, since we'll go away when the Looper quits,
         // but no real harm in it.
@@ -266,6 +362,15 @@ public class EditActivity extends BaseActivity implements TextureView.SurfaceTex
             sendMessage(obtainMessage(MSG_SHUTDOWN));
         }
 
+        public void sendResume() {
+            sendEmptyMessage(MSG_RESEUME_START_PLAY);
+
+        }
+
+        public void sendPause() {
+            sendEmptyMessage(MSG_PAUSE_STOP_PLAY);
+        }
+
         /**
          * Sends the "frame available" message.
          * <p>
@@ -277,6 +382,14 @@ public class EditActivity extends BaseActivity implements TextureView.SurfaceTex
 
         public void sendSwitchFilter(@RawRes int fiterId) {
             sendMessage(obtainMessage(MSG_SWITCH_FILTER, fiterId));
+        }
+
+        public void sendReloadVideo() {
+            sendEmptyMessage(MSG_RELOAD_VIDEO);
+        }
+
+        public void sendRestartVideo() {
+            sendEmptyMessage(MSG_RESTART_VIDEO);
         }
 
         @Override  // runs on RenderThread
@@ -316,6 +429,18 @@ public class EditActivity extends BaseActivity implements TextureView.SurfaceTex
                 case MSG_SWITCH_FILTER:
                     int filterId = (int) msg.obj;
                     renderThread.switchFilter(filterId);
+                    break;
+                case MSG_RESEUME_START_PLAY:
+                    renderThread.onResume();
+                    break;
+                case MSG_PAUSE_STOP_PLAY:
+                    renderThread.onPause();
+                    break;
+                case MSG_RELOAD_VIDEO:
+                    renderThread.reloadVideo();
+                    break;
+                case MSG_RESTART_VIDEO:
+                    renderThread.restartVideo();
                     break;
                 default:
                     throw new RuntimeException("unknown message " + what);
@@ -409,7 +534,21 @@ public class EditActivity extends BaseActivity implements TextureView.SurfaceTex
                             }
                         });
                     }
+
+                    float videoVolumn = VideoManager.getInstance().getVideoVolumn();
+                    mediaPlayer.setVolume(videoVolumn, videoVolumn);
                     mediaPlayer.start();
+
+                    long musicSeek = 0;
+                    float musicVolumn = VideoManager.getInstance().getMusicVolumn();
+                    String musicPath = VideoManager.getInstance().getMusicBean().url;
+                    try {
+                        RenderThread.this.musicSeek = musicSeek;
+                        RenderThread.this.musicVolumn = musicVolumn;
+                        playBGM(musicPath);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
                 }
             });
 
@@ -438,6 +577,86 @@ public class EditActivity extends BaseActivity implements TextureView.SurfaceTex
                     return true;
                 }
             });
+        }
+
+        private void reloadVideo() {
+            if (mediaPlayer != null) {
+                mediaPlayer.release();
+                mediaPlayer = null;
+            }
+            if (ksyMediaPlayer != null) ksyMediaPlayer.pause();
+            initPlayer();
+        }
+
+        private void restartVideo() {
+            if (mediaPlayer != null) {
+                mediaPlayer.stop();
+                mediaPlayer.prepareAsync();
+            }
+        }
+
+        private KSYMediaPlayer ksyMediaPlayer;
+        long musicSeek = 0;
+        float musicVolumn;
+
+        private void playBGM(String url) throws IOException {
+
+            if (TextUtils.isEmpty(url)) {
+                if (ksyMediaPlayer != null && ksyMediaPlayer.isPlaying())
+                    ksyMediaPlayer.stop();
+                return;
+            }
+            if (ksyMediaPlayer == null) {
+                ksyMediaPlayer = new KSYMediaPlayer.Builder(activity.getApplicationContext()).build();
+                ksyMediaPlayer.setOnPreparedListener(new IMediaPlayer.OnPreparedListener() {
+                    @Override
+                    public void onPrepared(IMediaPlayer mp) {
+                        ksyMediaPlayer.setVolume(musicVolumn, musicVolumn);
+                        ksyMediaPlayer.seekTo(musicSeek);
+                    }
+                });
+                ksyMediaPlayer.setOnSeekCompleteListener(new IMediaPlayer.OnSeekCompleteListener() {
+                    @Override
+                    public void onSeekComplete(IMediaPlayer mp) {
+                        ksyMediaPlayer.start();
+                    }
+                });
+                ksyMediaPlayer.setOnInfoListener(new IMediaPlayer.OnInfoListener() {
+                    @Override
+                    public boolean onInfo(IMediaPlayer mp, int what, int extra) {
+                        if (what == com.ksyun.media.player.IMediaPlayer.MEDIA_INFO_RELOADED) {
+                            ksyMediaPlayer.setVolume(musicVolumn, musicVolumn);
+                            ksyMediaPlayer.seekTo(musicSeek);
+                        }
+                        return false;
+                    }
+                });
+                ksyMediaPlayer.setLooping(true);
+                ksyMediaPlayer.setDataSource(url);
+                ksyMediaPlayer.prepareAsync();
+            } else {
+                ksyMediaPlayer.reload(url, false);
+            }
+
+        }
+
+        private void onResume() {
+            if (mediaPlayer != null && !mediaPlayer.isPlaying())
+                mediaPlayer.start();
+            if (ksyMediaPlayer != null && !ksyMediaPlayer.isPlaying())
+                ksyMediaPlayer.start();
+        }
+
+        private void onPause() {
+            if (mediaPlayer != null && mediaPlayer.isPlaying())
+                mediaPlayer.pause();
+            if (ksyMediaPlayer != null && ksyMediaPlayer.isPlaying())
+                ksyMediaPlayer.pause();
+        }
+
+        private void releaseMediaPlayer() {
+            if (mediaPlayer != null) mediaPlayer.release();
+            if (ksyMediaPlayer != null) ksyMediaPlayer.release();
         }
 
         /**
@@ -594,11 +813,6 @@ public class EditActivity extends BaseActivity implements TextureView.SurfaceTex
 
             GlUtil.checkGlError("releaseGl done");
 
-        }
-
-
-        private void releaseMediaPlayer() {
-            mediaPlayer.release();
         }
 
         /**

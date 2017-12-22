@@ -1,5 +1,6 @@
 package video.com.relavideolibrary.surface;
 
+import android.app.Activity;
 import android.app.Dialog;
 import android.content.ComponentName;
 import android.content.Context;
@@ -13,6 +14,7 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.text.TextUtils;
 import android.view.View;
+import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import java.util.ArrayList;
@@ -28,6 +30,8 @@ import video.com.relavideolibrary.service.ScanningVideoService;
 import video.com.relavideolibrary.view.LoadingDialog;
 
 public class GalleryActivity extends BaseActivity implements ScanningVideoService.QueryMediaStoreListener, View.OnClickListener, GalleryVideoAdapter.SelectCallback {
+
+    private RelativeLayout btn_container;
 
     private RecyclerView recyclerView;
 
@@ -67,7 +71,9 @@ public class GalleryActivity extends BaseActivity implements ScanningVideoServic
         setContentView(R.layout.activity_gallery);
         findViewById(R.id.preview).setOnClickListener(this);
         findViewById(R.id.complete).setOnClickListener(this);
+        findViewById(R.id.cancel).setOnClickListener(this);
         recyclerView = findViewById(R.id.recycler);
+        btn_container = findViewById(R.id.btn_container);
 
         loadingDialog = new LoadingDialog(this).getLoadingDialog();
 
@@ -118,23 +124,43 @@ public class GalleryActivity extends BaseActivity implements ScanningVideoServic
     public void onClick(View v) {
         int id = v.getId();
         if (id == R.id.preview) {
-
-        } else if (id == R.id.complete) {
-            if (!TextUtils.isEmpty(selectVideoPath)) {
-                VideoBean videoBean = new VideoBean();
-                videoBean.videoPath = selectVideoPath;
-                VideoManager.getInstance().setVideoBean(videoBean);
-                setResult(Constant.IntentCode.RESULT_CODE_GALLERY_OK);
-                finish();
-            } else {
+            if (TextUtils.isEmpty(selectVideoPath)) {
                 Toast.makeText(this, "video path empty", Toast.LENGTH_SHORT).show();
+                return;
             }
+            Intent intent = new Intent(this, PreviewActivity.class);
+            intent.putExtra("path", selectVideoPath);
+            startActivityForResult(intent, Constant.IntentCode.REQUEST_CODE_PREVIEW);
+        } else if (id == R.id.complete) {
+            complete();
+        } else if (id == R.id.cancel) {
+            finish();
+        }
+    }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == Constant.IntentCode.REQUEST_CODE_PREVIEW && resultCode == Activity.RESULT_OK) {
+            complete();
         }
     }
 
     @Override
     public void selected(String path) {
+        btn_container.setVisibility(TextUtils.isEmpty(path) ? View.INVISIBLE : View.VISIBLE);
         selectVideoPath = path;
+    }
+
+    private void complete() {
+        if (!TextUtils.isEmpty(selectVideoPath)) {
+            VideoBean videoBean = new VideoBean();
+            videoBean.videoPath = selectVideoPath;
+            VideoManager.getInstance().setVideoBean(videoBean);
+            setResult(Constant.IntentCode.RESULT_CODE_GALLERY_OK);
+            finish();
+        } else {
+            Toast.makeText(this, "video path empty", Toast.LENGTH_SHORT).show();
+        }
     }
 }

@@ -1,3 +1,15 @@
 <resources>
     <string name="app_name">RelaVideoDemo</string>
+
+    <string-array name="music_category">
+        <item>最新</item>
+        <item>热门</item>
+        <item>浪漫</item>
+        <item>安静</item>
+        <item>怀旧</item>
+        <item>忧郁</item>
+        <item>动感</item>
+        <item>欢乐</item>
+        <item>电影</item>
+    </string-array>
 </resources>

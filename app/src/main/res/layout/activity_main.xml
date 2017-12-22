@@ -10,18 +10,26 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:onClick="recoder"
-        android:text="start recoder"
+        android:text="recording"
         android:textAllCaps="false" />
-
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Local Path :" />
 
     <TextView
         android:id="@+id/path"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         tools:text="/storage/0/emulated/rela/video/1e43242.mp4" />
+
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:onClick="preview"
+        android:text="preview"
+        android:textAllCaps="false" />
+
+    <video.com.relavideolibrary.view.RecordingLine
+        android:background="@color/black"
+        android:layout_width="match_parent"
+        android:layout_height="10dp"
+        android:layout_alignParentTop="true" />
 
 </LinearLayout>
