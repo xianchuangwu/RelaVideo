@@ -1,7 +1,6 @@
 package video.com.relavideolibrary.view;
 
 import android.content.Context;
-import android.graphics.Rect;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
@@ -13,7 +12,7 @@ import android.view.View;
  * Description: TODO
  */
 
-public class RecordingButton extends android.support.v7.widget.AppCompatImageButton {
+public class RecordingButton extends android.support.v7.widget.AppCompatImageButton implements View.OnTouchListener {
 
     public RecordingButton(Context context) {
         super(context);
@@ -29,53 +28,9 @@ public class RecordingButton extends android.support.v7.widget.AppCompatImageBut
 
     public void registerOnClickListener(OnRecordingListener onRecordingListener) {
         this.onRecordingListener = onRecordingListener;
-        this.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                setClickZoomEffect(v);
-            }
-        });
+        setOnTouchListener(this);
     }
 
-    public void setClickZoomEffect(final View view) {
-        if (view != null) {
-            view.setOnTouchListener(new OnTouchListener() {
-                boolean cancelled;
-                Rect rect = new Rect();
-
-                @Override
-                public boolean onTouch(View v, MotionEvent event) {
-                    switch (event.getAction()) {
-                        case MotionEvent.ACTION_DOWN:
-                            if (onRecordingListener != null) onRecordingListener.startRecording();
-                            scaleTo(v, 1.2f);
-                            break;
-                        case MotionEvent.ACTION_MOVE:
-                            if (rect.isEmpty()) {
-                                v.getDrawingRect(rect);
-                            }
-                            if (!rect.contains((int) event.getX(), (int) event.getY())) {
-                                scaleTo(v, 1);
-                                cancelled = true;
-                            }
-                            break;
-                        case MotionEvent.ACTION_UP:
-                        case MotionEvent.ACTION_CANCEL: {
-                            if (!cancelled) {
-                                if (onRecordingListener != null)
-                                    onRecordingListener.stopRecording();
-                                scaleTo(v, 1);
-                            } else {
-                                cancelled = false;
-                            }
-                            break;
-                        }
-                    }
-                    return false;
-                }
-            });
-        }
-    }
 
     private void scaleTo(View v, float scale) {
         v.setScaleX(scale);
@@ -83,6 +38,23 @@ public class RecordingButton extends android.support.v7.widget.AppCompatImageBut
     }
 
     private OnRecordingListener onRecordingListener;
+
+    @Override
+    public boolean onTouch(View v, MotionEvent event) {
+
+        //按下操作
+        if (event.getAction() == MotionEvent.ACTION_DOWN) {
+            scaleTo(v, 1.2f);
+            if (onRecordingListener != null) onRecordingListener.startRecording();
+        }
+        //抬起操作
+        if (event.getAction() == MotionEvent.ACTION_UP) {
+            scaleTo(v, 1.0f);
+            if (onRecordingListener != null)
+                onRecordingListener.stopRecording();
+        }
+        return false;
+    }
 
     public interface OnRecordingListener {
         void startRecording();

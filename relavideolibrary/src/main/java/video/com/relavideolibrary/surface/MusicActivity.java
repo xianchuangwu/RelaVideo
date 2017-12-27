@@ -28,6 +28,7 @@ import java.util.List;
 import video.com.relavideolibrary.BaseActivity;
 import video.com.relavideolibrary.BaseApplication;
 import video.com.relavideolibrary.BaseViewHolder;
+import video.com.relavideolibrary.CallbackManager;
 import video.com.relavideolibrary.R;
 import video.com.relavideolibrary.RelaVideoSDK;
 import video.com.relavideolibrary.adapter.MusicCategoryAdapter;
@@ -84,9 +85,9 @@ public class MusicActivity extends BaseActivity implements MusicCategoryAdapter.
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
+        setTranslucentBar();
         setContentView(R.layout.activity_music);
-
+        showTranslucentView();
         tabLayout = findViewById(R.id.tabLayout);
         recyclerView = findViewById(R.id.music_recycler);
         findViewById(R.id.cancel).setOnClickListener(this);
@@ -101,7 +102,7 @@ public class MusicActivity extends BaseActivity implements MusicCategoryAdapter.
 
         initPlayer();
 
-        RelaVideoSDK.setMusicPlayEventListener(this);
+        CallbackManager.getInstance().getCallbackMap().put(MusicPlayEventListener.class.getSimpleName(), this);
     }
 
     private void initPlayer() {
@@ -148,7 +149,7 @@ public class MusicActivity extends BaseActivity implements MusicCategoryAdapter.
     }
 
     private void initTablayout() {
-        MusicCategoryCallback musicCategoryCallback = RelaVideoSDK.getMusicCategoryCallback();
+        MusicCategoryCallback musicCategoryCallback = (MusicCategoryCallback) CallbackManager.getInstance().getCallbackMap().get(MusicCategoryCallback.class.getSimpleName());
         if (musicCategoryCallback != null) {
             List<MusicCategoryBean> musicCategoryData = musicCategoryCallback.getMusicCategoryData();
 
@@ -173,7 +174,7 @@ public class MusicActivity extends BaseActivity implements MusicCategoryAdapter.
 
     @Override
     public void onItemClick(MusicCategoryBean item, int position) {
-        MusicListCallback musicListCallback = RelaVideoSDK.getMusicListCallback();
+        MusicListCallback musicListCallback = (MusicListCallback) CallbackManager.getInstance().getCallbackMap().get(MusicListCallback.class.getSimpleName());
         if (musicListCallback != null) {
             List<MusicBean> musicList = musicListCallback.getMusicList(item.categoryCode);
             musicListAdapter.setData(musicList);
@@ -209,7 +210,7 @@ public class MusicActivity extends BaseActivity implements MusicCategoryAdapter.
             musicListAdapter.notifyDataSetChanged();
             MusicProgressEvent musicProgressEvent = new MusicProgressEvent();
             musicProgressEvent.setLoading(true);
-            MusicPlayEventListener musicPlayEventListener = RelaVideoSDK.getMusicPlayEventListener();
+            MusicPlayEventListener musicPlayEventListener = (MusicPlayEventListener) CallbackManager.getInstance().getCallbackMap().get(MusicPlayEventListener.class.getSimpleName());
             if (musicPlayEventListener != null) {
                 musicPlayEventListener.progress(musicProgressEvent);
             }
@@ -271,7 +272,7 @@ public class MusicActivity extends BaseActivity implements MusicCategoryAdapter.
             case IMediaPlayer.MEDIA_INFO_AUDIO_RENDERING_START:
                 MusicProgressEvent musicProgressEvent = new MusicProgressEvent();
                 musicProgressEvent.setLoading(false);
-                MusicPlayEventListener musicPlayEventListener = RelaVideoSDK.getMusicPlayEventListener();
+                MusicPlayEventListener musicPlayEventListener = (MusicPlayEventListener) CallbackManager.getInstance().getCallbackMap().get(MusicPlayEventListener.class.getSimpleName());
                 if (musicPlayEventListener != null) {
                     musicPlayEventListener.progress(musicProgressEvent);
                 }
@@ -488,7 +489,7 @@ public class MusicActivity extends BaseActivity implements MusicCategoryAdapter.
 //                                + "\nposition :" + progress);
             MusicProgressEvent musicProgressEvent = new MusicProgressEvent();
             musicProgressEvent.setMusicPorgress(progress);
-            MusicPlayEventListener musicPlayEventListener = RelaVideoSDK.getMusicPlayEventListener();
+            MusicPlayEventListener musicPlayEventListener = (MusicPlayEventListener) CallbackManager.getInstance().getCallbackMap().get(MusicPlayEventListener.class.getSimpleName());
             if (musicPlayEventListener != null) {
                 musicPlayEventListener.progress(musicProgressEvent);
             }

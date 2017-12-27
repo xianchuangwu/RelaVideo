@@ -48,8 +48,6 @@ import static jp.co.cyberagent.android.gpuimage.util.TextureRotationUtil.TEXTURE
 @TargetApi(11)
 public class GPUImageRenderer implements Renderer, PreviewCallback {
 
-    private static final String TAG = "GPUImageRenderer";
-
     public static final int NO_IMAGE = -1;
     static final float CUBE[] = {
             -1.0f, -1.0f,
@@ -70,8 +68,8 @@ public class GPUImageRenderer implements Renderer, PreviewCallback {
 
     private int mOutputWidth;
     private int mOutputHeight;
-    private int mImageWidth = 480;
-    private int mImageHeight = 360;
+    private int mImageWidth;
+    private int mImageHeight;
     private int mAddedPadding;
 
     private final Queue<Runnable> mRunOnDraw;
@@ -85,14 +83,10 @@ public class GPUImageRenderer implements Renderer, PreviewCallback {
     private float mBackgroundGreen = 0;
     private float mBackgroundBlue = 0;
 
-    private boolean isInitSurface = false;
-
-    private int[] textures = new int[1];
-
     public GPUImageRenderer(final GPUImageFilter filter) {
         mFilter = filter;
-        mRunOnDraw = new LinkedList<>();
-        mRunOnDrawEnd = new LinkedList<>();
+        mRunOnDraw = new LinkedList<Runnable>();
+        mRunOnDrawEnd = new LinkedList<Runnable>();
 
         mGLCubeBuffer = ByteBuffer.allocateDirect(CUBE.length * 4)
                 .order(ByteOrder.nativeOrder())
@@ -102,7 +96,6 @@ public class GPUImageRenderer implements Renderer, PreviewCallback {
         mGLTextureBuffer = ByteBuffer.allocateDirect(TEXTURE_NO_ROTATION.length * 4)
                 .order(ByteOrder.nativeOrder())
                 .asFloatBuffer();
-        mGLTextureBuffer.put(TEXTURE_NO_ROTATION).position(0);
         setRotation(Rotation.NORMAL, false, false);
     }
 
@@ -126,53 +119,23 @@ public class GPUImageRenderer implements Renderer, PreviewCallback {
         }
     }
 
-    private float[] videoTextureTransform = new float[16];
-    boolean transformSetted = false;
-
     @Override
     public void onDrawFrame(final GL10 gl) {
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
         runAll(mRunOnDraw);
+        mFilter.onDraw(mGLTextureId, mGLCubeBuffer, mGLTextureBuffer);
+        runAll(mRunOnDrawEnd);
         if (mSurfaceTexture != null) {
             mSurfaceTexture.updateTexImage();
         }
-
-        mSurfaceTexture.getTransformMatrix(videoTextureTransform);
-        if (videoTextureTransform[0] == 1 && videoTextureTransform[5] == -1) {
-            setRotation(Rotation.NORMAL, false, false);
-        } else if (videoTextureTransform[1] == 1 && videoTextureTransform[4] == 1) {
-            setRotation(Rotation.ROTATION_270, false, false);
-        } else if (videoTextureTransform[1] == -1 && videoTextureTransform[4] == -1) {
-            setRotation(Rotation.ROTATION_90, false, false);
-        } else if (videoTextureTransform[0] == -1 && videoTextureTransform[5] == 1) {
-            setRotation(Rotation.ROTATION_180, false, false);
-        }
-
-//        if (!transformSetted) {
-//                if (mFilter instanceof GPUImageFilterGroup) {
-//                    GPUImageFilterGroup fg = (GPUImageFilterGroup) mFilter;
-//                    for (GPUImageFilter filter: fg.getFilters()) {
-//                        if (filter instanceof GPUImageExtRotationTexFilter) {
-//                            GPUImageExtRotationTexFilter rotationTexFilter = (GPUImageExtRotationTexFilter) filter;
-//                            rotationTexFilter.setTexMatrix(videoTextureTransform);
-//                            transformSetted = true;
-//                        }
-//                    }
-//                }
-//        }
-        mFilter.onDraw(mGLTextureId, mGLCubeBuffer, mGLTextureBuffer);
-        runAll(mRunOnDrawEnd);
-
-
-//        Log.d("TAG", "videoTextureTransform=" + Arrays.toString(videoTextureTransform));
     }
 
     /**
      * Sets the background color
      *
-     * @param red   red color value
+     * @param red red color value
      * @param green green color value
-     * @param blue  red color value
+     * @param blue red color value
      */
     public void setBackgroundColor(float red, float green, float blue) {
         mBackgroundRed = red;
@@ -229,63 +192,6 @@ public class GPUImageRenderer implements Renderer, PreviewCallback {
                 }
             }
         });
-    }
-
-    /**
-     * added by baidu, for re-use
-     *
-     * @param mp
-     */
-    public void setUpSurfaceTexture(final MediaPlayer mp) {
-        runOnDraw(new Runnable() {
-            @Override
-            public void run() {
-                GLES20.glGenTextures(1, textures, 0);
-                GLES20.glBindTexture(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, textures[0]);
-                checkGlError("glBindTexture mTextureID");
-                GLES20.glTexParameterf(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, GLES20.GL_TEXTURE_MIN_FILTER,
-                        GLES20.GL_NEAREST);
-                GLES20.glTexParameterf(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, GLES20.GL_TEXTURE_MAG_FILTER,
-                        GLES20.GL_LINEAR);
-                GLES20.glTexParameteri(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, GLES20.GL_TEXTURE_WRAP_S,
-                        GLES20.GL_CLAMP_TO_EDGE);
-                GLES20.glTexParameteri(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, GLES20.GL_TEXTURE_WRAP_T,
-                        GLES20.GL_CLAMP_TO_EDGE);
-
-                checkGlError("glTexParameter");
-                mSurfaceTexture = new SurfaceTexture(textures[0]);
-
-                try {
-                    mp.setSurface(new Surface(mSurfaceTexture));
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-        });
-    }
-
-    public Surface getSurface() {
-        return new Surface(mSurfaceTexture);
-    }
-
-    /**
-     * need set source Size, add by Baidu (since we don't setBitmap, so we need set these params)
-     *
-     * @param imageWidth
-     * @param imageHeight
-     */
-    public void setSourceSize(int imageWidth, int imageHeight) {
-        mImageWidth = imageWidth;
-        mImageHeight = imageHeight;
-    }
-
-
-    public void checkGlError(String op) {
-        int error;
-        while ((error = GLES20.glGetError()) != GLES20.GL_NO_ERROR) {
-            Log.e("GPUImageRenderer", op + ": glError " + error);
-            throw new RuntimeException(op + ": glError " + error);
-        }
     }
 
     public void setFilter(final GPUImageFilter filter) {
@@ -370,9 +276,6 @@ public class GPUImageRenderer implements Renderer, PreviewCallback {
     private void adjustImageScaling() {
         float outputWidth = mOutputWidth;
         float outputHeight = mOutputHeight;
-
-        Log.d("mRotation", " mRotation : " + mRotation);
-
         if (mRotation == Rotation.ROTATION_270 || mRotation == Rotation.ROTATION_90) {
             outputWidth = mOutputHeight;
             outputHeight = mOutputWidth;

@@ -30,7 +30,7 @@
             android:layout_width="32dp"
             android:layout_height="32dp"
             android:layout_centerInParent="true"
-            app:lottie_fileName="playingblack.json"
+            app:lottie_fileName="playing.json"
             app:lottie_loop="true" />
 
         <ImageView

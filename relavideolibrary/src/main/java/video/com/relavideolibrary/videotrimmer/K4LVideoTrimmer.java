@@ -43,25 +43,27 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
+import android.widget.Toast;
 import android.widget.VideoView;
 
 import java.io.File;
 import java.lang.ref.WeakReference;
 
 import video.com.relavideolibrary.R;
+import video.com.relavideolibrary.Utils.Constant;
 import video.com.relavideolibrary.videotrimmer.interfaces.OnK4LVideoListener;
 import video.com.relavideolibrary.videotrimmer.interfaces.OnProgressVideoListener;
 import video.com.relavideolibrary.videotrimmer.interfaces.OnRangeSeekBarListener;
 import video.com.relavideolibrary.videotrimmer.interfaces.OnTrimVideoListener;
 import video.com.relavideolibrary.videotrimmer.utils.BackgroundExecutor;
-import video.com.relavideolibrary.videotrimmer.utils.TrimVideoUtils;
+import video.com.relavideolibrary.videotrimmer.utils.Mp4parserUtils;
 import video.com.relavideolibrary.videotrimmer.utils.UiThreadExecutor;
 import video.com.relavideolibrary.videotrimmer.view.RangeSeekBarView;
 import video.com.relavideolibrary.videotrimmer.view.Thumb;
 import video.com.relavideolibrary.videotrimmer.view.ThumbRecyclerView;
 
-import static video.com.relavideolibrary.videotrimmer.utils.TrimVideoUtils.HYYstringForTime;
-import static video.com.relavideolibrary.videotrimmer.utils.TrimVideoUtils.stringForTime;
+import static video.com.relavideolibrary.videotrimmer.utils.Mp4parserUtils.HYYstringForTime;
+import static video.com.relavideolibrary.videotrimmer.utils.Mp4parserUtils.stringForTime;
 
 
 public class K4LVideoTrimmer extends FrameLayout {
@@ -86,7 +88,8 @@ public class K4LVideoTrimmer extends FrameLayout {
     private Uri mSrc;
     private String mFinalPath;
 
-    private int mMaxDuration;
+    private int mMaxDuration = (int) Constant.VideoConfig.MAX_VIDEO_DURATION;
+    private int mMinDuration = (int) Constant.VideoConfig.MIN_VIDEO_DURATION;
     private OnTrimVideoListener mOnTrimVideoListener;
     private OnK4LVideoListener mOnK4LVideoListener;
 
@@ -252,6 +255,10 @@ public class K4LVideoTrimmer extends FrameLayout {
     }
 
     private void onSaveClicked() {
+        if ((mEndPosition - mStartPosition) < Constant.VideoConfig.MIN_VIDEO_DURATION) {
+            Toast.makeText(getContext(), getContext().getString(R.string.video_min_duration), Toast.LENGTH_SHORT).show();
+            return;
+        }
         if (mStartPosition <= 0 && mEndPosition >= mDuration) {
             if (mOnTrimVideoListener != null)
                 mOnTrimVideoListener.getResult(mSrc);
@@ -283,7 +290,7 @@ public class K4LVideoTrimmer extends FrameLayout {
                         @Override
                         public void execute() {
                             try {
-                                TrimVideoUtils.startTrim(file, getDestinationPath(), mStartPosition, mEndPosition, mOnTrimVideoListener);
+                                Mp4parserUtils.startTrim(file, getDestinationPath(), mStartPosition, mEndPosition, mOnTrimVideoListener);
                             } catch (final Throwable e) {
                                 Thread.getDefaultUncaughtExceptionHandler().uncaughtException(Thread.currentThread(), e);
                             }
@@ -413,6 +420,7 @@ public class K4LVideoTrimmer extends FrameLayout {
 
         mTimeVideo = mDuration;
         mRangeSeekBarView.initMaxWidth();
+        mRangeSeekBarView.initMinWidth((float) mMinDuration / (float) mMaxDuration);
     }
 
     private void setTimeFrames() {
@@ -537,17 +545,6 @@ public class K4LVideoTrimmer extends FrameLayout {
     public void destroy() {
         BackgroundExecutor.cancelAll("", true);
         UiThreadExecutor.cancelAll("");
-    }
-
-    /**
-     * Set the maximum duration of the trimmed video.
-     * The trimmer interface wont allow the user to set duration longer than maxDuration
-     *
-     * @param maxDuration the maximum duration of the trimmed video in seconds
-     */
-    @SuppressWarnings("unused")
-    public void setMaxDuration(int maxDuration) {
-        mMaxDuration = maxDuration * 1000;
     }
 
     /**

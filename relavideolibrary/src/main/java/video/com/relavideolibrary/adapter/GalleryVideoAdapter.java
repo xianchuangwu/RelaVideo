@@ -25,6 +25,7 @@ import java.util.Collection;
 import video.com.relavideolibrary.BaseRecyclerAdapter;
 import video.com.relavideolibrary.BaseViewHolder;
 import video.com.relavideolibrary.R;
+import video.com.relavideolibrary.Utils.Constant;
 import video.com.relavideolibrary.Utils.ScreenUtils;
 import video.com.relavideolibrary.model.MediaModel;
 
@@ -64,46 +65,46 @@ public class GalleryVideoAdapter extends BaseRecyclerAdapter<MediaModel> {
                     MediaMetadataRetriever retr = new MediaMetadataRetriever();
                     try {
                         retr.setDataSource(item.url);
-                        String heightStr = retr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT); // 视频高度
-                        String widthStr = retr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH); // 视频宽度
+//                        String heightStr = retr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT); // 视频高度
+//                        String widthStr = retr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH); // 视频宽度
                         String durationStr = retr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);
                         Log.i("MediaGalleryActivity", "url :" + item.url
-                                + "\nwidth :" + widthStr
-                                + "\nheight :" + heightStr
-                                + "\nduration :" + durationStr
+//                                + "\nwidth :" + widthStr
+//                                + "\nheight :" + heightStr
+                                        + "\nduration :" + durationStr
                         );
-                        int height = 0;
-                        int width = 0;
+//                        int height = 0;
+//                        int width = 0;
                         long duration = 0;
-                        if (!TextUtils.isEmpty(heightStr)) height = Integer.parseInt(heightStr);
-                        if (!TextUtils.isEmpty(widthStr)) width = Integer.parseInt(widthStr);
+//                        if (!TextUtils.isEmpty(heightStr)) height = Integer.parseInt(heightStr);
+//                        if (!TextUtils.isEmpty(widthStr)) width = Integer.parseInt(widthStr);
                         if (!TextUtils.isEmpty(durationStr))
                             duration = Long.parseLong(durationStr);
 
-                        int bigBorder;
-                        int smallBorder;
-                        if (width >= height) {
-                            bigBorder = width;
-                            smallBorder = height;
-                        } else {
-                            bigBorder = height;
-                            smallBorder = width;
-                        }
+//                        int bigBorder;
+//                        int smallBorder;
+//                        if (width >= height) {
+//                            bigBorder = width;
+//                            smallBorder = height;
+//                        } else {
+//                            bigBorder = height;
+//                            smallBorder = width;
+//                        }
 
-                        if (!(bigBorder / 16 == smallBorder / 9 && bigBorder % 16 == 0 && smallBorder % 9 == 0)) {
-                            Toast.makeText(mContext, mContext.getString(R.string.video_format_not_support), Toast.LENGTH_SHORT).show();
-                            return;
-                        }
-                        if (duration > 60 * 1000) {
+//                        if (!(bigBorder / 16 == smallBorder / 9 && bigBorder % 16 == 0 && smallBorder % 9 == 0)) {
+//                            Toast.makeText(mContext, mContext.getString(R.string.video_format_not_support), Toast.LENGTH_SHORT).show();
+//                            return;
+//                        }
+                        if (duration > Constant.VideoConfig.MAX_VIDEO_DURATION) {
                             Toast.makeText(mContext, mContext.getString(R.string.video_max_duration), Toast.LENGTH_SHORT).show();
                             return;
-                        } else if (duration == 0) {
-                            Toast.makeText(mContext, mContext.getString(R.string.file_deleted), Toast.LENGTH_SHORT).show();
+                        } else if (duration < Constant.VideoConfig.MIN_VIDEO_DURATION) {
+                            Toast.makeText(mContext, mContext.getString(R.string.video_min_duration), Toast.LENGTH_SHORT).show();
                             return;
                         }
                     } catch (Exception e) {
                         e.printStackTrace();
-                        Toast.makeText(mContext, mContext.getString(R.string.file_deleted), Toast.LENGTH_SHORT).show();
+                        Toast.makeText(mContext, mContext.getString(R.string.unknow_error), Toast.LENGTH_SHORT).show();
                         return;
                     } finally {
                         retr.release();

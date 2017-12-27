@@ -11,6 +11,7 @@ import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 import java.util.Arrays;
 
+import video.com.relavideolibrary.camera.RotationMatrix;
 import video.com.relavideolibrary.camera.utils.MatrixUtils;
 
 
@@ -73,18 +74,18 @@ public abstract class AFilter {
     private int textureId=0;
     //顶点坐标
     private float pos[] = {
-        -1.0f,  1.0f,
-        -1.0f, -1.0f,
-        1.0f, 1.0f,
-        1.0f,  -1.0f,
+            -1.0f, -1.0f,
+            1.0f, -1.0f,
+            -1.0f,  1.0f,
+            1.0f,  1.0f,
     };
 
     //纹理坐标
     private float[] coord={
-        0.0f, 0.0f,
-        0.0f,  1.0f,
-        1.0f,  0.0f,
-        1.0f, 1.0f,
+            0.0f, 0.0f,
+            0.0f,  1.0f,
+            1.0f,  0.0f,
+            1.0f, 1.0f,
     };
 
     private SparseArray<boolean[]> mBools;
@@ -222,7 +223,8 @@ public abstract class AFilter {
         ByteBuffer b= ByteBuffer.allocateDirect(32);
         b.order(ByteOrder.nativeOrder());
         mTexBuffer=b.asFloatBuffer();
-        mTexBuffer.put(coord);
+//        mTexBuffer.put(coord);
+        mTexBuffer.put(RotationMatrix.None.matrix());
         mTexBuffer.position(0);
     }
 

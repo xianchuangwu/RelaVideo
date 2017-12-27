@@ -21,4 +21,5 @@
     <color name="line_color">#FF15FF00</color>
     <color name="trans_line_color">#44000000</color>
     <color name="red_line_color">#ff6565</color>
+    <color name="white_10_alpha">#10000000</color>
 </resources>

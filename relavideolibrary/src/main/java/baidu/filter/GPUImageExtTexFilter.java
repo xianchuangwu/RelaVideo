@@ -1,3 +1,18 @@
+/*
+ * Copyright 2014 Google Inc. All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package baidu.filter;
 
 import android.opengl.GLES11Ext;
@@ -9,7 +24,8 @@ import jp.co.cyberagent.android.gpuimage.GPUImageFilter;
 import jp.co.cyberagent.android.gpuimage.OpenGlUtils;
 
 /**
- * 因为Camera或者MediaCodec产出的Texture都是OES类型的，GPUImage处理的Texture都是Texture_2D类型，所以专门写一个来转。
+ *
+ * 因为Camera或者MediaCodec产出的Texture都是OES的，所以专门写一个来转。
  * GL program and supporting functions for textured 2D shapes.
  */
 public class GPUImageExtTexFilter extends GPUImageFilter {
@@ -19,12 +35,12 @@ public class GPUImageExtTexFilter extends GPUImageFilter {
     // SurfaceTexture).
     private static final String FRAGMENT_SHADER_EXT =
             "#extension GL_OES_EGL_image_external : require\n" +
-                    "precision mediump float;\n" +
-                    "varying vec2 textureCoordinate;\n" +
-                    "uniform samplerExternalOES inputImageTexture;\n" +
-                    "void main() {\n" +
-                    "    gl_FragColor = texture2D(inputImageTexture, textureCoordinate);\n" +
-                    "}\n";
+            "precision mediump float;\n" +
+            "varying vec2 textureCoordinate;\n" +
+            "uniform samplerExternalOES inputImageTexture;\n" +
+            "void main() {\n" +
+            "    gl_FragColor = texture2D(inputImageTexture, textureCoordinate);\n" +
+            "}\n";
 
     public GPUImageExtTexFilter() {
         super(NO_FILTER_VERTEX_SHADER, FRAGMENT_SHADER_EXT);

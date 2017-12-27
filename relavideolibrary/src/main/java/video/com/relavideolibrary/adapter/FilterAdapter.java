@@ -25,22 +25,11 @@ import video.com.relavideolibrary.view.RoundCornersImageView;
 
 public class FilterAdapter extends BaseRecyclerAdapter<FilterBean> {
 
-//    private final Bitmap bitmapWithFilterApplied;
-
     public FilterAdapter(int layoutId, RecyclerView recyclerView, Collection<FilterBean> list) {
         super(layoutId, recyclerView, list);
 
         //默认第一个选中
         mData.get(0).selected = true;
-
-//        MediaMetadataRetriever retriever = new MediaMetadataRetriever();
-//        retriever.setDataSource(VideoManager.getInstance().getVideoBean().videoPath);
-//        Bitmap frameAtTime = retriever.getFrameAtTime();
-//
-//        GPUImage gpuImage = new GPUImage(mContext);
-//        gpuImage.setImage(frameAtTime);
-//        gpuImage.setFilter(new GPUImageSobelEdgeDetection());
-//        bitmapWithFilterApplied = gpuImage.getBitmapWithFilterApplied();
     }
 
     @Override
@@ -50,8 +39,6 @@ public class FilterAdapter extends BaseRecyclerAdapter<FilterBean> {
                 .asBitmap()
                 .transform(new FilterTransformation(mContext, item.filterId))
                 .into((RoundCornersImageView) holder.getView(R.id.filter_image));
-
-//        ((RoundCornersImageView) holder.getView(R.id.filter_image)).setImageBitmap(bitmapWithFilterApplied);
 
         final TextView filter_name = holder.getView(R.id.filter_name);
         filter_name.setTextColor(mContext.getResources().getColor(item.selected ? R.color.rela_color : R.color.black_gray));

@@ -1,14 +1,18 @@
 package video.com.relavideodemo;
 
 import android.Manifest;
+import android.app.Activity;
 import android.content.Intent;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.StrictMode;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
+import android.view.MotionEvent;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -19,6 +23,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import io.reactivex.functions.Consumer;
+import jp.co.cyberagent.android.gpuimage.GPUImage;
+import jp.co.cyberagent.android.gpuimage.GPUImageLookupFilter;
+import jp.co.cyberagent.android.gpuimage.GPUImageSobelEdgeDetection;
 import video.com.relavideolibrary.RelaVideoSDK;
 import video.com.relavideolibrary.Utils.Constant;
 import video.com.relavideolibrary.interfaces.FilterDataCallback;
@@ -34,7 +41,6 @@ public class MainActivity extends AppCompatActivity implements FilterDataCallbac
     private TextView textView;
     private String path;
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -47,8 +53,25 @@ public class MainActivity extends AppCompatActivity implements FilterDataCallbac
 
         setContentView(R.layout.activity_main);
         textView = (TextView) findViewById(R.id.path);
+        ImageView filter_image = findViewById(R.id.filter_image);
+        GPUImage gpuImage = new GPUImage(this);
+        gpuImage.setImage(BitmapFactory.decodeResource(getResources(), R.mipmap.app_lockscreen_bg));
 
-        RelaVideoSDK.initialization(this, this, this);
+        GPUImageLookupFilter filter = new GPUImageLookupFilter();
+        filter.setBitmap(BitmapFactory.decodeResource(getResources(), R.raw.filter_baohe_high));
+        gpuImage.setFilter(filter);
+
+        filter_image.setImageBitmap(gpuImage.getBitmapWithFilterApplied());
+
+        new RelaVideoSDK()
+                .addFilter(this)
+                .addMusicCategory(this)
+                .addMusicList(this);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
     }
 
     public void recoder(View v) {
@@ -61,11 +84,16 @@ public class MainActivity extends AppCompatActivity implements FilterDataCallbac
             @Override
             public void accept(Boolean aBoolean) throws Exception {
                 if (aBoolean) {
-                    startActivity(new Intent(MainActivity.this, RecordingActivity.class));
+                    startActivityForResult(new Intent(MainActivity.this, RecordingActivity.class), Constant.IntentCode.REQUEST_CODE_RECORDING);
                 }
             }
         });
 
+    }
+
+    @Override
+    public boolean dispatchTouchEvent(MotionEvent ev) {
+        return super.dispatchTouchEvent(ev);
     }
 
     public void preview(View view) {
@@ -86,8 +114,9 @@ public class MainActivity extends AppCompatActivity implements FilterDataCallbac
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == Constant.IntentCode.REQUEST_CODE_RECODER && resultCode == Constant.IntentCode.RESULT_CODE_RECODER) {
-            path = data.getStringExtra(Constant.RECODER_RESULT_PATH);
+        if (requestCode == Constant.IntentCode.REQUEST_CODE_RECORDING && resultCode == Activity.RESULT_OK) {
+            Bundle extras = data.getExtras();
+            path = extras.getString(Constant.BundleConstants.FINAL_VIDEO_PATH);
             if (!TextUtils.isEmpty(path))
                 textView.setText(path);
         }

@@ -1,53 +1,52 @@
 package video.com.relavideolibrary;
 
+import java.util.Map;
+
 import video.com.relavideolibrary.interfaces.FilterDataCallback;
 import video.com.relavideolibrary.interfaces.MusicCategoryCallback;
 import video.com.relavideolibrary.interfaces.MusicListCallback;
-import video.com.relavideolibrary.interfaces.MusicPlayEventListener;
-import video.com.relavideolibrary.model.MusicProgressEvent;
 
 /**
  * Created by chad
  * Time 17/12/19
  * Email: wuxianchuang@foxmail.com
- * Description: TODO
+ * Description:
  */
 
 public class RelaVideoSDK {
-
-    public static void initialization(FilterDataCallback filterDataCallback
-            , MusicCategoryCallback musicCategoryCallback
-            , MusicListCallback musicListCallback) {
-        RelaVideoSDK.filterDataCallback = filterDataCallback;
-        RelaVideoSDK.musicCategoryCallback = musicCategoryCallback;
-        RelaVideoSDK.musicListCallback = musicListCallback;
+    /**
+     * 滤镜lookup图回调
+     *
+     * @param filterDataCallback
+     * @return
+     */
+    public RelaVideoSDK addFilter(FilterDataCallback filterDataCallback) {
+        Map<String, Object> callbackMap = CallbackManager.getInstance().getCallbackMap();
+        callbackMap.put(FilterDataCallback.class.getSimpleName(), filterDataCallback);
+        return this;
     }
 
-    private static FilterDataCallback filterDataCallback;
-
-    public static FilterDataCallback getFilterDataCallback() {
-        return filterDataCallback;
+    /**
+     * 音乐类别名称列表回调
+     *
+     * @param musicCategoryCallback
+     * @return
+     */
+    public RelaVideoSDK addMusicCategory(MusicCategoryCallback musicCategoryCallback) {
+        Map<String, Object> callbackMap = CallbackManager.getInstance().getCallbackMap();
+        callbackMap.put(MusicCategoryCallback.class.getSimpleName(), musicCategoryCallback);
+        return this;
     }
 
-    private static MusicCategoryCallback musicCategoryCallback;
-
-    public static MusicCategoryCallback getMusicCategoryCallback() {
-        return musicCategoryCallback;
-    }
-
-    private static MusicListCallback musicListCallback;
-
-    public static MusicListCallback getMusicListCallback() {
-        return musicListCallback;
-    }
-
-    private static MusicPlayEventListener musicPlayEventListener;
-
-    public static void setMusicPlayEventListener(MusicPlayEventListener musicPlayEventListener) {
-        RelaVideoSDK.musicPlayEventListener = musicPlayEventListener;
-    }
-
-    public static MusicPlayEventListener getMusicPlayEventListener() {
-        return musicPlayEventListener;
+    /**
+     * 音乐列表回调
+     *
+     * @param musicListCallback
+     * @return
+     */
+    public RelaVideoSDK addMusicList(MusicListCallback musicListCallback) {
+        Map<String, Object> callbackMap = CallbackManager.getInstance().getCallbackMap();
+        callbackMap.put(MusicListCallback.class.getSimpleName(), musicListCallback);
+        return this;
     }
 }

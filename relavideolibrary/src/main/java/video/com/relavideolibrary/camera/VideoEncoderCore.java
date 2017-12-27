@@ -16,7 +16,6 @@
 
 package video.com.relavideolibrary.camera;
 
-import android.media.AudioFormat;
 import android.media.AudioRecord;
 import android.media.MediaCodec;
 import android.media.MediaCodecInfo;
@@ -34,6 +33,8 @@ import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.nio.ByteBuffer;
 
+import video.com.relavideolibrary.Utils.Constant;
+
 /**
  * This class wraps up the core components used for surface-input video encoding.
  * <p>
@@ -49,19 +50,19 @@ public class VideoEncoderCore {
     private static final boolean VERBOSE = false;
 
     // TODO: these ought to be configurable as well
-    private static final String MIME_TYPE = "video/avc";    // H.264 Advanced Video Coding
-    private static final int FRAME_RATE = 30;               // 30fps
-    private static final int IFRAME_INTERVAL = 1;           // 1 seconds between I-frames
-
+    private static final String MIME_TYPE = Constant.EncodeConfig.OUTPUT_VIDEO_MIME_TYPE;
+    private static final int FRAME_RATE = Constant.EncodeConfig.OUTPUT_VIDEO_FRAME_RATE;
+    private static final int IFRAME_INTERVAL = Constant.EncodeConfig.OUTPUT_VIDEO_IFRAME_INTERVAL;
+    private static int OUTPUT_VIDEO_BIT_RATE = Constant.EncodeConfig.OUTPUT_VIDEO_BIT_RATE;
     //音频配置
-    private String audioMime = "audio/mp4a-latm";   //音频编码的Mime
+    private String audioMime = Constant.EncodeConfig.OUTPUT_AUDIO_MIME_TYPE;   //音频编码的Mime
     private AudioRecord mRecorder;   //录音器
     private MediaCodec mAudioEnc;   //编码器，用于音频编码
-    private int audioRate = 128000;   //音频编码的密钥比特率
-    private int sampleRate = 48000;   //音频采样率
-    private int channelCount = 2;     //音频编码通道数
-    private int channelConfig = AudioFormat.CHANNEL_IN_STEREO;   //音频录制通道,默认为立体声
-    private int audioFormat = AudioFormat.ENCODING_PCM_16BIT; //音频录制格式，默认为PCM16Bit
+    private int audioRate = Constant.EncodeConfig.OUTPUT_AUDIO_BIT_RATE;   //音频编码的密钥比特率
+    private int sampleRate = Constant.EncodeConfig.OUTPUT_AUDIO_SAMPLE_RATE_HZ;   //音频采样率
+    private int channelCount = Constant.EncodeConfig.OUTPUT_AUDIO_CHANNEL_COUNT;     //音频编码通道数
+    private int channelConfig = Constant.EncodeConfig.OUTPUT_AUDIO_CHANNEL_CONFIG;   //音频录制通道,默认为立体声
+    private int audioFormat = Constant.EncodeConfig.OUTPUT_AUDIO_FORMAT; //音频录制格式，默认为PCM16Bit
     private int bufferSize;
     private int mAudioTrackIndex;
     private Thread audioThread;
@@ -81,7 +82,7 @@ public class VideoEncoderCore {
     /**
      * Configures encoder and muxer state, and prepares the input Surface.
      */
-    public VideoEncoderCore(int width, int height, int bitRate, String path)
+    public VideoEncoderCore(int width, int height, String path)
             throws IOException {
         //audio init
         MediaFormat aFormat = MediaFormat.createAudioFormat(audioMime, sampleRate, channelCount);//创建音频的格式,参数 MIME,采样率,通道数
@@ -103,7 +104,7 @@ public class VideoEncoderCore {
         // configure() call to throw an unhelpful exception.
         format.setInteger(MediaFormat.KEY_COLOR_FORMAT,
                 MediaCodecInfo.CodecCapabilities.COLOR_FormatSurface);
-        format.setInteger(MediaFormat.KEY_BIT_RATE, bitRate);
+        format.setInteger(MediaFormat.KEY_BIT_RATE, OUTPUT_VIDEO_BIT_RATE);
         format.setInteger(MediaFormat.KEY_FRAME_RATE, FRAME_RATE);
         format.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, IFRAME_INTERVAL);
         if (VERBOSE) Log.d(TAG, "format: " + format);
@@ -289,20 +290,20 @@ public class VideoEncoderCore {
         public void run() {
             Looper.prepare();
             mHandler = new AudioHandler(this);
-            synchronized (mReadyFence){
-                isReady=true;
+            synchronized (mReadyFence) {
+                isReady = true;
                 mReadyFence.notify();
             }
             Looper.loop();
-            synchronized (mReadyFence){
-                isReady=false;
-                mHandler=null;
+            synchronized (mReadyFence) {
+                isReady = false;
+                mHandler = null;
             }
         }
 
         public void startRecord() {
-            synchronized (mReadyFence){
-                if(!isReady){
+            synchronized (mReadyFence) {
+                if (!isReady) {
                     try {
                         mReadyFence.wait();
                     } catch (InterruptedException e) {
@@ -343,10 +344,10 @@ public class VideoEncoderCore {
                             drainEncoder();
                             mHandler.sendEmptyMessage(MSG_QUIT);
                         }
-                    } else{
-                        if (isRecording){
+                    } else {
+                        if (isRecording) {
                             mHandler.sendEmptyMessage(MSG_AUDIO_STEP);
-                        }else{
+                        } else {
                             drainEncoder();
                             mHandler.sendEmptyMessage(MSG_QUIT);
                         }

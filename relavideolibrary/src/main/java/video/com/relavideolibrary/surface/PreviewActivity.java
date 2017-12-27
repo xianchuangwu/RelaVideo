@@ -30,7 +30,9 @@ public class PreviewActivity extends BaseActivity implements View.OnClickListene
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setTranslucentBar();
         setContentView(R.layout.activity_preview);
+        showTranslucentView();
         findViewById(R.id.cancel).setOnClickListener(this);
         findViewById(R.id.complete).setOnClickListener(this);
         play = findViewById(R.id.play);

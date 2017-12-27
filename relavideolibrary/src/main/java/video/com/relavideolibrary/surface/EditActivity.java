@@ -3,15 +3,18 @@ package video.com.relavideolibrary.surface;
 import android.app.Activity;
 import android.content.Intent;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.graphics.SurfaceTexture;
 import android.media.MediaPlayer;
 import android.opengl.GLES11Ext;
 import android.opengl.GLES20;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 import android.support.annotation.RawRes;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.text.TextUtils;
@@ -22,6 +25,7 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.ksyun.media.player.IMediaPlayer;
 import com.ksyun.media.player.KSYMediaPlayer;
@@ -34,22 +38,22 @@ import java.nio.FloatBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import baidu.filter.GPUImageExtRotationTexFilter;
+import baidu.measure.IRenderView;
+import baidu.measure.TextureRenderView;
+import google.grafika.gles.EglCore;
 import google.grafika.gles.GlUtil;
 import google.grafika.gles.WindowSurface;
-import google.grafika.gles.EglCore;
 import jp.co.cyberagent.android.gpuimage.GPUImageFilter;
 import jp.co.cyberagent.android.gpuimage.GPUImageFilterGroup;
 import jp.co.cyberagent.android.gpuimage.GPUImageLookupFilter;
 import video.com.relavideolibrary.BaseActivity;
+import video.com.relavideolibrary.CallbackManager;
 import video.com.relavideolibrary.R;
-import video.com.relavideolibrary.RelaVideoSDK;
 import video.com.relavideolibrary.Utils.Constant;
 import video.com.relavideolibrary.adapter.FilterAdapter;
-import baidu.filter.GPUImageExtRotationTexFilter;
 import video.com.relavideolibrary.interfaces.FilterDataCallback;
 import video.com.relavideolibrary.manager.VideoManager;
-import baidu.measure.IRenderView;
-import baidu.measure.TextureRenderView;
 import video.com.relavideolibrary.model.FilterBean;
 import video.com.relavideolibrary.thread.EditVideoThread;
 
@@ -70,10 +74,25 @@ public class EditActivity extends BaseActivity implements TextureView.SurfaceTex
 
     private RecyclerView filter_recyclerView;
 
+    private int currentFilterId = -1;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            //6.0修改状态栏字体色
+            getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                    | View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
+            getWindow().setStatusBarColor(Color.TRANSPARENT);
+        } else {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                //5.0 以上直接设置状态栏颜色
+                getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN);
+                getWindow().setStatusBarColor(ContextCompat.getColor(this, R.color.white_10_alpha));
+            }
+        }
         setContentView(R.layout.activity_edit);
+        showTranslucentView();
         findViewById(R.id.cancel).setOnClickListener(this);
         findViewById(R.id.next).setOnClickListener(this);
         findViewById(R.id.cut_img).setOnClickListener(this);
@@ -83,19 +102,17 @@ public class EditActivity extends BaseActivity implements TextureView.SurfaceTex
         filter_image = findViewById(R.id.filter_image);
         play = findViewById(R.id.play);
         filter_image.setOnClickListener(this);
-        filter_image.setTag(true);
 
         initVideoView();
         initFilterList();
         createRenderThread();
     }
 
-
     private void initFilterList() {
 
-        FilterDataCallback callback = RelaVideoSDK.getFilterDataCallback();
-        if (callback != null) {
-            ArrayList<FilterBean> list = (ArrayList<FilterBean>) callback.getFilterData();
+        FilterDataCallback filterDataCallback = (FilterDataCallback) CallbackManager.getInstance().getCallbackMap().get(FilterDataCallback.class.getSimpleName());
+        if (filterDataCallback != null) {
+            ArrayList<FilterBean> list = (ArrayList<FilterBean>) filterDataCallback.getFilterData();
             FilterAdapter filterAdapter = new FilterAdapter(R.layout.item_filter_list
                     , filter_recyclerView
                     , list);
@@ -172,8 +189,10 @@ public class EditActivity extends BaseActivity implements TextureView.SurfaceTex
         if (requestCode == Constant.IntentCode.REQUEST_CODE_MUSIC && resultCode == Activity.RESULT_OK) {
             music_name.setText(VideoManager.getInstance().getMusicBean().name);
             music_name.setVisibility(View.VISIBLE);
-            if (filter_recyclerView.getVisibility() != View.GONE)
+            if (filter_recyclerView.getVisibility() != View.GONE) {
                 filter_recyclerView.setVisibility(View.GONE);
+                filter_image.setImageResource(R.mipmap.ic_filter);
+            }
 
             if (mRenderThread != null) {
                 RenderHandler mRenderThreadHandler = mRenderThread.getHandler();
@@ -232,6 +251,7 @@ public class EditActivity extends BaseActivity implements TextureView.SurfaceTex
         //切换滤镜
         RenderHandler renderHandler = mRenderThread.getHandler();
         renderHandler.sendSwitchFilter(filterId);
+        currentFilterId = filterId;
     }
 
     @Override
@@ -240,8 +260,7 @@ public class EditActivity extends BaseActivity implements TextureView.SurfaceTex
         if (id == R.id.cancel) {
             finish();
         } else if (id == R.id.filter_image) {
-            boolean isShow = (boolean) v.getTag();
-            if (isShow) {
+            if (filter_recyclerView.getVisibility() == View.VISIBLE) {
                 filter_image.setImageResource(R.mipmap.ic_filter);
                 filter_recyclerView.setVisibility(View.GONE);
                 String name = VideoManager.getInstance().getMusicBean().name;
@@ -254,7 +273,6 @@ public class EditActivity extends BaseActivity implements TextureView.SurfaceTex
                 filter_recyclerView.setVisibility(View.VISIBLE);
                 music_name.setVisibility(View.GONE);
             }
-            v.setTag(!isShow);
         } else if (id == R.id.music_img) {
             startActivityForResult(new Intent(this, MusicActivity.class), Constant.IntentCode.REQUEST_CODE_MUSIC);
         } else if (id == R.id.cut_img) {
@@ -274,6 +292,8 @@ public class EditActivity extends BaseActivity implements TextureView.SurfaceTex
                 }
             }
         } else if (id == R.id.next) {
+            VideoManager.getInstance().getVideoBean().filterId = currentFilterId;
+            showDialog();
             new EditVideoThread(this).start();
         }
     }
@@ -281,11 +301,25 @@ public class EditActivity extends BaseActivity implements TextureView.SurfaceTex
     @Override
     public void onEditVideoSuccess(String path) {
 
+        dismissDialog();
+
+        Intent intent = getIntent();
+        Bundle bundle = new Bundle();
+        bundle.putString(Constant.BundleConstants.FINAL_VIDEO_PATH, path);
+        intent.putExtras(bundle);
+        setResult(Activity.RESULT_OK, intent);
+        finish();
     }
 
     @Override
-    public void onEditVideoError(String message) {
-
+    public void onEditVideoError(final String message) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                dismissDialog();
+                Toast.makeText(EditActivity.this, message, Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     private static class RenderHandler extends Handler {
@@ -514,6 +548,7 @@ public class EditActivity extends BaseActivity implements TextureView.SurfaceTex
         private MediaPlayer mediaPlayer;
 
         private void initPlayer() {
+            if (TextUtils.isEmpty(VideoManager.getInstance().getVideoBean().videoPath)) return;
             mediaPlayer = new MediaPlayer();
             try {
                 mediaPlayer.setDataSource(VideoManager.getInstance().getVideoBean().videoPath);
@@ -534,6 +569,9 @@ public class EditActivity extends BaseActivity implements TextureView.SurfaceTex
                             }
                         });
                     }
+
+                    VideoManager.getInstance().getMusicBean().startTime = 0;
+                    VideoManager.getInstance().getMusicBean().endTime = mediaPlayer.getDuration();
 
                     float videoVolumn = VideoManager.getInstance().getVideoVolumn();
                     mediaPlayer.setVolume(videoVolumn, videoVolumn);

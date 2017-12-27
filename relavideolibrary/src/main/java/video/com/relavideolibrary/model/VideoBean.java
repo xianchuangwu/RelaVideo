@@ -14,10 +14,15 @@ public class VideoBean implements Parcelable {
 
     public String videoPath;
 
-    public VideoBean() {}
+    public int filterId;
+
+    public VideoBean() {
+    }
+
 
     protected VideoBean(Parcel in) {
         videoPath = in.readString();
+        filterId = in.readInt();
     }
 
     public static final Creator<VideoBean> CREATOR = new Creator<VideoBean>() {
@@ -40,5 +45,6 @@ public class VideoBean implements Parcelable {
     @Override
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeString(videoPath);
+        dest.writeInt(filterId);
     }
 }

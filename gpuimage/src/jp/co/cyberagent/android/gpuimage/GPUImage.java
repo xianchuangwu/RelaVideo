@@ -141,7 +141,7 @@ public class GPUImage {
      * @param flipVertical if the image should be flipped vertically
      */
     public void setUpCamera(final Camera camera, final int degrees, final boolean flipHorizontal,
-            final boolean flipVertical) {
+                            final boolean flipVertical) {
         mGlSurfaceView.setRenderMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);
         if (Build.VERSION.SDK_INT > Build.VERSION_CODES.GINGERBREAD_MR1) {
             setUpCameraGingerbread(camera);
@@ -337,7 +337,7 @@ public class GPUImage {
      * @param listener the listener on which the results will be notified
      */
     public static void getBitmapForMultipleFilters(final Bitmap bitmap,
-            final List<GPUImageFilter> filters, final ResponseListener<Bitmap> listener) {
+                                                   final List<GPUImageFilter> filters, final ResponseListener<Bitmap> listener) {
         if (filters.isEmpty()) {
             return;
         }
@@ -371,7 +371,7 @@ public class GPUImage {
      */
     @Deprecated
     public void saveToPictures(final String folderName, final String fileName,
-            final OnPictureSavedListener listener) {
+                               final OnPictureSavedListener listener) {
         saveToPictures(mCurrentBitmap, folderName, fileName, listener);
     }
 
@@ -392,7 +392,7 @@ public class GPUImage {
      */
     @Deprecated
     public void saveToPictures(final Bitmap bitmap, final String folderName, final String fileName,
-            final OnPictureSavedListener listener) {
+                               final OnPictureSavedListener listener) {
         new SaveTask(bitmap, folderName, fileName, listener).execute();
     }
 
@@ -441,7 +441,7 @@ public class GPUImage {
         private final Handler mHandler;
 
         public SaveTask(final Bitmap bitmap, final String folderName, final String fileName,
-                final OnPictureSavedListener listener) {
+                        final OnPictureSavedListener listener) {
             mBitmap = bitmap;
             mFolderName = folderName;
             mFileName = fileName;
@@ -465,7 +465,7 @@ public class GPUImage {
                 image.compress(CompressFormat.JPEG, 80, new FileOutputStream(file));
                 MediaScannerConnection.scanFile(mContext,
                         new String[] {
-                            file.toString()
+                                file.toString()
                         }, null,
                         new MediaScannerConnection.OnScanCompletedListener() {
                             @Override

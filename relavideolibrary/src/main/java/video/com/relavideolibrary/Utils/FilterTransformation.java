@@ -2,11 +2,15 @@ package video.com.relavideolibrary.Utils;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 
 import com.bumptech.glide.load.engine.bitmap_recycle.BitmapPool;
 import com.bumptech.glide.load.resource.bitmap.BitmapTransformation;
 
+import baidu.filter.GPUImageExtTexFilter;
 import jp.co.cyberagent.android.gpuimage.GPUImage;
+import jp.co.cyberagent.android.gpuimage.GPUImageFilterGroup;
+import jp.co.cyberagent.android.gpuimage.GPUImageLookupFilter;
 import jp.co.cyberagent.android.gpuimage.GPUImageSobelEdgeDetection;
 
 /**
@@ -35,14 +39,9 @@ public class FilterTransformation extends BitmapTransformation {
         GPUImage gpuImage = new GPUImage(context);
         gpuImage.setImage(toTransform);
 
-//        GPUImageFilterGroup gpuImageFilter = new GPUImageFilterGroup();
-//        gpuImageFilter.addFilter(new GPUImageExtTexFilter());
-//        GPUImageLookupFilter lookupFilter = new GPUImageLookupFilter();
-//        lookupFilter.setBitmap(BitmapFactory.decodeResource(context.getResources(), filterId));
-//        gpuImageFilter.addFilter(lookupFilter);
-//        gpuImage.setFilter(gpuImageFilter);
-
-        gpuImage.setFilter(new GPUImageSobelEdgeDetection());
+        GPUImageLookupFilter lookupFilter = new GPUImageLookupFilter();
+        lookupFilter.setBitmap(BitmapFactory.decodeResource(context.getResources(), filterId));
+        gpuImage.setFilter(lookupFilter);
 
         return gpuImage.getBitmapWithFilterApplied();
     }

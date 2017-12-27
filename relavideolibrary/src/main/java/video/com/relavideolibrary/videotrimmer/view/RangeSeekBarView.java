@@ -30,6 +30,7 @@ import android.graphics.Rect;
 import android.support.annotation.NonNull;
 import android.support.v4.content.ContextCompat;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 
@@ -49,6 +50,7 @@ public class RangeSeekBarView extends View {
     private List<Thumb> mThumbs;
     private List<OnRangeSeekBarListener> mListeners;
     private float mMaxWidth;
+    private float mMinWidth;
     private float mThumbWidth;
     private float mThumbHeight;
     private int mViewWidth;
@@ -100,6 +102,10 @@ public class RangeSeekBarView extends View {
 
         onSeekStop(this, 0, mThumbs.get(0).getVal());
         onSeekStop(this, 1, mThumbs.get(1).getVal());
+    }
+
+    public void initMinWidth(float scale) {
+        mMinWidth = mMaxWidth * scale;
     }
 
     @Override
@@ -189,7 +195,6 @@ public class RangeSeekBarView extends View {
                         checkPositionThumb(mThumb, mThumb2, dx, true);
                         // Move the object
                         mThumb.setPos(mThumb.getPos() + dx);
-
                         // Remember this touch position for the next move event
                         mThumb.setLastTouchX(coordinate);
                     }
@@ -220,15 +225,29 @@ public class RangeSeekBarView extends View {
     }
 
     private void checkPositionThumb(@NonNull Thumb mThumbLeft, @NonNull Thumb mThumbRight, float dx, boolean isLeftMove) {
-        if (isLeftMove && dx < 0) {
-            if ((mThumbRight.getPos() - (mThumbLeft.getPos() + dx)) > mMaxWidth) {
-                mThumbRight.setPos(mThumbLeft.getPos() + dx + mMaxWidth);
-                setThumbPos(1, mThumbRight.getPos());
+        if (isLeftMove) {
+            if (dx > 0) {
+                if ((mThumbRight.getPos() - mThumbLeft.getPos() - dx) < mMinWidth) {
+                    mThumbRight.setPos(mThumbLeft.getPos() + dx + mMinWidth);
+                    setThumbPos(1, mThumbRight.getPos());
+                }
+            } else {
+                if ((mThumbRight.getPos() - (mThumbLeft.getPos() + dx)) > mMaxWidth) {
+                    mThumbRight.setPos(mThumbLeft.getPos() + dx + mMaxWidth);
+                    setThumbPos(1, mThumbRight.getPos());
+                }
             }
-        } else if (!isLeftMove && dx > 0) {
-            if (((mThumbRight.getPos() + dx) - mThumbLeft.getPos()) > mMaxWidth) {
-                mThumbLeft.setPos(mThumbRight.getPos() + dx - mMaxWidth);
-                setThumbPos(0, mThumbLeft.getPos());
+        } else {
+            if (dx > 0) {
+                if (((mThumbRight.getPos() + dx) - mThumbLeft.getPos()) > mMaxWidth) {
+                    mThumbLeft.setPos(mThumbRight.getPos() + dx - mMaxWidth);
+                    setThumbPos(0, mThumbLeft.getPos());
+                }
+            } else {
+                if ((mThumbRight.getPos() - mThumbLeft.getPos() + dx) < mMinWidth) {
+                    mThumbLeft.setPos(mThumbRight.getPos() + dx - mMinWidth);
+                    setThumbPos(0, mThumbLeft.getPos());
+                }
             }
         }
     }

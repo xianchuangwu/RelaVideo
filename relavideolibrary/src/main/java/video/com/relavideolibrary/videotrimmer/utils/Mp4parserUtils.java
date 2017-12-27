@@ -39,8 +39,10 @@ import com.googlecode.mp4parser.authoring.tracks.CroppedTrack;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.nio.channels.FileChannel;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Formatter;
@@ -51,9 +53,9 @@ import java.util.Locale;
 import video.com.relavideolibrary.videotrimmer.interfaces.OnTrimVideoListener;
 
 
-public class TrimVideoUtils {
+public class Mp4parserUtils {
 
-    private static final String TAG = TrimVideoUtils.class.getSimpleName();
+    private static final String TAG = Mp4parserUtils.class.getSimpleName();
 
     public static void startTrim(@NonNull File src, @NonNull String dst, long startMs, long endMs, @NonNull OnTrimVideoListener callback) throws IOException {
         final String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(new Date());
@@ -181,9 +183,9 @@ public class TrimVideoUtils {
         Formatter mFormatter = new Formatter();
         if (hours > 0) {
             return mFormatter.format("%d:%02d:%02d", hours, minutes, seconds).toString();
-        } else if (minutes > 0){
+        } else if (minutes > 0) {
             return mFormatter.format("%02d:%02d", minutes, seconds).toString();
-        }else {
+        } else {
             return mFormatter.format("%02d", seconds).toString();
         }
     }
@@ -201,5 +203,61 @@ public class TrimVideoUtils {
         } else {
             return mFormatter.format("%02d:%02d", minutes, seconds).toString();
         }
+    }
+
+    public static void videoMerge(final String[] srcVideoPath, final String dstVideoPath, final MergeVideoListener mergeVideoListener) {
+
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+
+                    List<Movie> inMovies = new ArrayList<Movie>();
+                    for (String videoUri : srcVideoPath) {
+                        inMovies.add(MovieCreator.build(videoUri));
+                    }
+
+                    List<Track> videoTracks = new LinkedList<Track>();
+                    List<Track> audioTracks = new LinkedList<Track>();
+
+                    for (Movie m : inMovies) {
+                        for (Track t : m.getTracks()) {
+                            if (t.getHandler().equals("soun")) {
+                                audioTracks.add(t);
+                            }
+                            if (t.getHandler().equals("vide")) {
+                                videoTracks.add(t);
+                            }
+                        }
+                    }
+
+                    Movie result = new Movie();
+
+                    if (audioTracks.size() > 0) {
+                        result.addTrack(new AppendTrack(audioTracks.toArray(new Track[audioTracks.size()])));
+                    }
+                    if (videoTracks.size() > 0) {
+                        result.addTrack(new AppendTrack(videoTracks.toArray(new Track[videoTracks.size()])));
+                    }
+
+                    Container out = new DefaultMp4Builder().build(result);
+
+                    FileChannel fc = new RandomAccessFile(String.format(dstVideoPath), "rw").getChannel();
+                    out.writeContainer(fc);
+                    fc.close();
+
+                    mergeVideoListener.success();
+                } catch (IOException e) {
+                    mergeVideoListener.failed();
+                }
+
+            }
+        }).start();
+    }
+
+    public interface MergeVideoListener {
+        void success();
+
+        void failed();
     }
 }

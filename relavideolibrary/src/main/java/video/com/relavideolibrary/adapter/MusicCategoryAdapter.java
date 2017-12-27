@@ -1,11 +1,9 @@
 package video.com.relavideolibrary.adapter;
 
 import android.support.annotation.LayoutRes;
-import android.support.v4.app.FragmentActivity;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.widget.ImageView;
-
 
 import java.util.Collection;
 
@@ -46,7 +44,6 @@ public class MusicCategoryAdapter extends BaseRecyclerAdapter<MusicCategoryBean>
             }
         });
         holder.setText(R.id.category_name, item.categoryName);
-
     }
 
     private OnItemClickListener onItemClickListener;

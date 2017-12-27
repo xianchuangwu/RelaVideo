@@ -2,6 +2,8 @@ package video.com.relavideolibrary.camera.gpufilter;
 
 import android.content.res.Resources;
 
+import video.com.relavideolibrary.camera.RotationMatrix;
+
 
 /**
  * Description:
@@ -16,20 +18,11 @@ public class CameraFilter extends OesFilter {
     public void setFlag(int flag) {
         super.setFlag(flag);
         float[] coord;
-        if(getFlag()==1){    //前置摄像头 顺时针旋转90,并上下颠倒
-            coord=new float[]{
-                    1.0f, 1.0f,
-                    0.0f, 1.0f,
-                    1.0f, 0.0f,
-                    0.0f, 0.0f,
-            };
-        }else{               //后置摄像头 顺时针旋转90度
-            coord=new float[]{
-                    0.0f, 1.0f,
-                    1.0f, 1.0f,
-                    0.0f, 0.0f,
-                    1.0f, 0.0f,
-            };
+        if(getFlag()==1) {
+            coord = RotationMatrix.Left.matrix();
+        }
+        else {
+            coord = RotationMatrix.Right.matrix();
         }
         mTexBuffer.clear();
         mTexBuffer.put(coord);

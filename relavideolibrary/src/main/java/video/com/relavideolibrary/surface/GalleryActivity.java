@@ -1,7 +1,6 @@
 package video.com.relavideolibrary.surface;
 
 import android.app.Activity;
-import android.app.Dialog;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -27,7 +26,6 @@ import video.com.relavideolibrary.manager.VideoManager;
 import video.com.relavideolibrary.model.MediaModel;
 import video.com.relavideolibrary.model.VideoBean;
 import video.com.relavideolibrary.service.ScanningVideoService;
-import video.com.relavideolibrary.view.LoadingDialog;
 
 public class GalleryActivity extends BaseActivity implements ScanningVideoService.QueryMediaStoreListener, View.OnClickListener, GalleryVideoAdapter.SelectCallback {
 
@@ -38,8 +36,6 @@ public class GalleryActivity extends BaseActivity implements ScanningVideoServic
     private GalleryVideoAdapter mVideoAdapter;
 
     private ScanningVideoService scanningVideoService;
-
-    private Dialog loadingDialog;
 
     private String selectVideoPath;
 
@@ -68,14 +64,14 @@ public class GalleryActivity extends BaseActivity implements ScanningVideoServic
             StrictMode.setVmPolicy(builder.build());
         }
 
+        setTranslucentBar();
         setContentView(R.layout.activity_gallery);
+        showTranslucentView();
         findViewById(R.id.preview).setOnClickListener(this);
         findViewById(R.id.complete).setOnClickListener(this);
         findViewById(R.id.cancel).setOnClickListener(this);
         recyclerView = findViewById(R.id.recycler);
         btn_container = findViewById(R.id.btn_container);
-
-        loadingDialog = new LoadingDialog(this).getLoadingDialog();
 
         bindService(new Intent(this, ScanningVideoService.class), serviceConnection, Context.BIND_AUTO_CREATE);
     }
@@ -105,7 +101,7 @@ public class GalleryActivity extends BaseActivity implements ScanningVideoServic
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                loadingDialog.show();
+                showDialog();
             }
         });
     }
@@ -115,7 +111,7 @@ public class GalleryActivity extends BaseActivity implements ScanningVideoServic
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                loadingDialog.dismiss();
+                dismissDialog();
             }
         });
     }
