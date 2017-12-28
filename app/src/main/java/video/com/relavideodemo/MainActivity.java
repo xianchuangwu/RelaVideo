@@ -25,7 +25,6 @@ import java.util.List;
 import io.reactivex.functions.Consumer;
 import jp.co.cyberagent.android.gpuimage.GPUImage;
 import jp.co.cyberagent.android.gpuimage.GPUImageLookupFilter;
-import jp.co.cyberagent.android.gpuimage.GPUImageSobelEdgeDetection;
 import video.com.relavideolibrary.RelaVideoSDK;
 import video.com.relavideolibrary.Utils.Constant;
 import video.com.relavideolibrary.interfaces.FilterDataCallback;
@@ -58,7 +57,7 @@ public class MainActivity extends AppCompatActivity implements FilterDataCallbac
         gpuImage.setImage(BitmapFactory.decodeResource(getResources(), R.mipmap.app_lockscreen_bg));
 
         GPUImageLookupFilter filter = new GPUImageLookupFilter();
-        filter.setBitmap(BitmapFactory.decodeResource(getResources(), R.raw.filter_baohe_high));
+        filter.setBitmap(BitmapFactory.decodeResource(getResources(), R.raw.filter_black_white1));
         gpuImage.setFilter(filter);
 
         filter_image.setImageBitmap(gpuImage.getBitmapWithFilterApplied());
@@ -67,6 +66,17 @@ public class MainActivity extends AppCompatActivity implements FilterDataCallbac
                 .addFilter(this)
                 .addMusicCategory(this)
                 .addMusicList(this);
+
+
+//        ListeningExecutorService executorService = MoreExecutors.listeningDecorator(Executors.newCachedThreadPool());
+//        final ListenableFuture<Integer> listenableFuture = executorService.submit(new Callable<Integer>() {
+//            @Override
+//            public Integer call() throws Exception {
+//                System.out.println("call execute..");
+//                TimeUnit.SECONDS.sleep(1);
+//                return 7;
+//            }
+//        });
     }
 
     @Override

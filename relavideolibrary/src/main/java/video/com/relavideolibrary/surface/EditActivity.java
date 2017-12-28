@@ -545,20 +545,20 @@ public class EditActivity extends BaseActivity implements TextureView.SurfaceTex
             }
         }
 
-        private MediaPlayer mediaPlayer;
+        private MediaPlayer videoPlayer;
 
         private void initPlayer() {
             if (TextUtils.isEmpty(VideoManager.getInstance().getVideoBean().videoPath)) return;
-            mediaPlayer = new MediaPlayer();
+            videoPlayer = new MediaPlayer();
             try {
-                mediaPlayer.setDataSource(VideoManager.getInstance().getVideoBean().videoPath);
-                mediaPlayer.prepareAsync();
-                mediaPlayer.setLooping(true);
+                videoPlayer.setDataSource(VideoManager.getInstance().getVideoBean().videoPath);
+                videoPlayer.prepareAsync();
+                videoPlayer.setLooping(true);
             } catch (IOException e) {
                 e.printStackTrace();
             }
 
-            mediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+            videoPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
                 @Override
                 public void onPrepared(final MediaPlayer iMediaPlayer) {
                     if (textureView != null) {
@@ -571,11 +571,11 @@ public class EditActivity extends BaseActivity implements TextureView.SurfaceTex
                     }
 
                     VideoManager.getInstance().getMusicBean().startTime = 0;
-                    VideoManager.getInstance().getMusicBean().endTime = mediaPlayer.getDuration();
+                    VideoManager.getInstance().getMusicBean().endTime = videoPlayer.getDuration();
 
                     float videoVolumn = VideoManager.getInstance().getVideoVolumn();
-                    mediaPlayer.setVolume(videoVolumn, videoVolumn);
-                    mediaPlayer.start();
+                    videoPlayer.setVolume(videoVolumn, videoVolumn);
+                    videoPlayer.start();
 
                     long musicSeek = 0;
                     float musicVolumn = VideoManager.getInstance().getMusicVolumn();
@@ -590,7 +590,7 @@ public class EditActivity extends BaseActivity implements TextureView.SurfaceTex
                 }
             });
 
-            mediaPlayer.setOnVideoSizeChangedListener(new MediaPlayer.OnVideoSizeChangedListener() {
+            videoPlayer.setOnVideoSizeChangedListener(new MediaPlayer.OnVideoSizeChangedListener() {
                 @Override
                 public void onVideoSizeChanged(final MediaPlayer iMediaPlayer, int width, int height) {
                     if (textureView != null) {
@@ -604,97 +604,96 @@ public class EditActivity extends BaseActivity implements TextureView.SurfaceTex
                 }
             });
 
-            mediaPlayer.setOnInfoListener(new MediaPlayer.OnInfoListener() {
+            videoPlayer.setOnInfoListener(new MediaPlayer.OnInfoListener() {
                 @Override
-                public boolean onInfo(MediaPlayer mp, int i, int i1) {
-                    if (i == IMediaPlayer.MEDIA_INFO_VIDEO_ROTATION_CHANGED) {
+                public boolean onInfo(MediaPlayer mp, int what, int extra) {
+                    if (what == IMediaPlayer.MEDIA_INFO_VIDEO_ROTATION_CHANGED) {
                         if (textureView != null)
-                            textureView.setVideoRotation(i1);
+                            textureView.setVideoRotation(extra);
                     }
-
                     return true;
                 }
             });
         }
 
         private void reloadVideo() {
-            if (mediaPlayer != null) {
-                mediaPlayer.release();
-                mediaPlayer = null;
+            if (videoPlayer != null) {
+                videoPlayer.release();
+                videoPlayer = null;
             }
-            if (ksyMediaPlayer != null) ksyMediaPlayer.pause();
+            if (musicPlayer != null) musicPlayer.pause();
             initPlayer();
         }
 
         private void restartVideo() {
-            if (mediaPlayer != null) {
-                mediaPlayer.stop();
-                mediaPlayer.prepareAsync();
+            if (videoPlayer != null) {
+                videoPlayer.stop();
+                videoPlayer.prepareAsync();
             }
         }
 
-        private KSYMediaPlayer ksyMediaPlayer;
+        private KSYMediaPlayer musicPlayer;
         long musicSeek = 0;
         float musicVolumn;
 
         private void playBGM(String url) throws IOException {
 
             if (TextUtils.isEmpty(url)) {
-                if (ksyMediaPlayer != null && ksyMediaPlayer.isPlaying())
-                    ksyMediaPlayer.stop();
+                if (musicPlayer != null && musicPlayer.isPlaying())
+                    musicPlayer.stop();
                 return;
             }
-            if (ksyMediaPlayer == null) {
-                ksyMediaPlayer = new KSYMediaPlayer.Builder(activity.getApplicationContext()).build();
-                ksyMediaPlayer.setOnPreparedListener(new IMediaPlayer.OnPreparedListener() {
+            if (musicPlayer == null) {
+                musicPlayer = new KSYMediaPlayer.Builder(activity.getApplicationContext()).build();
+                musicPlayer.setOnPreparedListener(new IMediaPlayer.OnPreparedListener() {
                     @Override
                     public void onPrepared(IMediaPlayer mp) {
-                        ksyMediaPlayer.setVolume(musicVolumn, musicVolumn);
-                        ksyMediaPlayer.seekTo(musicSeek);
+                        musicPlayer.setVolume(musicVolumn, musicVolumn);
+                        musicPlayer.seekTo(musicSeek);
                     }
                 });
-                ksyMediaPlayer.setOnSeekCompleteListener(new IMediaPlayer.OnSeekCompleteListener() {
+                musicPlayer.setOnSeekCompleteListener(new IMediaPlayer.OnSeekCompleteListener() {
                     @Override
                     public void onSeekComplete(IMediaPlayer mp) {
-                        ksyMediaPlayer.start();
+                        musicPlayer.start();
                     }
                 });
-                ksyMediaPlayer.setOnInfoListener(new IMediaPlayer.OnInfoListener() {
+                musicPlayer.setOnInfoListener(new IMediaPlayer.OnInfoListener() {
                     @Override
                     public boolean onInfo(IMediaPlayer mp, int what, int extra) {
                         if (what == com.ksyun.media.player.IMediaPlayer.MEDIA_INFO_RELOADED) {
-                            ksyMediaPlayer.setVolume(musicVolumn, musicVolumn);
-                            ksyMediaPlayer.seekTo(musicSeek);
+                            musicPlayer.setVolume(musicVolumn, musicVolumn);
+                            musicPlayer.seekTo(musicSeek);
                         }
                         return false;
                     }
                 });
-                ksyMediaPlayer.setLooping(true);
-                ksyMediaPlayer.setDataSource(url);
-                ksyMediaPlayer.prepareAsync();
+                musicPlayer.setLooping(true);
+                musicPlayer.setDataSource(url);
+                musicPlayer.prepareAsync();
             } else {
-                ksyMediaPlayer.reload(url, false);
+                musicPlayer.reload(url, false);
             }
 
         }
 
         private void onResume() {
-            if (mediaPlayer != null && !mediaPlayer.isPlaying())
-                mediaPlayer.start();
-            if (ksyMediaPlayer != null && !ksyMediaPlayer.isPlaying())
-                ksyMediaPlayer.start();
+            if (videoPlayer != null && !videoPlayer.isPlaying())
+                videoPlayer.start();
+            if (musicPlayer != null && !musicPlayer.isPlaying())
+                musicPlayer.start();
         }
 
         private void onPause() {
-            if (mediaPlayer != null && mediaPlayer.isPlaying())
-                mediaPlayer.pause();
-            if (ksyMediaPlayer != null && ksyMediaPlayer.isPlaying())
-                ksyMediaPlayer.pause();
+            if (videoPlayer != null && videoPlayer.isPlaying())
+                videoPlayer.pause();
+            if (musicPlayer != null && musicPlayer.isPlaying())
+                musicPlayer.pause();
         }
 
         private void releaseMediaPlayer() {
-            if (mediaPlayer != null) mediaPlayer.release();
-            if (ksyMediaPlayer != null) ksyMediaPlayer.release();
+            if (videoPlayer != null) videoPlayer.release();
+            if (musicPlayer != null) musicPlayer.release();
         }
 
         /**
@@ -859,7 +858,7 @@ public class EditActivity extends BaseActivity implements TextureView.SurfaceTex
          * Open the camera (to set mCameraAspectRatio) before calling here.
          */
         private void finishSurfaceSetup() {
-            mediaPlayer.setSurface(new Surface(mCameraTexture));
+            videoPlayer.setSurface(new Surface(mCameraTexture));
         }
 
         @Override   // SurfaceTexture.OnFrameAvailableListener; runs on arbitrary thread

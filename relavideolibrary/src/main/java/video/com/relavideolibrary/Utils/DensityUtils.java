@@ -2,6 +2,8 @@ package video.com.relavideolibrary.Utils;
 
 import android.util.TypedValue;
 
+import java.util.Formatter;
+
 import video.com.relavideolibrary.BaseApplication;
 
 /**
@@ -39,5 +41,48 @@ public class DensityUtils {
         String f = secondnd >= 10 ? String.valueOf(secondnd) : "0" + String.valueOf(secondnd);
         String m = million >= 10 ? String.valueOf(million) : "0" + String.valueOf(million);
         return f + ":" + m;
+    }
+
+    public static String stringForTime(int timeMs) {
+        int totalSeconds = timeMs / 1000;
+
+        int seconds = totalSeconds % 60;
+        int minutes = (totalSeconds / 60) % 60;
+        int hours = totalSeconds / 3600;
+
+        Formatter mFormatter = new Formatter();
+        if (hours > 0) {
+            return mFormatter.format("%d:%02d:%02d", hours, minutes, seconds).toString();
+        } else {
+            return mFormatter.format("%02d:%02d", minutes, seconds).toString();
+        }
+    }
+
+    public static String stringForTimeFFmpeg(int timeMs) {
+        int totalSeconds = timeMs / 1000;
+
+        int seconds = totalSeconds % 60;
+        int minutes = (totalSeconds / 60) % 60;
+        int hours = totalSeconds / 3600;
+
+        Formatter mFormatter = new Formatter();
+        return mFormatter.format("%02d:%02d:%02d", hours, minutes, seconds).toString();
+    }
+
+    public static String HYYstringForTime(int timeMs) {
+        int totalSeconds = timeMs / 1000;
+
+        int seconds = totalSeconds % 60;
+        int minutes = (totalSeconds / 60) % 60;
+        int hours = totalSeconds / 3600;
+
+        Formatter mFormatter = new Formatter();
+        if (hours > 0) {
+            return mFormatter.format("%d:%02d:%02d", hours, minutes, seconds).toString();
+        } else if (minutes > 0) {
+            return mFormatter.format("%02d:%02d", minutes, seconds).toString();
+        } else {
+            return mFormatter.format("%02d", seconds).toString();
+        }
     }
 }

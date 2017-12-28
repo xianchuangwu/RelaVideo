@@ -33,20 +33,26 @@ public class FFmpegUtils {
         return fmpegUtils;
     }
 
-    public static synchronized FFmpeg getFfmepgObj() {
-        FFmpeg fFmpeg = FFmpeg.getInstance(BaseApplication.context);
-        try {
-            fFmpeg.loadBinary(new LoadBinaryResponseHandler() {
-                @Override
-                public void onFailure() {
-                    Log.e(TAG, "FFmpeg is not supported on your device");
-                }
-            });
-        } catch (FFmpegNotSupportedException e) {
-            Log.e(TAG, "FFmpeg is not supported on your device");
-        }
-        return fFmpeg;
-    }
+    /**
+     * ffmpeg同一时间不能执行多个命令，执行多个命令需要通过多线程管理,
+     * 由于使用的ffmpeg编译库内部执行命令都是异步，所以只需返回不同的ffmpeg对象
+     *
+     * @return
+     */
+//    private synchronized FFmpeg getFfmepgObj() {
+//        FFmpeg fFmpeg = FFmpeg.getInstance(BaseApplication.context);
+//        try {
+//            fFmpeg.loadBinary(new LoadBinaryResponseHandler() {
+//                @Override
+//                public void onFailure() {
+//                    Log.e(TAG, "FFmpeg is not supported on your device");
+//                }
+//            });
+//        } catch (FFmpegNotSupportedException e) {
+//            Log.e(TAG, "FFmpeg is not supported on your device");
+//        }
+//        return fFmpeg;
+//    }
 
     /**
      * 从视频中提取音轨
@@ -220,6 +226,31 @@ public class FFmpegUtils {
         commands[7] = "copy";
         commands[8] = "-y";
         commands[9] = outPutPath;
+        fFmpeg.execute(commands, fFmpegResponseListener);
+    }
+
+    /**
+     * 视频剪裁
+     *
+     * @param fFmpeg
+     * @param startTime              00:00:00
+     * @param endTime                00:00:00
+     * @param src
+     * @param output
+     * @param fFmpegResponseListener
+     * @throws FFmpegCommandAlreadyRunningException
+     */
+    public void splitVideo(FFmpeg fFmpeg, String startTime, String endTime, String src, String output, FFmpegResponseListener fFmpegResponseListener) throws FFmpegCommandAlreadyRunningException {
+        String[] commands = new String[9];
+        commands[0] = "-ss";
+        commands[1] = startTime;
+        commands[2] = "-i";
+        commands[3] = src;
+        commands[4] = "-c";
+        commands[5] = "copy";
+        commands[6] = "-t";
+        commands[7] = endTime;
+        commands[8] = output;
         fFmpeg.execute(commands, fFmpegResponseListener);
     }
 

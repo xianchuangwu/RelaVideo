@@ -27,7 +27,6 @@ import android.content.Context;
 import android.media.MediaMetadataRetriever;
 import android.media.MediaPlayer;
 import android.net.Uri;
-import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 import android.support.annotation.NonNull;
@@ -46,24 +45,32 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.VideoView;
 
+import com.github.hiteshsondhi88.libffmpeg.FFmpeg;
+import com.github.hiteshsondhi88.libffmpeg.LoadBinaryResponseHandler;
+import com.github.hiteshsondhi88.libffmpeg.exceptions.FFmpegCommandAlreadyRunningException;
+import com.github.hiteshsondhi88.libffmpeg.exceptions.FFmpegNotSupportedException;
+
 import java.io.File;
 import java.lang.ref.WeakReference;
 
+import video.com.relavideolibrary.BaseApplication;
 import video.com.relavideolibrary.R;
 import video.com.relavideolibrary.Utils.Constant;
+import video.com.relavideolibrary.Utils.FFmpegUtils;
+import video.com.relavideolibrary.Utils.FileManager;
 import video.com.relavideolibrary.videotrimmer.interfaces.OnK4LVideoListener;
 import video.com.relavideolibrary.videotrimmer.interfaces.OnProgressVideoListener;
 import video.com.relavideolibrary.videotrimmer.interfaces.OnRangeSeekBarListener;
 import video.com.relavideolibrary.videotrimmer.interfaces.OnTrimVideoListener;
 import video.com.relavideolibrary.videotrimmer.utils.BackgroundExecutor;
-import video.com.relavideolibrary.videotrimmer.utils.Mp4parserUtils;
 import video.com.relavideolibrary.videotrimmer.utils.UiThreadExecutor;
 import video.com.relavideolibrary.videotrimmer.view.RangeSeekBarView;
 import video.com.relavideolibrary.videotrimmer.view.Thumb;
 import video.com.relavideolibrary.videotrimmer.view.ThumbRecyclerView;
 
-import static video.com.relavideolibrary.videotrimmer.utils.Mp4parserUtils.HYYstringForTime;
-import static video.com.relavideolibrary.videotrimmer.utils.Mp4parserUtils.stringForTime;
+import static video.com.relavideolibrary.Utils.DensityUtils.HYYstringForTime;
+import static video.com.relavideolibrary.Utils.DensityUtils.stringForTime;
+import static video.com.relavideolibrary.Utils.DensityUtils.stringForTimeFFmpeg;
 
 
 public class K4LVideoTrimmer extends FrameLayout {
@@ -285,18 +292,33 @@ public class K4LVideoTrimmer extends FrameLayout {
             if (mOnTrimVideoListener != null)
                 mOnTrimVideoListener.onTrimStarted();
 
-            BackgroundExecutor.execute(
-                    new BackgroundExecutor.Task("", 0L, "") {
-                        @Override
-                        public void execute() {
-                            try {
-                                Mp4parserUtils.startTrim(file, getDestinationPath(), mStartPosition, mEndPosition, mOnTrimVideoListener);
-                            } catch (final Throwable e) {
-                                Thread.getDefaultUncaughtExceptionHandler().uncaughtException(Thread.currentThread(), e);
-                            }
-                        }
+            FFmpeg fFmpeg = FFmpeg.getInstance(BaseApplication.context);
+            try {
+                fFmpeg.loadBinary(new LoadBinaryResponseHandler() {
+                    @Override
+                    public void onFailure() {
+                        Log.e(TAG, "FFmpeg is not supported on your device");
                     }
-            );
+                });
+            } catch (FFmpegNotSupportedException e) {
+                Log.e(TAG, "FFmpeg is not supported on your device");
+            }
+
+            try {
+                final String output = FileManager.getVideoFile();
+                FFmpegUtils.getInstance().splitVideo(fFmpeg, stringForTimeFFmpeg(mStartPosition), stringForTimeFFmpeg(mEndPosition)
+                        , mSrc.getPath(), output, new FFmpegUtils.FFmpegResponseListener() {
+                            @Override
+                            public void onSuccess(String s) {
+                                super.onSuccess(s);
+                                if (mOnTrimVideoListener != null) {
+                                    mOnTrimVideoListener.getResult(Uri.parse(output));
+                                }
+                            }
+                        });
+            } catch (FFmpegCommandAlreadyRunningException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -327,8 +349,9 @@ public class K4LVideoTrimmer extends FrameLayout {
 
     private String getDestinationPath() {
         if (mFinalPath == null) {
-            File folder = Environment.getExternalStorageDirectory();
-            mFinalPath = folder.getPath() + File.separator;
+//            File folder = Environment.getExternalStorageDirectory();
+//            mFinalPath = folder.getPath() + File.separator;
+            mFinalPath = FileManager.getVideoFile();
             Log.d(TAG, "Using default path " + mFinalPath);
         }
         return mFinalPath;
@@ -508,7 +531,7 @@ public class K4LVideoTrimmer extends FrameLayout {
     }
 
     /**
-     * Listener for events such as trimming operation success and cancel
+     * Listener for events such as trimming operation videoMergeSuccess and cancel
      *
      * @param onTrimVideoListener interface for events
      */

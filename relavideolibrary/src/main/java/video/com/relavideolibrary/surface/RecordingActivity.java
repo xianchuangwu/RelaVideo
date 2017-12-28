@@ -2,9 +2,12 @@ package video.com.relavideolibrary.surface;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.content.ContentResolver;
 import android.content.Intent;
+import android.database.Cursor;
 import android.os.Bundle;
 import android.os.SystemClock;
+import android.provider.MediaStore;
 import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
@@ -13,24 +16,27 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import baidu.encode.MediaMerge;
 import video.com.relavideolibrary.BaseActivity;
 import video.com.relavideolibrary.R;
 import video.com.relavideolibrary.Utils.Constant;
+import video.com.relavideolibrary.Utils.FileManager;
 import video.com.relavideolibrary.camera.CameraView;
 import video.com.relavideolibrary.camera.utils.Constants;
 import video.com.relavideolibrary.manager.VideoManager;
 import video.com.relavideolibrary.model.VideoBean;
-import video.com.relavideolibrary.videotrimmer.utils.Mp4parserUtils;
 import video.com.relavideolibrary.view.RecordingButton;
 import video.com.relavideolibrary.view.RecordingLine;
 import video.com.relavideolibrary.view.RoundCornersImageView;
 
-public class RecordingActivity extends BaseActivity implements View.OnClickListener, RecordingButton.OnRecordingListener {
+public class RecordingActivity extends BaseActivity implements View.OnClickListener, RecordingButton.OnRecordingListener, MediaMerge.MediaMuxerListener {
 
     public static final String TAG = "RecordingActivity";
 
@@ -85,6 +91,46 @@ public class RecordingActivity extends BaseActivity implements View.OnClickListe
 
         Constants.getInstance().setContext(getApplicationContext());
         executorService = Executors.newSingleThreadExecutor();
+
+        initFirstGalleryVideo();
+    }
+
+    private void initFirstGalleryVideo() {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                final ArrayList<String> videos = new ArrayList<>();
+                ContentResolver resolver = RecordingActivity.this.getContentResolver();
+                Cursor cursor = null;
+                try {
+                    //查询数据库，参数分别为（路径，要查询的列名，条件语句，条件参数，排序）
+                    cursor = resolver.query(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, null, null, null, null);
+                    if (cursor != null) {
+                        while (cursor.moveToNext()) {
+                            videos.add(cursor.getString(cursor.getColumnIndex(MediaStore.Video.Media.DATA)));
+                        }
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                } finally {
+                    if (cursor != null) {
+                        cursor.close();
+                    }
+                }
+                if (videos.size() > 0) {
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            Glide.with(RecordingActivity.this)
+                                    .load(videos.get(videos.size() - 1))
+                                    .placeholder(R.mipmap.ic_default)
+                                    .centerCrop()
+                                    .into(gallery);
+                        }
+                    });
+                }
+            }
+        }).start();
     }
 
     @Override
@@ -100,26 +146,27 @@ public class RecordingActivity extends BaseActivity implements View.OnClickListe
             finish();
         } else if (id == R.id.next) {
             if (outputList.size() > 0) {
-                String[] outputArr = new String[outputList.size()];
-                outputList.toArray(outputArr);
-                final String output = "/storage/emulated/0/rela_" + SystemClock.currentThreadTimeMillis() + ".mp4";
                 showDialog();
-                Mp4parserUtils.videoMerge(outputArr, output, new Mp4parserUtils.MergeVideoListener() {
+                new Thread(new Runnable() {
                     @Override
-                    public void success() {
-                        dismissDialog();
-                        VideoBean bean = new VideoBean();
-                        bean.videoPath = output;
-                        VideoManager.getInstance().setVideoBean(bean);
-                        startActivityForResult(new Intent(RecordingActivity.this, EditActivity.class), Constant.IntentCode.REQUEST_CODE_EDIT);
-                    }
+                    public void run() {
+                        try {
+                            String[] outputArr = new String[outputList.size()];
+                            outputList.toArray(outputArr);
+                            new MediaMerge(outputArr).startMux(RecordingActivity.this);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    dismissDialog();
+                                    Toast.makeText(RecordingActivity.this, "merge video fail", Toast.LENGTH_SHORT).show();
+                                }
+                            });
+                        }
 
-                    @Override
-                    public void failed() {
-                        dismissDialog();
-                        Toast.makeText(RecordingActivity.this, "merge video fail", Toast.LENGTH_SHORT).show();
                     }
-                });
+                }).start();
             }
         } else if (id == R.id.camera_switch) {
             executorService.execute(new Runnable() {
@@ -133,6 +180,12 @@ public class RecordingActivity extends BaseActivity implements View.OnClickListe
         } else if (id == R.id.delete) {
             if (recordingLine.delete()) {
                 outputList.remove(outputList.size() - 1);
+                if (outputList.size() == 0) {
+                    next.setAlpha(0.5f);
+                    next.setEnabled(false);
+                    delete.setAlpha(0.5f);
+                    delete.setEnabled(false);
+                }
             }
         } else if (id == R.id.beautiful) {
             if (isBeautiful) {
@@ -178,7 +231,7 @@ public class RecordingActivity extends BaseActivity implements View.OnClickListe
         executorService.execute(new Runnable() {
             @Override
             public void run() {
-                outputPath = "/storage/emulated/0/rela_" + SystemClock.currentThreadTimeMillis() + ".mp4";
+                outputPath = FileManager.getVideoFile();
                 cameraView.setSavePath(outputPath);
                 cameraView.startRecord();
                 runOnUiThread(new Runnable() {
@@ -218,5 +271,20 @@ public class RecordingActivity extends BaseActivity implements View.OnClickListe
             }
         });
 
+    }
+
+    @Override
+    public void videoMergeSuccess(String outputPath) {
+        Log.d(TAG, "merge path :" + outputPath);
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                dismissDialog();
+            }
+        });
+        VideoBean bean = new VideoBean();
+        bean.videoPath = outputPath;
+        VideoManager.getInstance().setVideoBean(bean);
+        startActivityForResult(new Intent(RecordingActivity.this, EditActivity.class), Constant.IntentCode.REQUEST_CODE_EDIT);
     }
 }

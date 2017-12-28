@@ -24,23 +24,24 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import jp.co.cyberagent.android.gpuimage.GPUImageFilter;
 import video.com.relavideolibrary.Utils.Constant;
+import video.com.relavideolibrary.Utils.FileManager;
 
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertTrue;
 import static junit.framework.Assert.fail;
 
 /**
- * Test for the integration of MediaMuxer and MediaCodec's encoder.
+ * Test for the integration of MediaMerge and MediaCodec's encoder.
  * <p>
  * <p>It uses MediaExtractor to get frames from a test stream, decodes them to a surface, uses a
- * shader to edit them, encodes them from the resulting surface, and then uses MediaMuxer to write
+ * shader to edit them, encodes them from the resulting surface, and then uses MediaMerge to write
  * them into a file.
  * <p>
  * <p>It does not currently check whether the result file is correct, but makes sure that nothing
  * fails along the way.
  * <p>
  * <p>It also tests the way the codec config buffers need to be passed from the MediaCodec to the
- * MediaMuxer.
+ * MediaMerge.
  */
 @TargetApi(18)
 public class ExtractDecodeEditEncodeMux {
@@ -172,9 +173,8 @@ public class ExtractDecodeEditEncodeMux {
      */
     private void setOutputFile() {
         StringBuilder sb = new StringBuilder();
-        sb.append(Environment.getExternalStorageDirectory().getAbsolutePath());
-        sb.append("/rela");
-        sb.append("/rela");
+        sb.append(FileManager.getRelaStorageFile());
+        sb.append("/");
         if (mCopyVideo) {
             sb.append('-');
             sb.append("video");

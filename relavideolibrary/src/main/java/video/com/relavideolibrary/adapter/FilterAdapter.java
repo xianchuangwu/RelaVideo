@@ -5,6 +5,8 @@ import android.view.View;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.bumptech.glide.signature.StringSignature;
 
 import java.util.Collection;
 
@@ -36,8 +38,8 @@ public class FilterAdapter extends BaseRecyclerAdapter<FilterBean> {
     public void dataBinding(final BaseViewHolder holder, final FilterBean item, final int position) {
         Glide.with(mContext)
                 .load(VideoManager.getInstance().getVideoBean().videoPath)
-                .asBitmap()
-                .transform(new FilterTransformation(mContext, item.filterId))
+                .signature(new StringSignature(String.valueOf(item.filterId)))
+                .bitmapTransform(new FilterTransformation(mContext, item.filterId))
                 .into((RoundCornersImageView) holder.getView(R.id.filter_image));
 
         final TextView filter_name = holder.getView(R.id.filter_name);

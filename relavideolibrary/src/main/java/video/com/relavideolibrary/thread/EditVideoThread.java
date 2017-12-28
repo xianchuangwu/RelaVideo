@@ -1,7 +1,6 @@
 package video.com.relavideolibrary.thread;
 
 import android.graphics.BitmapFactory;
-import android.os.Environment;
 import android.text.TextUtils;
 import android.util.Log;
 
@@ -15,6 +14,7 @@ import jp.co.cyberagent.android.gpuimage.GPUImageFilter;
 import jp.co.cyberagent.android.gpuimage.GPUImageLookupFilter;
 import video.com.relavideolibrary.BaseApplication;
 import video.com.relavideolibrary.Utils.FFmpegUtils;
+import video.com.relavideolibrary.Utils.FileManager;
 import video.com.relavideolibrary.camera.utils.DateUtils;
 import video.com.relavideolibrary.manager.VideoManager;
 
@@ -302,13 +302,7 @@ public class EditVideoThread extends Thread implements ExtractDecodeEditEncodeMu
     }
 
     private String setFile(String fileName) {
-        StringBuilder sb = new StringBuilder();
-        sb.append(Environment.getExternalStorageDirectory().getAbsolutePath());
-        sb.append("/rela");
-        sb.append("/rela");
-        sb.append('-');
-        sb.append(fileName);
-        return sb.toString();
+        return FileManager.getOtherFile(fileName);
     }
 
     private GPUImageFilter generateGPUImageFilter(int resId) {

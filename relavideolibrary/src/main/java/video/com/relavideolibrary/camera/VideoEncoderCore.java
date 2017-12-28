@@ -116,7 +116,7 @@ public class VideoEncoderCore {
         mInputSurface = mVideoEncoder.createInputSurface();
         mVideoEncoder.start();
 
-        // Create a MediaMuxer.  We can't add the video track and start() the muxer here,
+        // Create a MediaMerge.  We can't add the video track and start() the muxer here,
         // because our MediaFormat doesn't have the Magic Goodies.  These can only be
         // obtained from the encoder after it has started processing data.
         //
@@ -164,9 +164,14 @@ public class VideoEncoderCore {
         if (mMuxer != null) {
             // TODO: stop() throws an exception if you haven't fed it any data.  Keep track
             //       of frames submitted, and don't call stop() if we haven't written anything.
-            mMuxer.stop();
-            mMuxer.release();
-            mMuxer = null;
+            try {
+                mMuxer.stop();
+                mMuxer.release();
+                mMuxer = null;
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
         }
     }
 

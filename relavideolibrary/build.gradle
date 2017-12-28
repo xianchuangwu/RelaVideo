@@ -50,6 +50,6 @@ dependencies {
     compile 'com.ksyun.media:libksyplayer-arm64:2.1.2'
     compile 'com.airbnb.android:lottie:2.0.0-beta4'
     implementation files('libs/libksyhttpcache.jar')
-    compile 'com.googlecode.mp4parser:isoparser:1.1.21'
     compile 'com.writingminds:FFmpegAndroid:0.3.2'
+//    compile 'com.google.guava:guava:21.0'
 }

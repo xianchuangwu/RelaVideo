@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
-import android.os.Environment;
 import android.os.Handler;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -30,7 +29,7 @@ import video.com.relavideolibrary.BaseApplication;
 import video.com.relavideolibrary.BaseViewHolder;
 import video.com.relavideolibrary.CallbackManager;
 import video.com.relavideolibrary.R;
-import video.com.relavideolibrary.RelaVideoSDK;
+import video.com.relavideolibrary.Utils.FileManager;
 import video.com.relavideolibrary.adapter.MusicCategoryAdapter;
 import video.com.relavideolibrary.adapter.MusicListAdapter;
 import video.com.relavideolibrary.interfaces.MusicCategoryCallback;
@@ -114,7 +113,7 @@ public class MusicActivity extends BaseActivity implements MusicCategoryAdapter.
     private void initProxy() {
         proxy = BaseApplication.getKSYProxy(this);
 
-        File file = new File(getMusicPath());
+        File file = new File(FileManager.getMusicPath());
 
         proxy.setCacheRoot(file);
 
@@ -122,21 +121,6 @@ public class MusicActivity extends BaseActivity implements MusicCategoryAdapter.
 
         proxy.startServer();
 
-    }
-
-    private String getMusicPath() {
-
-        String fiveRootPath = Environment.getExternalStorageDirectory() + "/Rela";
-        File file = new File(fiveRootPath);
-        if (!file.exists()) {
-            file.mkdirs();
-        }
-
-        File file1 = new File(fiveRootPath + "/Music");
-        if (!file1.exists()) {
-            file1.mkdir();
-        }
-        return file1.getAbsolutePath();
     }
 
     private void initMusicList() {
