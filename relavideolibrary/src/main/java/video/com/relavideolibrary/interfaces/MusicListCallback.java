@@ -1,9 +1,5 @@
 package video.com.relavideolibrary.interfaces;
 
-import java.util.List;
-
-import video.com.relavideolibrary.model.MusicBean;
-
 /**
  * Created by chad
  * Time 17/12/19
@@ -13,5 +9,5 @@ import video.com.relavideolibrary.model.MusicBean;
 
 public interface MusicListCallback {
 
-    List<MusicBean> getMusicList(int category);
+    void getMusicList(int category, MusicListSyncDataCallback musicListSyncDataCallback);
 }

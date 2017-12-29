@@ -34,6 +34,7 @@ import video.com.relavideolibrary.adapter.MusicCategoryAdapter;
 import video.com.relavideolibrary.adapter.MusicListAdapter;
 import video.com.relavideolibrary.interfaces.MusicCategoryCallback;
 import video.com.relavideolibrary.interfaces.MusicListCallback;
+import video.com.relavideolibrary.interfaces.MusicListSyncDataCallback;
 import video.com.relavideolibrary.interfaces.MusicPlayEventListener;
 import video.com.relavideolibrary.manager.VideoManager;
 import video.com.relavideolibrary.model.MusicBean;
@@ -130,6 +131,27 @@ public class MusicActivity extends BaseActivity implements MusicCategoryAdapter.
         recyclerView.setAdapter(musicListAdapter);
         musicListAdapter.setOnItemClickListener(this);
 
+        //默认请求一组数据
+        MusicListCallback musicListCallback = (MusicListCallback) CallbackManager.getInstance().getCallbackMap().get(MusicListCallback.class.getSimpleName());
+        if (musicListCallback != null) {
+            musicListCallback.getMusicList(0, new MusicListSyncDataCallback() {
+                @Override
+                public void onSuccess(final List<MusicBean> data) {
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            musicListAdapter.setData(data);
+                        }
+                    });
+                }
+
+                @Override
+                public void onFail() {
+
+                }
+            });
+        }
+
     }
 
     private void initTablayout() {
@@ -160,8 +182,22 @@ public class MusicActivity extends BaseActivity implements MusicCategoryAdapter.
     public void onItemClick(MusicCategoryBean item, int position) {
         MusicListCallback musicListCallback = (MusicListCallback) CallbackManager.getInstance().getCallbackMap().get(MusicListCallback.class.getSimpleName());
         if (musicListCallback != null) {
-            List<MusicBean> musicList = musicListCallback.getMusicList(item.categoryCode);
-            musicListAdapter.setData(musicList);
+            musicListCallback.getMusicList(item.categoryCode, new MusicListSyncDataCallback() {
+                @Override
+                public void onSuccess(final List<MusicBean> data) {
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            musicListAdapter.setData(data);
+                        }
+                    });
+                }
+
+                @Override
+                public void onFail() {
+
+                }
+            });
         }
     }
 

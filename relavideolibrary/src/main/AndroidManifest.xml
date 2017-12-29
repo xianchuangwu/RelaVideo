@@ -43,7 +43,9 @@
         <activity android:name=".surface.GalleryActivity" />
         <activity android:name=".surface.RecordingActivity" />
         <activity android:name=".surface.PreviewActivity" />
-        <activity android:name=".surface.EditActivity" />
+        <activity
+            android:name=".surface.EditActivity"
+            android:hardwareAccelerated="true" />
         <activity android:name=".surface.MusicActivity" />
         <activity android:name=".surface.CutActivity" />
     </application>

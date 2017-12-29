@@ -30,6 +30,7 @@ import video.com.relavideolibrary.Utils.Constant;
 import video.com.relavideolibrary.interfaces.FilterDataCallback;
 import video.com.relavideolibrary.interfaces.MusicCategoryCallback;
 import video.com.relavideolibrary.interfaces.MusicListCallback;
+import video.com.relavideolibrary.interfaces.MusicListSyncDataCallback;
 import video.com.relavideolibrary.model.FilterBean;
 import video.com.relavideolibrary.model.MusicBean;
 import video.com.relavideolibrary.model.MusicCategoryBean;
@@ -68,13 +69,25 @@ public class MainActivity extends AppCompatActivity implements FilterDataCallbac
                 .addMusicList(this);
 
 
-//        ListeningExecutorService executorService = MoreExecutors.listeningDecorator(Executors.newCachedThreadPool());
+//        ListeningExecutorService executorService = MoreExecutors.newDirectExecutorService();
 //        final ListenableFuture<Integer> listenableFuture = executorService.submit(new Callable<Integer>() {
 //            @Override
 //            public Integer call() throws Exception {
 //                System.out.println("call execute..");
 //                TimeUnit.SECONDS.sleep(1);
 //                return 7;
+//            }
+//        });
+//
+//        Futures.addCallback(listenableFuture, new FutureCallback<Integer>() {
+//            @Override
+//            public void onSuccess(@Nullable Integer result) {
+//
+//            }
+//
+//            @Override
+//            public void onFailure(Throwable t) {
+//
 //            }
 //        });
     }
@@ -185,20 +198,26 @@ public class MainActivity extends AppCompatActivity implements FilterDataCallbac
     }
 
     @Override
-    public List<MusicBean> getMusicList(int category) {
+    public void getMusicList(int category, final MusicListSyncDataCallback musicListSyncDataCallback) {
 
-        List<MusicBean> list = new ArrayList<>();
-        for (int i = 0; i < 10; i++) {
-            MusicBean musicBean = new MusicBean();
-            musicBean.musicId = (57 + i);
-            musicBean.name = "克罗地亚狂想曲";
-            musicBean.singer = "狄仁杰,王孝杰";
-            musicBean.musicHours = 151;
-            musicBean.url = "http://music.fffffive.com/1502085142227.mp3";
-            musicBean.categoryName = "怀旧";
-            musicBean.collectStatus = 0;
-            list.add(musicBean);
-        }
-        return list;
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                List<MusicBean> list = new ArrayList<>();
+                for (int i = 0; i < 10; i++) {
+                    MusicBean musicBean = new MusicBean();
+                    musicBean.musicId = (57 + i);
+                    musicBean.name = "克罗地亚狂想曲";
+                    musicBean.singer = "狄仁杰,王孝杰";
+                    musicBean.musicHours = 151;
+                    musicBean.url = "http://music.fffffive.com/1502085142227.mp3";
+                    musicBean.categoryName = "怀旧";
+                    musicBean.collectStatus = 0;
+                    list.add(musicBean);
+                }
+
+                if (musicListSyncDataCallback != null) musicListSyncDataCallback.onSuccess(list);
+            }
+        }).start();
     }
 }
