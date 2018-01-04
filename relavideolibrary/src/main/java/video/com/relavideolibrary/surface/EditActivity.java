@@ -2,9 +2,11 @@ package video.com.relavideolibrary.surface;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.SurfaceTexture;
+import android.media.MediaMetadataRetriever;
 import android.media.MediaPlayer;
 import android.opengl.GLES11Ext;
 import android.opengl.GLES20;
@@ -30,6 +32,8 @@ import android.widget.Toast;
 import com.ksyun.media.player.IMediaPlayer;
 import com.ksyun.media.player.KSYMediaPlayer;
 
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.nio.ByteBuffer;
@@ -51,6 +55,7 @@ import video.com.relavideolibrary.BaseActivity;
 import video.com.relavideolibrary.CallbackManager;
 import video.com.relavideolibrary.R;
 import video.com.relavideolibrary.Utils.Constant;
+import video.com.relavideolibrary.Utils.FileManager;
 import video.com.relavideolibrary.adapter.FilterAdapter;
 import video.com.relavideolibrary.interfaces.FilterDataCallback;
 import video.com.relavideolibrary.manager.VideoManager;
@@ -303,9 +308,29 @@ public class EditActivity extends BaseActivity implements TextureView.SurfaceTex
 
         dismissDialog();
 
+        MediaMetadataRetriever retr = new MediaMetadataRetriever();
+        retr.setDataSource(path);
+        String durationStr = retr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);
+        String heightStr = retr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT); // 视频高度
+        String widthStr = retr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH); // 视频宽度
+        Bitmap frameAtTime = retr.getFrameAtTime();
+        FileOutputStream fos = null;
+        String imagePath = FileManager.getOtherFile(System.currentTimeMillis() + ".jpeg");
+        try {
+            fos = new FileOutputStream(imagePath);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        //第一个参数是图片保存的格式，第二个参数是压缩率（100表示压缩0%，0表示压缩100%）
+        frameAtTime.compress(Bitmap.CompressFormat.JPEG, 100, fos);
+
         Intent intent = getIntent();
         Bundle bundle = new Bundle();
-        bundle.putString(Constant.BundleConstants.FINAL_VIDEO_PATH, path);
+        bundle.putString(Constant.BundleConstants.RESULT_VIDEO_PATH, path);
+        bundle.putString(Constant.BundleConstants.RESULT_VIDEO_DURATION, durationStr);
+        bundle.putString(Constant.BundleConstants.RESULT_VIDEO_WIDTH, widthStr);
+        bundle.putString(Constant.BundleConstants.RESULT_VIDEO_HEIGHT, heightStr);
+        bundle.putString(Constant.BundleConstants.RESULT_VIDEO_THUMB, imagePath);
         intent.putExtras(bundle);
         setResult(Activity.RESULT_OK, intent);
         finish();

@@ -4,7 +4,7 @@ import android.util.TypedValue;
 
 import java.util.Formatter;
 
-import video.com.relavideolibrary.BaseApplication;
+import video.com.relavideolibrary.RelaVideoSDK;
 
 /**
  * Created by chad
@@ -23,7 +23,7 @@ public class DensityUtils {
      */
     public static int dp2px(float dpVal) {
         return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
-                dpVal, BaseApplication.context.getResources().getDisplayMetrics());
+                dpVal, RelaVideoSDK.context.getResources().getDisplayMetrics());
     }
 
     /**

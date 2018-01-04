@@ -139,7 +139,7 @@ public class MainActivity extends AppCompatActivity implements FilterDataCallbac
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == Constant.IntentCode.REQUEST_CODE_RECORDING && resultCode == Activity.RESULT_OK) {
             Bundle extras = data.getExtras();
-            path = extras.getString(Constant.BundleConstants.FINAL_VIDEO_PATH);
+            path = extras.getString(Constant.BundleConstants.RESULT_VIDEO_PATH);
             if (!TextUtils.isEmpty(path))
                 textView.setText(path);
         }

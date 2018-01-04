@@ -16,6 +16,10 @@ public class Constant {
 
     public static final String VIDEO_BEAN = "video bean";
 
+    public static final int HOT_MUSIC_CATEGORY = -1;
+
+    public static final int NEWEST_MUSIC_CATEGORY = -2;
+
     public static final class VideoConfig {
 
         public static final long MAX_VIDEO_DURATION = 60 * 1000;
@@ -42,7 +46,11 @@ public class Constant {
         public static final String WAVE_DATA_URL = "wave_data_url";
         public static final String MUSIC_NAME = "music_name";
         public static final String AUDIO_URL = "audio_url";
-        public static final String FINAL_VIDEO_PATH = "final video path";
+        public static final String RESULT_VIDEO_PATH = "final video path";
+        public static final String RESULT_VIDEO_DURATION = "return duration";
+        public static final String RESULT_VIDEO_WIDTH = "return width";
+        public static final String RESULT_VIDEO_HEIGHT = "return height";
+        public static final String RESULT_VIDEO_THUMB = "return thumbnail";
     }
 
     public static final class BroadcastAction {

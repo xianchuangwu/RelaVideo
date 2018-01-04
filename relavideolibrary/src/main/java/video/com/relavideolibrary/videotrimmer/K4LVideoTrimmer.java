@@ -53,8 +53,8 @@ import com.github.hiteshsondhi88.libffmpeg.exceptions.FFmpegNotSupportedExceptio
 import java.io.File;
 import java.lang.ref.WeakReference;
 
-import video.com.relavideolibrary.BaseApplication;
 import video.com.relavideolibrary.R;
+import video.com.relavideolibrary.RelaVideoSDK;
 import video.com.relavideolibrary.Utils.Constant;
 import video.com.relavideolibrary.Utils.FFmpegUtils;
 import video.com.relavideolibrary.Utils.FileManager;
@@ -292,7 +292,7 @@ public class K4LVideoTrimmer extends FrameLayout {
             if (mOnTrimVideoListener != null)
                 mOnTrimVideoListener.onTrimStarted();
 
-            FFmpeg fFmpeg = FFmpeg.getInstance(BaseApplication.context);
+            FFmpeg fFmpeg = FFmpeg.getInstance(RelaVideoSDK.context);
             try {
                 fFmpeg.loadBinary(new LoadBinaryResponseHandler() {
                     @Override

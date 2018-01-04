@@ -144,7 +144,7 @@ public class BaseActivity extends AppCompatActivity {
     }
 
     public static boolean isRunningForeground() {
-        String packageName = BaseApplication.context.getPackageName();
+        String packageName = RelaVideoSDK.context.getPackageName();
         String topActivityClassName = getTopActivityName();
         if (packageName != null && topActivityClassName != null && topActivityClassName.startsWith(packageName)) {
             return true;
@@ -160,7 +160,7 @@ public class BaseActivity extends AppCompatActivity {
      */
     public static String getTopActivityName() {
         String topActivityClassName = null;
-        ActivityManager activityManager = (ActivityManager) (BaseApplication.context.getSystemService(Context.ACTIVITY_SERVICE));
+        ActivityManager activityManager = (ActivityManager) (RelaVideoSDK.context.getSystemService(Context.ACTIVITY_SERVICE));
         List<ActivityManager.RunningTaskInfo> runningTaskInfos = activityManager.getRunningTasks(1);
         if (runningTaskInfos != null) {
             ComponentName f = runningTaskInfos.get(0).topActivity;

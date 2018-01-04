@@ -1,5 +1,9 @@
 package video.com.relavideolibrary;
 
+import android.content.Context;
+
+import com.kingsoft.media.httpcache.KSYProxyService;
+
 import java.util.Map;
 
 import video.com.relavideolibrary.interfaces.FilterDataCallback;
@@ -14,6 +18,19 @@ import video.com.relavideolibrary.interfaces.MusicListCallback;
  */
 
 public class RelaVideoSDK {
+
+    public static Context context;
+
+    private static KSYProxyService proxyService = null;
+
+    public static void init(Context context) {
+        RelaVideoSDK.context = context;
+    }
+
+    public static KSYProxyService getKSYProxy() {
+        return proxyService == null ? (proxyService = new KSYProxyService(context)) : proxyService;
+    }
+
     /**
      * 滤镜lookup图回调
      *

@@ -12,7 +12,7 @@ import com.github.hiteshsondhi88.libffmpeg.exceptions.FFmpegNotSupportedExceptio
 import baidu.encode.ExtractDecodeEditEncodeMux;
 import jp.co.cyberagent.android.gpuimage.GPUImageFilter;
 import jp.co.cyberagent.android.gpuimage.GPUImageLookupFilter;
-import video.com.relavideolibrary.BaseApplication;
+import video.com.relavideolibrary.RelaVideoSDK;
 import video.com.relavideolibrary.Utils.FFmpegUtils;
 import video.com.relavideolibrary.Utils.FileManager;
 import video.com.relavideolibrary.camera.utils.DateUtils;
@@ -50,7 +50,7 @@ public class EditVideoThread extends Thread implements ExtractDecodeEditEncodeMu
     }
 
     private void generateFilter() {
-        ExtractDecodeEditEncodeMux test = new ExtractDecodeEditEncodeMux(BaseApplication.context);
+        ExtractDecodeEditEncodeMux test = new ExtractDecodeEditEncodeMux(RelaVideoSDK.context);
         if (filterId != -1) {
             test.setFilterType(generateGPUImageFilter(filterId));
         }
@@ -68,7 +68,7 @@ public class EditVideoThread extends Thread implements ExtractDecodeEditEncodeMu
         if (TextUtils.isEmpty(VideoManager.getInstance().getMusicBean().url)) {
             if (editVideoListener != null) editVideoListener.onEditVideoSuccess(path);
         } else {
-            FFmpeg fFmpeg = FFmpeg.getInstance(BaseApplication.context);
+            FFmpeg fFmpeg = FFmpeg.getInstance(RelaVideoSDK.context);
             try {
                 fFmpeg.loadBinary(new LoadBinaryResponseHandler() {
                     @Override
@@ -283,7 +283,7 @@ public class EditVideoThread extends Thread implements ExtractDecodeEditEncodeMu
      * @return
      */
     private synchronized FFmpeg getFfmepgObj() {
-        FFmpeg fFmpeg = FFmpeg.getInstance(BaseApplication.context);
+        FFmpeg fFmpeg = FFmpeg.getInstance(RelaVideoSDK.context);
         try {
             fFmpeg.loadBinary(new LoadBinaryResponseHandler() {
                 @Override
@@ -308,7 +308,7 @@ public class EditVideoThread extends Thread implements ExtractDecodeEditEncodeMu
     private GPUImageFilter generateGPUImageFilter(int resId) {
 
         GPUImageLookupFilter lookupFilter = new GPUImageLookupFilter();
-        lookupFilter.setBitmap(BitmapFactory.decodeResource(BaseApplication.context.getResources(), resId));
+        lookupFilter.setBitmap(BitmapFactory.decodeResource(RelaVideoSDK.context.getResources(), resId));
         return lookupFilter;
     }
 

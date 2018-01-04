@@ -25,10 +25,11 @@ import java.io.IOException;
 import java.util.List;
 
 import video.com.relavideolibrary.BaseActivity;
-import video.com.relavideolibrary.BaseApplication;
 import video.com.relavideolibrary.BaseViewHolder;
 import video.com.relavideolibrary.CallbackManager;
 import video.com.relavideolibrary.R;
+import video.com.relavideolibrary.RelaVideoSDK;
+import video.com.relavideolibrary.Utils.Constant;
 import video.com.relavideolibrary.Utils.FileManager;
 import video.com.relavideolibrary.adapter.MusicCategoryAdapter;
 import video.com.relavideolibrary.adapter.MusicListAdapter;
@@ -112,7 +113,7 @@ public class MusicActivity extends BaseActivity implements MusicCategoryAdapter.
     }
 
     private void initProxy() {
-        proxy = BaseApplication.getKSYProxy(this);
+        proxy = RelaVideoSDK.getKSYProxy();
 
         File file = new File(FileManager.getMusicPath());
 
@@ -134,7 +135,7 @@ public class MusicActivity extends BaseActivity implements MusicCategoryAdapter.
         //默认请求一组数据
         MusicListCallback musicListCallback = (MusicListCallback) CallbackManager.getInstance().getCallbackMap().get(MusicListCallback.class.getSimpleName());
         if (musicListCallback != null) {
-            musicListCallback.getMusicList(0, new MusicListSyncDataCallback() {
+            musicListCallback.getMusicList(Constant.NEWEST_MUSIC_CATEGORY, new MusicListSyncDataCallback() {
                 @Override
                 public void onSuccess(final List<MusicBean> data) {
                     runOnUiThread(new Runnable() {
