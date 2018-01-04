@@ -107,14 +107,15 @@
             android:layout_below="@id/recordingLine">
 
             <RelativeLayout
-                android:layout_width="40dp"
-                android:layout_height="40dp"
+                android:id="@+id/gallery_container"
+                android:layout_width="41.5dp"
+                android:layout_height="41.5dp"
                 android:layout_centerVertical="true"
                 android:layout_marginLeft="32dp"
                 android:background="@drawable/gallery_btn_bg"
                 android:padding="1.5dp">
 
-                <video.com.relavideolibrary.view.RoundCornersImageView
+                <ImageView
                     android:id="@+id/gallery"
                     android:layout_width="40dp"
                     android:layout_height="40dp"

@@ -38,7 +38,7 @@ public class FilterAdapter extends BaseRecyclerAdapter<FilterBean> {
         Glide.with(mContext)
                 .load(VideoManager.getInstance().getVideoBean().videoPath)
                 .signature(new StringSignature(String.valueOf(item.filterId)))
-                .bitmapTransform(new FilterTransformation(mContext, item.filterId))
+                .transform(new FilterTransformation(mContext, item.filterId))
                 .into((ImageView) holder.getView(R.id.filter_image));
 
         final TextView filter_name = holder.getView(R.id.filter_name);

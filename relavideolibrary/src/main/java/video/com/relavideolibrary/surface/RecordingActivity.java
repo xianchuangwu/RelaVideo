@@ -6,7 +6,6 @@ import android.content.ContentResolver;
 import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
-import android.os.SystemClock;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.View;
@@ -17,6 +16,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.resource.bitmap.CenterCrop;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,6 +27,7 @@ import baidu.encode.MediaMerge;
 import video.com.relavideolibrary.BaseActivity;
 import video.com.relavideolibrary.R;
 import video.com.relavideolibrary.Utils.Constant;
+import video.com.relavideolibrary.Utils.CornerTransformation;
 import video.com.relavideolibrary.Utils.FileManager;
 import video.com.relavideolibrary.camera.CameraView;
 import video.com.relavideolibrary.camera.utils.Constants;
@@ -34,17 +35,18 @@ import video.com.relavideolibrary.manager.VideoManager;
 import video.com.relavideolibrary.model.VideoBean;
 import video.com.relavideolibrary.view.RecordingButton;
 import video.com.relavideolibrary.view.RecordingLine;
-import video.com.relavideolibrary.view.RoundCornersImageView;
 
 public class RecordingActivity extends BaseActivity implements View.OnClickListener, RecordingButton.OnRecordingListener, MediaMerge.MediaMuxerListener, RecordingLine.RecordingLineListener {
 
     public static final String TAG = "RecordingActivity";
 
-    private RoundCornersImageView gallery;
+    private ImageView gallery;
 
     private RecordingButton recording;
 
     private ImageView beautiful_icon;
+
+    private RelativeLayout gallery_container;
 
     private TextView next;
 
@@ -76,6 +78,7 @@ public class RecordingActivity extends BaseActivity implements View.OnClickListe
         params.flags |= WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON;
         getWindow().setAttributes(params);
 
+        gallery_container = findViewById(R.id.gallery_container);
         cameraView = findViewById(R.id.cameraView);
         beautiful_icon = findViewById(R.id.beautiful_icon);
         recordingLine = findViewById(R.id.recordingLine);
@@ -127,8 +130,9 @@ public class RecordingActivity extends BaseActivity implements View.OnClickListe
                         public void run() {
                             Glide.with(RecordingActivity.this)
                                     .load(videos.get(videos.size() - 1))
+                                    .transform(new CenterCrop(RecordingActivity.this)
+                                            , new CornerTransformation(RecordingActivity.this, 10))
                                     .placeholder(R.mipmap.ic_default)
-                                    .centerCrop()
                                     .into(gallery);
                         }
                     });
@@ -189,6 +193,8 @@ public class RecordingActivity extends BaseActivity implements View.OnClickListe
                     next.setEnabled(false);
                     delete.setAlpha(0.5f);
                     delete.setEnabled(false);
+                    gallery_container.setAlpha(1.0f);
+                    gallery_container.setEnabled(true);
                 }
             }
         } else if (id == R.id.beautiful) {
@@ -245,6 +251,8 @@ public class RecordingActivity extends BaseActivity implements View.OnClickListe
                         next.setEnabled(false);
                         delete.setAlpha(0.5f);
                         delete.setEnabled(false);
+                        gallery_container.setAlpha(0.5f);
+                        gallery_container.setEnabled(false);
                         recordingLine.start();
                     }
                 });
