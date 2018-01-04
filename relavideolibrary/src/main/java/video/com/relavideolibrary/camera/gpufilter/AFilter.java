@@ -11,7 +11,7 @@ import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 import java.util.Arrays;
 
-import video.com.relavideolibrary.camera.RotationMatrix;
+import video.com.relavideolibrary.camera.VertexPosition;
 import video.com.relavideolibrary.camera.utils.MatrixUtils;
 
 
@@ -224,7 +224,7 @@ public abstract class AFilter {
         b.order(ByteOrder.nativeOrder());
         mTexBuffer=b.asFloatBuffer();
 //        mTexBuffer.put(coord);
-        mTexBuffer.put(RotationMatrix.None.matrix());
+        mTexBuffer.put(VertexPosition.None.matrix());
         mTexBuffer.position(0);
     }
 

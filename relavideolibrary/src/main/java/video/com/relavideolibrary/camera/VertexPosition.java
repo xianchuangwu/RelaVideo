@@ -4,7 +4,7 @@ package video.com.relavideolibrary.camera;
  * Created by hirochin on 22/12/2017.
  */
 
-public enum RotationMatrix {
+public enum VertexPosition {
     None,
     Left,
     Right,
@@ -12,6 +12,7 @@ public enum RotationMatrix {
     Flip_Horizontal,
     Right_And_Flip_Vertical,
     Right_And_Flip_Horizontal,
+    Left_And_Flip_Horizontal,
     Up_Down;
 
     public float[] matrix() {
@@ -80,6 +81,15 @@ public enum RotationMatrix {
                         0.0f, 0.0f,
                 };
                 return resultUpDown;
+            case Left_And_Flip_Horizontal:
+                float resultLeftAndFlipHorizontal[] = {
+                        1.0f, 1.0f,
+                        1.0f, 0.0f,
+                        0.0f, 1.0f,
+                        0.0f, 0.0f,
+                };
+                return resultLeftAndFlipHorizontal;
+
         }
         float defaultM[] = {0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f};
         return defaultM;

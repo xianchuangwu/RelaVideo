@@ -1,12 +1,16 @@
 package video.com.relavideolibrary.view;
 
 import android.content.Context;
+import android.content.res.TypedArray;
 import android.graphics.Canvas;
 import android.graphics.Path;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.Region;
 import android.util.AttributeSet;
+
+import video.com.relavideolibrary.R;
+import video.com.relavideolibrary.Utils.DensityUtils;
 
 /**
  * Created by chad
@@ -16,24 +20,28 @@ import android.util.AttributeSet;
  */
 
 public class RoundCornersImageView extends android.support.v7.widget.AppCompatImageView {
-    private float radiusX = 10;
-    private float radiusY = 10;
+    private float radiusX = DensityUtils.dp2px(10);
+    private float radiusY = DensityUtils.dp2px(10);
     private Path path;
     private Rect rect;
     private RectF rectF;
 
     public RoundCornersImageView(Context context) {
-        super(context);
+        super(context, null);
         init();
     }
 
     public RoundCornersImageView(Context context, AttributeSet attrs) {
-        super(context, attrs);
+        super(context, attrs, 0);
         init();
     }
 
     public RoundCornersImageView(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
+        TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.RoundCornersImageView, defStyleAttr, R.style.AppCompatLightTheme);
+        radiusX = a.getDimensionPixelSize(R.styleable.RoundCornersImageView_radius, DensityUtils.dp2px(10));
+        radiusY = radiusX;
+        a.recycle();
         init();
     }
 

@@ -120,6 +120,8 @@ public class RecordingLine extends android.support.v7.widget.AppCompatTextView i
         int value = (int) animation.getAnimatedValue();
         lastDuration = (long) value;
         currentLineY = (float) value * perMilliSecWidth;
+        if (recordingLineListener != null)
+            recordingLineListener.recordProgress(lastDuration);
         invalidate();
     }
 
@@ -177,6 +179,8 @@ public class RecordingLine extends android.support.v7.widget.AppCompatTextView i
                 } else {
                     lastDuration = 0;
                 }
+                if (recordingLineListener != null)
+                    recordingLineListener.recordProgress(lastDuration);
             }
             invalidate();
             willDelete = !willDelete;
@@ -259,5 +263,15 @@ public class RecordingLine extends android.support.v7.widget.AppCompatTextView i
         canvas.drawRect(height / 2, 0, Math.abs(width - height / 2), height, mPaint);
         mPaint.setColor(whiteColor);
         canvas.drawRect(width / 12, 0, width / 12 + intervalWidth, height, mPaint);//最短时长刻度线,5s时line
+    }
+
+    private RecordingLineListener recordingLineListener;
+
+    public void setRecordingLineListener(RecordingLineListener recordingLineListener) {
+        this.recordingLineListener = recordingLineListener;
+    }
+
+    public interface RecordingLineListener {
+        void recordProgress(long progress);
     }
 }

@@ -2,10 +2,10 @@ package video.com.relavideolibrary.adapter;
 
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
-import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.signature.StringSignature;
 
 import java.util.Collection;
@@ -16,7 +16,6 @@ import video.com.relavideolibrary.R;
 import video.com.relavideolibrary.Utils.FilterTransformation;
 import video.com.relavideolibrary.manager.VideoManager;
 import video.com.relavideolibrary.model.FilterBean;
-import video.com.relavideolibrary.view.RoundCornersImageView;
 
 /**
  * Created by chad
@@ -40,7 +39,7 @@ public class FilterAdapter extends BaseRecyclerAdapter<FilterBean> {
                 .load(VideoManager.getInstance().getVideoBean().videoPath)
                 .signature(new StringSignature(String.valueOf(item.filterId)))
                 .bitmapTransform(new FilterTransformation(mContext, item.filterId))
-                .into((RoundCornersImageView) holder.getView(R.id.filter_image));
+                .into((ImageView) holder.getView(R.id.filter_image));
 
         final TextView filter_name = holder.getView(R.id.filter_name);
         filter_name.setTextColor(mContext.getResources().getColor(item.selected ? R.color.rela_color : R.color.black_gray));

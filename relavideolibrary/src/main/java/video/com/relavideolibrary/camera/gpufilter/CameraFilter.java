@@ -2,7 +2,7 @@ package video.com.relavideolibrary.camera.gpufilter;
 
 import android.content.res.Resources;
 
-import video.com.relavideolibrary.camera.RotationMatrix;
+import video.com.relavideolibrary.camera.VertexPosition;
 
 
 /**
@@ -19,10 +19,10 @@ public class CameraFilter extends OesFilter {
         super.setFlag(flag);
         float[] coord;
         if(getFlag()==1) {
-            coord = RotationMatrix.Left.matrix();
+            coord = VertexPosition.Left_And_Flip_Horizontal.matrix();
         }
         else {
-            coord = RotationMatrix.Right.matrix();
+            coord = VertexPosition.Right.matrix();
         }
         mTexBuffer.clear();
         mTexBuffer.put(coord);

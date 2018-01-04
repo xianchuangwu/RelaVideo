@@ -36,7 +36,7 @@ import video.com.relavideolibrary.view.RecordingButton;
 import video.com.relavideolibrary.view.RecordingLine;
 import video.com.relavideolibrary.view.RoundCornersImageView;
 
-public class RecordingActivity extends BaseActivity implements View.OnClickListener, RecordingButton.OnRecordingListener, MediaMerge.MediaMuxerListener {
+public class RecordingActivity extends BaseActivity implements View.OnClickListener, RecordingButton.OnRecordingListener, MediaMerge.MediaMuxerListener, RecordingLine.RecordingLineListener {
 
     public static final String TAG = "RecordingActivity";
 
@@ -47,6 +47,8 @@ public class RecordingActivity extends BaseActivity implements View.OnClickListe
     private ImageView beautiful_icon;
 
     private TextView next;
+
+    private TextView second_txt;
 
     private RecordingLine recordingLine;
 
@@ -77,11 +79,13 @@ public class RecordingActivity extends BaseActivity implements View.OnClickListe
         cameraView = findViewById(R.id.cameraView);
         beautiful_icon = findViewById(R.id.beautiful_icon);
         recordingLine = findViewById(R.id.recordingLine);
+        recordingLine.setRecordingLineListener(this);
         gallery = findViewById(R.id.gallery);
         recording = findViewById(R.id.recording);
         recording.registerOnClickListener(this);
         gallery.setOnClickListener(this);
         findViewById(R.id.cancel).setOnClickListener(this);
+        second_txt = findViewById(R.id.second_txt);
         next = findViewById(R.id.next);
         next.setOnClickListener(this);
         findViewById(R.id.camera_switch).setOnClickListener(this);
@@ -286,5 +290,12 @@ public class RecordingActivity extends BaseActivity implements View.OnClickListe
         bean.videoPath = outputPath;
         VideoManager.getInstance().setVideoBean(bean);
         startActivityForResult(new Intent(RecordingActivity.this, EditActivity.class), Constant.IntentCode.REQUEST_CODE_EDIT);
+    }
+
+    @SuppressLint("SetTextI18n")
+    @Override
+    public void recordProgress(long progress) {
+        @SuppressLint("DefaultLocale") String result = String.format("%.1f", (float) progress / 1000);
+        second_txt.setText(result + " S");
     }
 }
