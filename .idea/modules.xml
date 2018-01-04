@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/RelaVideoDemo.iml" filepath="$PROJECT_DIR$/RelaVideoDemo.iml" />
+      <module fileurl="file://$PROJECT_DIR$/RelaVideo.iml" filepath="$PROJECT_DIR$/RelaVideo.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
       <module fileurl="file://$PROJECT_DIR$/gpuimage/gpuimage.iml" filepath="$PROJECT_DIR$/gpuimage/gpuimage.iml" />
       <module fileurl="file://$PROJECT_DIR$/relavideolibrary/relavideolibrary.iml" filepath="$PROJECT_DIR$/relavideolibrary/relavideolibrary.iml" />
