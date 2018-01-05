@@ -203,7 +203,7 @@ public final class EglCore {
             if (mEGLDisplay != EGL14.EGL_NO_DISPLAY) {
                 // We're limited here -- finalizers don't run on the thread that holds
                 // the EGL state, so if a surface or context is still current on another
-                // thread we can't fully release it here.  Exceptions thrown from here
+                // thread we can't fully clean it here.  Exceptions thrown from here
                 // are quietly discarded.  Complain in the log file.
                 Log.w(TAG, "WARNING: EglCore was not explicitly released -- state may be leaked");
                 release();

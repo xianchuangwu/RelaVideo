@@ -23,8 +23,9 @@ public class RelaVideoSDK {
 
     private static KSYProxyService proxyService = null;
 
-    public static void init(Context context) {
+    public RelaVideoSDK init(Context context) {
         RelaVideoSDK.context = context;
+        return this;
     }
 
     public static KSYProxyService getKSYProxy() {

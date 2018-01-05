@@ -18,4 +18,5 @@
     <string name="short_seconds">sec</string>
     <string name="megabyte">MB</string>
     <string name="kilobyte">KB</string>
+    <string name="click_fast">Tap to fast</string>
 </resources>

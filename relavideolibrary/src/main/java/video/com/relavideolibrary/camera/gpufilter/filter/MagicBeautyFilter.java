@@ -37,26 +37,36 @@ public class MagicBeautyFilter extends GPUImageFilter {
     }
 
     public void setBeautyLevel(int level){
-        mLevel=level;
-        switch (level) {
-            case 1:
-                setFloat(mParamsLocation, 1.0f);
-                break;
-            case 2:
-                setFloat(mParamsLocation, 0.8f);
-                break;
-            case 3:
-                setFloat(mParamsLocation,0.6f);
-                break;
-            case 4:
-                setFloat(mParamsLocation, 0.4f);
-                break;
-            case 5:
-                setFloat(mParamsLocation,0.33f);
-                break;
-            default:
-                break;
-        }
+//        mLevel=level;
+//        switch (level) {
+//            case 1:
+//                setFloat(mParamsLocation, 1.0f);
+//                break;
+//            case 2:
+//                setFloat(mParamsLocation, 0.8f);
+//                break;
+//            case 3:
+//                setFloat(mParamsLocation,0.6f);
+//                break;
+//            case 4:
+//                setFloat(mParamsLocation, 0.4f);
+//                break;
+//            case 5:
+//                setFloat(mParamsLocation,0.33f);
+//                break;
+//            default:
+//                break;
+//        }
+        final float[][] beautify_level = {
+                { 1.0f, 1.0f, 0.15f, 0.15f },
+                { 0.8f, 0.9f, 0.2f, 0.2f },
+                { 0.6f, 0.8f, 0.25f, 0.25f },
+                { 0.4f, 0.7f, 0.38f, 0.3f },
+                { 0.33f, 0.63f, 0.4f, 0.35f }
+        };
+        mLevel = level < 0 ? 0 : (level > 4 ? 4 : level);
+        if (level == 0) return;
+        setFloatVec4(mParamsLocation, beautify_level[mLevel - 1]);
     }
     public int getBeautyLevel(){
         return mLevel;

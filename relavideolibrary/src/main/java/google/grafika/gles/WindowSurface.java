@@ -23,7 +23,7 @@ import android.view.Surface;
 /**
  * Recordable EGL window surface.
  * <p>
- * It's good practice to explicitly release() the surface, preferably from a "finally" block.
+ * It's good practice to explicitly clean() the surface, preferably from a "finally" block.
  */
 public class WindowSurface extends EglSurfaceBase {
     private Surface mSurface;
@@ -32,9 +32,9 @@ public class WindowSurface extends EglSurfaceBase {
     /**
      * Associates an EGL surface with the native window surface.
      * <p>
-     * Set releaseSurface to true if you want the Surface to be released when release() is
+     * Set releaseSurface to true if you want the Surface to be released when clean() is
      * called.  This is convenient, but can interfere with framework classes that expect to
-     * manage the Surface themselves (e.g. if you release a SurfaceView's Surface, the
+     * manage the Surface themselves (e.g. if you clean a SurfaceView's Surface, the
      * surfaceDestroyed() callback won't fire).
      */
     public WindowSurface(EglCore eglCore, Surface surface, boolean releaseSurface) {

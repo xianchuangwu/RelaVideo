@@ -64,6 +64,7 @@ public class MainActivity extends AppCompatActivity implements FilterDataCallbac
         filter_image.setImageBitmap(gpuImage.getBitmapWithFilterApplied());
 
         new RelaVideoSDK()
+                .init(getApplicationContext())
                 .addFilter(this)
                 .addMusicCategory(this)
                 .addMusicList(this);

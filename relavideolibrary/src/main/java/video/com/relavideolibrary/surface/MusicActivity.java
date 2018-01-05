@@ -31,6 +31,7 @@ import video.com.relavideolibrary.R;
 import video.com.relavideolibrary.RelaVideoSDK;
 import video.com.relavideolibrary.Utils.Constant;
 import video.com.relavideolibrary.Utils.FileManager;
+import video.com.relavideolibrary.Utils.ScreenUtils;
 import video.com.relavideolibrary.adapter.MusicCategoryAdapter;
 import video.com.relavideolibrary.adapter.MusicListAdapter;
 import video.com.relavideolibrary.interfaces.MusicCategoryCallback;
@@ -172,6 +173,7 @@ public class MusicActivity extends BaseActivity implements MusicCategoryAdapter.
     public void onClick(View v) {
         int id = v.getId();
         if (id == R.id.complete) {
+            ScreenUtils.preventViewMultipleTouch(v, 2000);
             downloadMusic(currentMusic);
         } else if (id == R.id.cancel) {
             setResult(Activity.RESULT_CANCELED);

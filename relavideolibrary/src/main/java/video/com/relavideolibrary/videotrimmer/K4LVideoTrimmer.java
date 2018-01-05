@@ -58,6 +58,7 @@ import video.com.relavideolibrary.RelaVideoSDK;
 import video.com.relavideolibrary.Utils.Constant;
 import video.com.relavideolibrary.Utils.FFmpegUtils;
 import video.com.relavideolibrary.Utils.FileManager;
+import video.com.relavideolibrary.Utils.ScreenUtils;
 import video.com.relavideolibrary.videotrimmer.interfaces.OnK4LVideoListener;
 import video.com.relavideolibrary.videotrimmer.interfaces.OnProgressVideoListener;
 import video.com.relavideolibrary.videotrimmer.interfaces.OnRangeSeekBarListener;
@@ -161,6 +162,7 @@ public class K4LVideoTrimmer extends FrameLayout {
                         new OnClickListener() {
                             @Override
                             public void onClick(View view) {
+                                ScreenUtils.preventViewMultipleTouch(view, 2000);
                                 onSaveClicked();
                             }
                         }

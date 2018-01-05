@@ -1,1 +1,1 @@
-include ':app', ':relavideolibrary', ':gpuimage'
+include ':app', ':relavideolibrary','gpuimage'

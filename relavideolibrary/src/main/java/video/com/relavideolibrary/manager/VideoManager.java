@@ -69,5 +69,8 @@ public class VideoManager {
         return musicVolumn;
     }
 
+    public void clean() {
+        instance = null;
+    }
 
 }

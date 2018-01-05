@@ -81,7 +81,7 @@ public class TextureRenderView extends TextureView implements IRenderView {
     protected void onDetachedFromWindow() {
         super.onDetachedFromWindow();
         Log.d(TAG, "onDetachedFromWindow");
-//        release(); // release surface when detach. if uncomment, not support float window
+//        clean(); // clean surface when detach. if uncomment, not support float window
     }
 
     // --------------------
@@ -221,7 +221,7 @@ public class TextureRenderView extends TextureView implements IRenderView {
     public void release() {
         if (lastSurfaceTexture != null) {
             if (this.isAvailable()) {
-                // let textureview to release surfacetexture
+                // let textureview to clean surfacetexture
                 mSurfaceCallback.setOwnSurfaceTexture(true);
             } else {
                 lastSurfaceTexture.release();

@@ -8,11 +8,13 @@ import android.graphics.Paint;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
 import android.graphics.RectF;
-import android.util.ArrayMap;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.View;
-import android.view.animation.DecelerateInterpolator;
+import android.view.animation.LinearInterpolator;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import video.com.relavideolibrary.R;
 import video.com.relavideolibrary.Utils.Constant;
@@ -25,6 +27,8 @@ import video.com.relavideolibrary.Utils.Constant;
  */
 
 public class RecordingLine extends android.support.v7.widget.AppCompatTextView implements ValueAnimator.AnimatorUpdateListener, Animator.AnimatorListener {
+
+    private static final String TAG = "RecordingLine";
 
     private Context mContext;
 
@@ -45,9 +49,9 @@ public class RecordingLine extends android.support.v7.widget.AppCompatTextView i
 
     private int redColor;
 
-    private float currentLineY;
+    private float currentLineX;
 
-    private ArrayMap<Paint, RectF> lines = new ArrayMap<>();
+    private List<Square> lines = new ArrayList<>();
 
     private ValueAnimator valueAnimator;
 
@@ -119,7 +123,8 @@ public class RecordingLine extends android.support.v7.widget.AppCompatTextView i
     public void onAnimationUpdate(ValueAnimator animation) {
         int value = (int) animation.getAnimatedValue();
         lastDuration = (long) value;
-        currentLineY = (float) value * perMilliSecWidth;
+        currentLineX = (float) value * perMilliSecWidth;
+        Log.d(TAG, "value :" + value + ",lastDuration :" + lastDuration + ",currentLineX :" + currentLineX);
         if (recordingLineListener != null)
             recordingLineListener.recordProgress(lastDuration);
         invalidate();
@@ -132,7 +137,29 @@ public class RecordingLine extends android.support.v7.widget.AppCompatTextView i
 
     @Override
     public void onAnimationEnd(Animator animation) {
-//        stop();
+        float endX;
+        float maxX = getMeasuredWidth() - getMeasuredHeight() / 2;//总长度减去末尾半圆
+        if (currentLineX <= maxX) {
+            endX = currentLineX;
+        } else {
+            endX = maxX;
+        }
+        //current line
+        mPaint.setColor(whiteColor);
+        if (lines.size() == 0) {
+            int height = getMeasuredHeight();
+            Square square = new Square();
+            square.paint = new Paint(mPaint);
+            square.recf = new RectF(height / 2, 0, endX, height);
+            lines.add(square);
+        } else {
+            RectF rectF = lines.get(lines.size() - 1).recf;
+            Square square = new Square();
+            square.paint = new Paint(mPaint);
+            square.recf = new RectF(rectF.right, rectF.top, endX, rectF.bottom);
+            lines.add(square);
+        }
+        invalidate();
     }
 
     @Override
@@ -146,36 +173,25 @@ public class RecordingLine extends android.support.v7.widget.AppCompatTextView i
     }
 
     public void start() {
-
         valueAnimator = ValueAnimator.ofInt((int) lastDuration, (int) maxDuration);
         valueAnimator.setDuration(maxDuration - lastDuration);
-        valueAnimator.setInterpolator(new DecelerateInterpolator());//先加速再减速
+        valueAnimator.setInterpolator(new LinearInterpolator());//匀速运动
         valueAnimator.addUpdateListener(this);
         valueAnimator.addListener(this);
         valueAnimator.start();
     }
 
     public void stop() {
-        Log.d("stop before", String.valueOf(lines.size()));
         valueAnimator.cancel();
-        //current line
-        mPaint.setColor(whiteColor);
-        if (lines.size() == 0) {
-            int height = getMeasuredHeight();
-            lines.put(new Paint(mPaint), new RectF(height / 2, 0, currentLineY, height));
-        } else {
-            RectF rectF = lines.valueAt(lines.size() - 1);
-            lines.put(new Paint(mPaint), new RectF(rectF.right, rectF.top, currentLineY, rectF.bottom));
-        }
-        Log.d("stop after", String.valueOf(lines.size()));
     }
 
     public boolean delete() {
+        Log.d(TAG, "delete before:" + String.valueOf(lines.size()));
         if (lines.size() > 0) {
             if (willDelete) {
-                lines.removeAt(lines.size() - 1);
+                lines.remove(lines.size() - 1);
                 if (lines.size() > 0) {
-                    lastDuration = (long) (lines.valueAt(lines.size() - 1).right / perMilliSecWidth);
+                    lastDuration = (long) (lines.get(lines.size() - 1).recf.right / perMilliSecWidth);
                 } else {
                     lastDuration = 0;
                 }
@@ -185,6 +201,7 @@ public class RecordingLine extends android.support.v7.widget.AppCompatTextView i
             invalidate();
             willDelete = !willDelete;
         }
+        Log.d(TAG, "delete after:" + String.valueOf(lines.size()));
         return !willDelete;
     }
 
@@ -193,23 +210,34 @@ public class RecordingLine extends android.support.v7.widget.AppCompatTextView i
     }
 
     private void drawCurrentLine(Canvas canvas) {
-        if (valueAnimator != null && valueAnimator.isRunning()) {
+        if (lastDuration < Constant.VideoConfig.MAX_VIDEO_DURATION
+                && valueAnimator != null
+                && valueAnimator.isRunning()) {
             float height = getMeasuredHeight();
+            float width = getMeasuredWidth();
 
+            float endX;
+            float maxX = width - height / 2;//总长度减去末尾半圆
+            if (currentLineX <= maxX) {
+                endX = currentLineX;
+            } else {
+                endX = maxX;
+            }
             mPaint.setColor(whiteColor);
             if (lines.size() == 0) {
                 canvas.drawCircle(height / 2, height / 2, height / 2, mPaint);
-                canvas.drawRect(height / 2, 0, currentLineY, height, mPaint);
+                canvas.drawRect(height / 2, 0, endX, height, mPaint);
+                //画末尾的半圆
+                if (currentLineX >= maxX) canvas.drawCircle(maxX, height / 2, height / 2, mPaint);
             } else {
-                RectF rectF = lines.valueAt(lines.size() - 1);
+                RectF rectF = lines.get(lines.size() - 1).recf;
                 //先画间隔
                 mPaint.setColor(transColor);
                 canvas.drawRect(rectF.right, rectF.top, rectF.right + intervalWidth, rectF.bottom, mPaint);
-                Log.d("currentLineY", String.valueOf(currentLineY));
-                if (currentLineY > rectF.right + intervalWidth) {
-                    mPaint.setColor(whiteColor);
-                    canvas.drawRect(rectF.right + intervalWidth, rectF.top, currentLineY, rectF.bottom, mPaint);
-                }
+                mPaint.setColor(whiteColor);
+                canvas.drawRect(rectF.right + intervalWidth, rectF.top, endX, rectF.bottom, mPaint);
+                //画末尾的半圆
+                if (currentLineX >= maxX) canvas.drawCircle(maxX, height / 2, height / 2, mPaint);
             }
         }
     }
@@ -219,23 +247,33 @@ public class RecordingLine extends android.support.v7.widget.AppCompatTextView i
         if (lines.size() > 0) {
             Log.d("drawArrayMapLines", String.valueOf(lines.size()));
             float height = getMeasuredHeight();
-            canvas.drawCircle(height / 2, height / 2, height / 2, lines.keyAt(0));
+            float width = getMeasuredWidth();
+            Paint paintCircle = lines.get(0).paint;
+            if (lines.size() == 1 && willDelete) {
+                paintCircle.setColor(redColor);
+            }
+            canvas.drawCircle(height / 2, height / 2, height / 2, paintCircle);
 
+            float maxX = width - height / 2;//总长度减去末尾半圆
             for (int i = 0; i < lines.size(); i++) {
-                RectF rectF = lines.valueAt(i);
-                Paint paint = lines.keyAt(i);
+                RectF rectF = lines.get(i).recf;
+                Paint paint = lines.get(i).paint;
                 //第一个line前面不画间隔
                 if (i == 0) {
                     if (lines.size() == 1 && willDelete) {
                         paint.setColor(redColor);
                     }
                     canvas.drawRect(rectF, paint);
+                    if (rectF.right >= maxX)
+                        canvas.drawCircle(maxX, height / 2, height / 2, paint);
                 } else {
                     mPaint.setColor(transColor);
                     canvas.drawRect(rectF.left, rectF.top, rectF.left + intervalWidth, rectF.bottom, mPaint);//间隔
                     if (i == lines.size() - 1 && willDelete)
                         paint.setColor(redColor);
                     canvas.drawRect(rectF.left + intervalWidth, rectF.top, rectF.right, rectF.bottom, paint);//line
+                    if (rectF.right >= maxX)
+                        canvas.drawCircle(maxX, height / 2, height / 2, paint);
                 }
             }
         }
@@ -273,5 +311,12 @@ public class RecordingLine extends android.support.v7.widget.AppCompatTextView i
 
     public interface RecordingLineListener {
         void recordProgress(long progress);
+    }
+
+    private class Square {
+
+        public Paint paint;
+
+        public RectF recf;
     }
 }

@@ -12,9 +12,9 @@ android {
 
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
 
-        // 此处很重要，指定APP只使用 armeabi-v7a和arm64-v8a的库
+        // 此处很重要，指定APP只使用 armeabi,armeabi-v7a和arm64-v8a的库
         ndk {
-            abiFilters 'armeabi-v7a', 'arm64-v8a'
+            abiFilters 'armeabi-v7a', 'arm64-v8a', 'armeabi'
         }
     }
     buildTypes {
@@ -45,10 +45,10 @@ dependencies {
     compile project(':gpuimage')
     compile 'com.github.bumptech.glide:glide:3.7.0'
     compile 'com.github.bumptech.glide:okhttp3-integration:1.4.0@aar'
-    compile 'com.ksyun.media:libksyplayer-java:2.1.2'
-    compile 'com.ksyun.media:libksyplayer-armv7a:2.1.2'
-    compile 'com.ksyun.media:libksyplayer-arm64:2.1.2'
+    compile 'com.ksyun.media:libksylive-java:2.4.2'
+    compile 'com.ksyun.media:libksylive-armv7a:2.4.2'
+    compile 'com.ksyun.media:libksylive-arm64:2.4.2'//v5没有jcenter库，直接将so文件放在lib里了
     compile 'com.airbnb.android:lottie:2.0.0-beta4'
-    implementation files('libs/libksyhttpcache.jar')
+    compile files('libs/libksyhttpcache.jar')
     compile 'com.writingminds:FFmpegAndroid:0.3.2'
 }

@@ -29,6 +29,7 @@ import video.com.relavideolibrary.R;
 import video.com.relavideolibrary.Utils.Constant;
 import video.com.relavideolibrary.Utils.CornerTransformation;
 import video.com.relavideolibrary.Utils.FileManager;
+import video.com.relavideolibrary.Utils.ScreenUtils;
 import video.com.relavideolibrary.camera.CameraView;
 import video.com.relavideolibrary.camera.utils.Constants;
 import video.com.relavideolibrary.manager.VideoManager;
@@ -153,6 +154,7 @@ public class RecordingActivity extends BaseActivity implements View.OnClickListe
         if (id == R.id.cancel) {
             finish();
         } else if (id == R.id.next) {
+            ScreenUtils.preventViewMultipleTouch(v, 2000);
             if (outputList.size() > 0) {
                 showDialog();
                 new Thread(new Runnable() {
@@ -177,6 +179,7 @@ public class RecordingActivity extends BaseActivity implements View.OnClickListe
                 }).start();
             }
         } else if (id == R.id.camera_switch) {
+            ScreenUtils.preventViewMultipleTouch(v, 2000);
             executorService.execute(new Runnable() {
                 @Override
                 public void run() {
@@ -184,6 +187,7 @@ public class RecordingActivity extends BaseActivity implements View.OnClickListe
                 }
             });
         } else if (id == R.id.gallery) {
+            ScreenUtils.preventViewMultipleTouch(v, 2000);
             startActivityForResult(new Intent(this, GalleryActivity.class), Constant.IntentCode.REQUEST_CODE_GALLERY);
         } else if (id == R.id.delete) {
             if (recordingLine.delete()) {
@@ -194,7 +198,7 @@ public class RecordingActivity extends BaseActivity implements View.OnClickListe
                     delete.setAlpha(0.5f);
                     delete.setEnabled(false);
                     gallery_container.setAlpha(1.0f);
-                    gallery_container.setEnabled(true);
+                    gallery.setEnabled(true);
                 }
             }
         } else if (id == R.id.beautiful) {
@@ -211,7 +215,7 @@ public class RecordingActivity extends BaseActivity implements View.OnClickListe
                 executorService.execute(new Runnable() {
                     @Override
                     public void run() {
-                        cameraView.changeBeautyLevel(5);
+                        cameraView.changeBeautyLevel(1);
                     }
                 });
             }
@@ -224,20 +228,29 @@ public class RecordingActivity extends BaseActivity implements View.OnClickListe
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == Constant.IntentCode.REQUEST_CODE_GALLERY && resultCode == Constant.IntentCode.RESULT_CODE_GALLERY_OK) {
             startActivityForResult(new Intent(this, EditActivity.class), Constant.IntentCode.REQUEST_CODE_EDIT);
-        } else if (requestCode == Constant.IntentCode.REQUEST_CODE_EDIT && resultCode == Activity.RESULT_OK) {
-            if (data.getExtras() != null) {
-                Intent intent = getIntent();
-                intent.putExtras(data.getExtras());
-                setResult(Activity.RESULT_OK, intent);
-                finish();
-            } else {
-                Log.e(TAG, "intent data null");
+        } else if (requestCode == Constant.IntentCode.REQUEST_CODE_EDIT) {
+            if (resultCode == Activity.RESULT_OK) {
+                if (data.getExtras() != null) {
+                    Intent intent = getIntent();
+                    intent.putExtras(data.getExtras());
+                    setResult(Activity.RESULT_OK, intent);
+                    finish();
+                } else {
+                    Log.e(TAG, "intent data null");
+                }
             }
+
+            //从编辑页回来，清空视频管理类
+            VideoManager.getInstance().clean();
         }
     }
 
     @Override
     public void startRecording() {
+        if (recordingLine.getLastDuration() == Constant.VideoConfig.MAX_VIDEO_DURATION) {
+            Toast.makeText(this, getString(R.string.video_max_duration), Toast.LENGTH_SHORT).show();
+            return;
+        }
         executorService.execute(new Runnable() {
             @Override
             public void run() {
@@ -252,7 +265,7 @@ public class RecordingActivity extends BaseActivity implements View.OnClickListe
                         delete.setAlpha(0.5f);
                         delete.setEnabled(false);
                         gallery_container.setAlpha(0.5f);
-                        gallery_container.setEnabled(false);
+                        gallery.setEnabled(false);
                         recordingLine.start();
                     }
                 });

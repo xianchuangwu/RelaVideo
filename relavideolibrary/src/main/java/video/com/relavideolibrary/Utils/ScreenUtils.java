@@ -124,4 +124,18 @@ public class ScreenUtils {
         view.destroyDrawingCache();
         return bp;
     }
+
+    // 防止控件被连续误点击的实用方法，传入要保护的时间，在此时间内将不可被再次点击
+    public static void preventViewMultipleTouch(final View v, int protectionMilliseconds) {
+        if (v == null) {
+            return;
+        }
+        v.setEnabled(false);
+        v.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                v.setEnabled(true);
+            }
+        }, protectionMilliseconds);
+    }
 }

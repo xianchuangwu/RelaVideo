@@ -200,7 +200,7 @@ public class ExtractDecodeEditEncodeMux {
      * with MediaCodec and do some simple checks.
      */
     private void extractDecodeEditEncodeMux() throws Exception {
-        // Exception that may be thrown during release.
+        // Exception that may be thrown during clean.
         Exception exception = null;
         MediaCodecInfo videoCodecInfo = selectCodec(OUTPUT_VIDEO_MIME_TYPE);
         if (videoCodecInfo == null) {
@@ -289,7 +289,7 @@ public class ExtractDecodeEditEncodeMux {
             e.printStackTrace();
         } finally {
             if (VERBOSE) Log.d(TAG, "releasing extractor, decoder, encoder, and muxer");
-            // Try to release everything we acquired, even if one of the releases fails, in which
+            // Try to clean everything we acquired, even if one of the releases fails, in which
             // case we save the first exception we got and re-throw at the end (unless something
             // other exception has already been thrown). This guarantees the first exception thrown
             // is reported as the cause of the error, everything is (attempted) to be released, and

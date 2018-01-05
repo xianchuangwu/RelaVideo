@@ -89,12 +89,8 @@ public class CameraRenderer implements GLSurfaceView.Renderer {
         mAfFilter = new GroupFilter(resources);
         mBeautyFilter = new MagicBeautyFilter();
 
-
-//        WaterMarkFilter waterMarkFilter = new WaterMarkFilter(resources);
-//        waterMarkFilter.setWaterMark(BitmapFactory.decodeResource(resources,R.mipmap.watermark));
-//        waterMarkFilter.setPosition(30,50,0,0);
-//        addFilter(waterMarkFilter);
-//        addFilter(mBeFilter);
+        NoFilter clearFilter = new NoFilter(resources);
+        addFilter(clearFilter);
 
         recordingEnabled = false;
     }
@@ -164,7 +160,6 @@ public class CameraRenderer implements GLSurfaceView.Renderer {
     public void onDrawFrame(GL10 gl10) {
         /**更新界面中的数据*/
         mSurfaceTextrue.updateTexImage();
-        Log.d("onDrawFrame: ", String.valueOf(System.currentTimeMillis()));
 
         EasyGlUtils.bindFrameTexture(fFrame[0], fTexture[0]);
         GLES20.glViewport(0, 0, mPreviewWidth, mPreviewHeight);
@@ -266,7 +261,7 @@ public class CameraRenderer implements GLSurfaceView.Renderer {
     }
 
     /**
-     * 提供修改美白等级的接口 level:0-5
+     * 提供修改美白等级的接口 0表示关,1表示开
      */
     public void changeBeautyLevel(int level) {
         mBeautyFilter.setBeautyLevel(level);

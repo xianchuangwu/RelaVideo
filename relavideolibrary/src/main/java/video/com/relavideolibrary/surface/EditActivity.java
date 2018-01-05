@@ -24,7 +24,9 @@ import android.util.Log;
 import android.view.Surface;
 import android.view.TextureView;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -56,6 +58,7 @@ import video.com.relavideolibrary.CallbackManager;
 import video.com.relavideolibrary.R;
 import video.com.relavideolibrary.Utils.Constant;
 import video.com.relavideolibrary.Utils.FileManager;
+import video.com.relavideolibrary.Utils.ScreenUtils;
 import video.com.relavideolibrary.adapter.FilterAdapter;
 import video.com.relavideolibrary.interfaces.FilterDataCallback;
 import video.com.relavideolibrary.manager.VideoManager;
@@ -130,12 +133,16 @@ public class EditActivity extends BaseActivity implements TextureView.SurfaceTex
 
     private void initVideoView() {
         RelativeLayout video_container = findViewById(R.id.video_container);
+        RelativeLayout.LayoutParams layoutParams1 = (RelativeLayout.LayoutParams) video_container.getLayoutParams();
+        layoutParams1.width = Constant.VideoConfig.WIDTH;
+        layoutParams1.height = Constant.VideoConfig.HEIGHT;
+        video_container.setLayoutParams(layoutParams1);
         textureView = new TextureRenderView(this);
         textureView.setId(R.id.edit_video_id);
+        textureView.setAspectRatio(IRenderView.AR_ASPECT_WRAP_CONTENT);
         RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(-1, -1);
         layoutParams.addRule(RelativeLayout.CENTER_IN_PARENT);
         video_container.addView(textureView, layoutParams);
-        textureView.setAspectRatio(IRenderView.AR_ASPECT_FIT_PARENT);
         textureView.setSurfaceTextureListener(this);
         textureView.setOnClickListener(this);
     }
@@ -279,8 +286,10 @@ public class EditActivity extends BaseActivity implements TextureView.SurfaceTex
                 music_name.setVisibility(View.GONE);
             }
         } else if (id == R.id.music_img) {
+            ScreenUtils.preventViewMultipleTouch(v, 2000);
             startActivityForResult(new Intent(this, MusicActivity.class), Constant.IntentCode.REQUEST_CODE_MUSIC);
         } else if (id == R.id.cut_img) {
+            ScreenUtils.preventViewMultipleTouch(v, 2000);
             startActivityForResult(new Intent(this, CutActivity.class), Constant.IntentCode.REQUEST_CODE_CUT);
         } else if (id == R.id.edit_video_id) {
             if (play.getVisibility() == View.INVISIBLE) {
@@ -297,6 +306,7 @@ public class EditActivity extends BaseActivity implements TextureView.SurfaceTex
                 }
             }
         } else if (id == R.id.next) {
+            ScreenUtils.preventViewMultipleTouch(v, 2000);
             VideoManager.getInstance().getVideoBean().filterId = currentFilterId;
             showDialog();
             new EditVideoThread(this).start();
@@ -861,7 +871,7 @@ public class EditActivity extends BaseActivity implements TextureView.SurfaceTex
          * Releases most of the GL resources we currently hold (anything allocated by
          * surfaceAvailable()).
          * <p>
-         * Does not release EglCore.
+         * Does not clean EglCore.
          */
         private void releaseGl(SurfaceTexture surfaceHolder) {
             GlUtil.checkGlError("releaseGl start");

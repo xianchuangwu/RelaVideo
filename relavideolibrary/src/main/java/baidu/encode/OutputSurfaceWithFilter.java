@@ -217,7 +217,7 @@ class OutputSurfaceWithFilter implements SurfaceTexture.OnFrameAvailableListener
         gpuImageFilter.destroy();
         // this causes a bunch of warnings that appear harmless but might confuse someone:
         //  W BufferQueue: [unnamed-3997-2] cancelBuffer: BufferQueue has been abandoned!
-        //mSurfaceTexture.release();
+        //mSurfaceTexture.clean();
         // null everything out so future attempts to use this object will cause an NPE
         mEGLDisplay = null;
         mEGLContext = null;
