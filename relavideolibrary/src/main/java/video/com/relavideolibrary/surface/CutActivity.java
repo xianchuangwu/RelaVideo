@@ -43,7 +43,6 @@ public class CutActivity extends BaseActivity implements OnTrimVideoListener, On
             mVideoTrimmer.setOnTrimVideoListener(this);
             mVideoTrimmer.setOnK4LVideoListener(this);
             mVideoTrimmer.setVideoURI(Uri.parse(VideoManager.getInstance().getVideoBean().videoPath));
-            mVideoTrimmer.setVideoInformationVisibility(true);
         }
     }
 

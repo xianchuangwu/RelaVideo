@@ -42,7 +42,7 @@ public class BaseActivity extends AppCompatActivity {
         //setting progressbar
         mProgressDialog = new ProgressDialog(this);
         mProgressDialog.setCancelable(false);
-        mProgressDialog.setMessage("处理中...");
+        mProgressDialog.setMessage(getString(R.string.processing));
     }
 
     @Override

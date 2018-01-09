@@ -1,5 +1,6 @@
 package video.com.relavideolibrary.adapter;
 
+import android.graphics.Typeface;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.widget.ImageView;
@@ -43,6 +44,7 @@ public class FilterAdapter extends BaseRecyclerAdapter<FilterBean> {
 
         final TextView filter_name = holder.getView(R.id.filter_name);
         filter_name.setTextColor(mContext.getResources().getColor(item.selected ? R.color.rela_color : R.color.black_gray));
+        filter_name.setTypeface(Typeface.defaultFromStyle(item.selected ? Typeface.BOLD : Typeface.NORMAL));
         filter_name.setText(item.filterName);
         holder.getView(R.id.filter_image).setOnClickListener(new View.OnClickListener() {
             @Override

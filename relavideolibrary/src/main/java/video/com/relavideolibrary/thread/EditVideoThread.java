@@ -3,6 +3,7 @@ package video.com.relavideolibrary.thread;
 import android.graphics.BitmapFactory;
 import android.text.TextUtils;
 import android.util.Log;
+import android.util.TimingLogger;
 
 import com.github.hiteshsondhi88.libffmpeg.FFmpeg;
 import com.github.hiteshsondhi88.libffmpeg.LoadBinaryResponseHandler;
@@ -22,7 +23,7 @@ import video.com.relavideolibrary.manager.VideoManager;
  * Created by chad
  * Time 17/12/21
  * Email: wuxianchuang@foxmail.com
- * Description: TODO
+ * Description: TODO 合成滤镜-->合成背景乐
  */
 
 public class EditVideoThread extends Thread implements ExtractDecodeEditEncodeMux.ResultListener {
@@ -31,11 +32,14 @@ public class EditVideoThread extends Thread implements ExtractDecodeEditEncodeMu
 
     private final String mVideoPath;
     private final int filterId;
+    //adb shell setprop log.tag.EditVideoThread VERBOSE
+    private final TimingLogger timingLogger;
 
     public EditVideoThread(EditVideoListener editVideoListener) {
         this.editVideoListener = editVideoListener;
         mVideoPath = VideoManager.getInstance().getVideoBean().videoPath;
         filterId = VideoManager.getInstance().getVideoBean().filterId;
+        timingLogger = new TimingLogger(TAG, "edit video");
     }
 
     @Override
@@ -43,8 +47,10 @@ public class EditVideoThread extends Thread implements ExtractDecodeEditEncodeMu
         super.run();
 
         if (filterId == -1) {
+            printMsg("未添加滤镜,直接合成背景乐");
             addBGM(mVideoPath);
         } else {
+            printMsg("开始合成滤镜");
             generateFilter();
         }
     }
@@ -56,7 +62,6 @@ public class EditVideoThread extends Thread implements ExtractDecodeEditEncodeMu
         }
         try {
             test.testExtractDecodeEditEncodeMuxAudioVideo(mVideoPath, this);
-
         } catch (Throwable tr) {
             if (editVideoListener != null)
                 editVideoListener.onEditVideoError("generate filter failed");
@@ -66,8 +71,11 @@ public class EditVideoThread extends Thread implements ExtractDecodeEditEncodeMu
 
     private void addBGM(String path) {
         if (TextUtils.isEmpty(VideoManager.getInstance().getMusicBean().url)) {
+            printMsg("未添加背景乐");
+            timingLogger.dumpToLog();
             if (editVideoListener != null) editVideoListener.onEditVideoSuccess(path);
         } else {
+            printMsg("开始合成背景乐");
             FFmpeg fFmpeg = FFmpeg.getInstance(RelaVideoSDK.context);
             try {
                 fFmpeg.loadBinary(new LoadBinaryResponseHandler() {
@@ -94,19 +102,16 @@ public class EditVideoThread extends Thread implements ExtractDecodeEditEncodeMu
                 @Override
                 public void onSuccess(String s) {
                     super.onSuccess(s);
+                    timingLogger.addSplit("音视频合成");
+                    timingLogger.dumpToLog();
                     if (editVideoListener != null)
                         editVideoListener.onEditVideoSuccess(composePath);
                 }
 
                 @Override
-                public void onStart() {
-                    super.onStart();
-                }
-
-                @Override
                 public void onProgress(String s) {
                     super.onProgress(s);
-//                    printMsg("第" + position + "段视频添加背景乐 progress :" + s);
+                    printMsg("音视频合成 onProgress :" + s);
                 }
             });
         } catch (FFmpegCommandAlreadyRunningException e) {
@@ -125,18 +130,14 @@ public class EditVideoThread extends Thread implements ExtractDecodeEditEncodeMu
                 @Override
                 public void onSuccess(String s) {
                     super.onSuccess(s);
+                    timingLogger.addSplit("合成音轨");
                     composeVideo();
-                }
-
-                @Override
-                public void onStart() {
-                    super.onStart();
                 }
 
                 @Override
                 public void onProgress(String s) {
                     super.onProgress(s);
-//                    printMsg("混合音频 onStart position :" + position + ",progress :" + s);
+                    printMsg("合成音轨 onProgress :" + s);
                 }
             });
         } catch (FFmpegCommandAlreadyRunningException e) {
@@ -156,18 +157,14 @@ public class EditVideoThread extends Thread implements ExtractDecodeEditEncodeMu
                 @Override
                 public void onSuccess(String s) {
                     super.onSuccess(s);
+                    timingLogger.addSplit("设置背景乐音量");
                     composeAudio();
-                }
-
-                @Override
-                public void onStart() {
-                    super.onStart();
                 }
 
                 @Override
                 public void onProgress(String s) {
                     super.onProgress(s);
-//                    printMsg("修改背景乐音量 position :" + position + ",progress :" + s);
+                    printMsg("设置背景乐音量 onProgress :" + s);
                 }
             });
         } catch (FFmpegCommandAlreadyRunningException e) {
@@ -190,18 +187,14 @@ public class EditVideoThread extends Thread implements ExtractDecodeEditEncodeMu
                 @Override
                 public void onSuccess(String s) {
                     super.onSuccess(s);
+                    timingLogger.addSplit("剪裁背景乐");
                     setBGMAudioVol();
-                }
-
-                @Override
-                public void onStart() {
-                    super.onStart();
                 }
 
                 @Override
                 public void onProgress(String s) {
                     super.onProgress(s);
-//                    printMsg("截取背景乐 position :" + position + ",progress :" + s);
+                    printMsg("剪裁背景乐 onProgress :" + s);
                 }
             });
         } catch (FFmpegCommandAlreadyRunningException e) {
@@ -221,17 +214,14 @@ public class EditVideoThread extends Thread implements ExtractDecodeEditEncodeMu
                 @Override
                 public void onSuccess(String s) {
                     super.onSuccess(s);
+                    timingLogger.addSplit("设置视频音量");
                     splitMusic();
-                }
-
-                @Override
-                public void onStart() {
-                    super.onStart();
                 }
 
                 @Override
                 public void onProgress(String s) {
                     super.onProgress(s);
+                    printMsg("设置视频音量 onProgress :" + s);
                 }
             });
         } catch (FFmpegCommandAlreadyRunningException e) {
@@ -248,7 +238,14 @@ public class EditVideoThread extends Thread implements ExtractDecodeEditEncodeMu
                 @Override
                 public void onSuccess(String s) {
                     super.onSuccess(s);
+                    timingLogger.addSplit("提取音轨");
                     setAudioVol();
+                }
+
+                @Override
+                public void onProgress(String s) {
+                    super.onProgress(s);
+                    printMsg("提取音轨 onProgress :" + s);
                 }
             });
         } catch (FFmpegCommandAlreadyRunningException e) {
@@ -266,7 +263,14 @@ public class EditVideoThread extends Thread implements ExtractDecodeEditEncodeMu
                 @Override
                 public void onSuccess(String s) {
                     super.onSuccess(s);
+                    timingLogger.addSplit("提取视轨");
                     extractorAudio(videoPath);
+                }
+
+                @Override
+                public void onProgress(String s) {
+                    super.onProgress(s);
+                    printMsg("提取视轨 onProgress :" + s);
                 }
             });
         } catch (FFmpegCommandAlreadyRunningException e) {
@@ -316,6 +320,7 @@ public class EditVideoThread extends Thread implements ExtractDecodeEditEncodeMu
 
     @Override
     public void onFilterGenerateResult(String extra) {
+        timingLogger.addSplit("合成滤镜");
         addBGM(extra);
     }
 

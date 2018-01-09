@@ -25,6 +25,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import jp.co.cyberagent.android.gpuimage.GPUImageFilter;
 import video.com.relavideolibrary.Utils.Constant;
 import video.com.relavideolibrary.Utils.FileManager;
+import video.com.relavideolibrary.thread.EditVideoThread;
 
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertTrue;
@@ -52,7 +53,7 @@ public class ExtractDecodeEditEncodeMux {
         mAppContext = context.getApplicationContext();
     }
 
-    private static final String TAG = ExtractDecodeEditEncodeMux.class.getSimpleName();
+    private static final String TAG = EditVideoThread.TAG;
     private static final boolean VERBOSE = true; // lots of logging
     /**
      * How long to wait for the next buffer to become available.

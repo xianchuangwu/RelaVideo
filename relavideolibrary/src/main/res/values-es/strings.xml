@@ -1,0 +1,14 @@
+<resources>
+    <string name="next">Siguiente</string>
+    <string name="photo">Foto</string>
+    <string name="cancel">Anular</string>
+    <string name="preview">avance</string>
+    <string name="complete">Hecho</string>
+    <string name="original_film">Origen</string>
+    <string name="add_music">Añadir música</string>
+    <string name="click_fast">Toca demasiado rápido</string>
+    <string name="processing">cargando…</string>
+    <string name="video_max_duration">视频不能大于60s</string>
+    <string name="video_min_duration">视频不能小于5s</string>
+    <string name="unknow_error">未知错误</string>
+</resources>

@@ -128,7 +128,7 @@ public class ScanningVideoService extends Service {
 //                    if (queryMediaStoreListener != null)
 //                        queryMediaStoreListener.queryVideoFolder(bufferVideo, allVideoCount);
                 } else {
-                    Toast.makeText(context, context.getString(R.string.no_media_file_available), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(context, context.getString(R.string.unknow_error), Toast.LENGTH_SHORT).show();
                 }
 
             } finally {
@@ -160,7 +160,7 @@ public class ScanningVideoService extends Service {
             final String orderByVideo = MediaStore.Video.Media.DATE_TAKEN;
             try {
 
-                if (bucketName.equals(context.getResources().getString(R.string.all_video)) || TextUtils.isEmpty(bucketName)) {
+                if (bucketName.equals("全部视频") || TextUtils.isEmpty(bucketName)) {
                     //查询所有视频
                     mCursor = context.getContentResolver().query(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, PROJECTION_BUCKET, null, null, orderByVideo + " DESC");
 
@@ -188,7 +188,7 @@ public class ScanningVideoService extends Service {
                         mGalleryModelList.add(new MediaModel(url, false, duration, id));
                     }
                 } else {
-                    Toast.makeText(context, context.getString(R.string.no_media_file_available), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(context, context.getString(R.string.unknow_error), Toast.LENGTH_SHORT).show();
                 }
 
                 if (queryMediaStoreListener != null) {
@@ -229,7 +229,7 @@ public class ScanningVideoService extends Service {
                     Log.d(TAG, bucketName + "文件夹的视频总数:" + ss.length);
                     return ss.length;
                 } else {
-                    Toast.makeText(context, context.getString(R.string.no_media_file_available), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(context, context.getString(R.string.unknow_error), Toast.LENGTH_SHORT).show();
                 }
 
             } catch (Exception e) {

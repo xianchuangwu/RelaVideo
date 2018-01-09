@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="next">下一步</string>
+    <string name="photo">相片</string>
+    <string name="cancel">取消</string>
+    <string name="preview">預覽</string>
+    <string name="complete">完成</string>
+    <string name="original_film">原片</string>
+    <string name="add_music">添加音樂</string>
+    <string name="click_fast">手速太快啦</string>
+    <string name="processing">加載中…</string>
+    <string name="video_max_duration">视频不能大于60s</string>
+    <string name="video_min_duration">视频不能小于5s</string>
+    <string name="unknow_error">未知错误</string>
+</resources>

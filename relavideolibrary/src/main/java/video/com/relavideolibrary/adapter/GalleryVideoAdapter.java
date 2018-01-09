@@ -59,7 +59,7 @@ public class GalleryVideoAdapter extends BaseRecyclerAdapter<MediaModel> {
                 if (!item.status) {
                     File file = new File(item.url);
                     if (!file.exists()) {
-                        Toast.makeText(mContext, mContext.getString(R.string.file_deleted), Toast.LENGTH_SHORT).show();
+                        Toast.makeText(mContext, mContext.getString(R.string.unknow_error), Toast.LENGTH_SHORT).show();
                         return;
                     }
                     MediaMetadataRetriever retr = new MediaMetadataRetriever();
@@ -132,7 +132,7 @@ public class GalleryVideoAdapter extends BaseRecyclerAdapter<MediaModel> {
             public boolean onLongClick(View v) {
                 File file = new File(item.url);
                 if (!file.exists()) {
-                    Toast.makeText(mContext, mContext.getString(R.string.file_deleted), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(mContext, mContext.getString(R.string.unknow_error), Toast.LENGTH_SHORT).show();
                     return true;
                 }
                 Intent intent = new Intent(Intent.ACTION_VIEW);

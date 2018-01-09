@@ -34,5 +34,5 @@
         android:layout_centerVertical="true"
         android:padding="5dp"
         android:textColor="@color/white"
-        android:textSize="11dp" />
+        android:textSize="12sp" />
 </RelativeLayout>

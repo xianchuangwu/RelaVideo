@@ -64,6 +64,7 @@ import video.com.relavideolibrary.interfaces.FilterDataCallback;
 import video.com.relavideolibrary.manager.VideoManager;
 import video.com.relavideolibrary.model.FilterBean;
 import video.com.relavideolibrary.thread.EditVideoThread;
+import video.com.relavideolibrary.thread.EditVideoThread2;
 
 public class EditActivity extends BaseActivity implements TextureView.SurfaceTextureListener
         , FilterAdapter.OnItemClickListener, View.OnClickListener, EditVideoThread.EditVideoListener {
@@ -83,6 +84,8 @@ public class EditActivity extends BaseActivity implements TextureView.SurfaceTex
     private RecyclerView filter_recyclerView;
 
     private int currentFilterId = -1;
+    //是否正在编辑中
+    private boolean isEdit = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -171,7 +174,7 @@ public class EditActivity extends BaseActivity implements TextureView.SurfaceTex
     @Override
     protected void onResume() {
         super.onResume();
-        if (mRenderThread != null) {
+        if (!isEdit && mRenderThread != null) {
             RenderHandler mRenderThreadHandler = mRenderThread.getHandler();
             mRenderThreadHandler.sendResume();
             play.setVisibility(View.INVISIBLE);
@@ -309,7 +312,14 @@ public class EditActivity extends BaseActivity implements TextureView.SurfaceTex
             ScreenUtils.preventViewMultipleTouch(v, 2000);
             VideoManager.getInstance().getVideoBean().filterId = currentFilterId;
             showDialog();
-            new EditVideoThread(this).start();
+//            new EditVideoThread(this).start();
+            new EditVideoThread2(this).start();
+            isEdit = true;
+            if (mRenderThread != null) {
+                RenderHandler mRenderThreadHandler = mRenderThread.getHandler();
+                mRenderThreadHandler.sendPause();
+                play.setVisibility(View.VISIBLE);
+            }
         }
     }
 

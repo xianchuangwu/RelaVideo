@@ -87,7 +87,7 @@
                 <video.com.relavideolibrary.view.VoiceControlView
                     android:id="@+id/voiceControlView"
                     android:layout_width="wrap_content"
-                    android:layout_height="15dp"
+                    android:layout_height="25dp"
                     android:layout_centerInParent="true"
                     android:layout_toLeftOf="@id/voice_image"
                     android:layout_toRightOf="@id/music_image" />
@@ -101,7 +101,7 @@
                 android:background="@drawable/add_bg_unselect"
                 android:enabled="false"
                 android:gravity="center"
-                android:text="@string/add_bgm"
+                android:text="@string/add_music"
                 android:textColor="@color/white"
                 android:textSize="12sp" />
 

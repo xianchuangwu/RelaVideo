@@ -38,7 +38,7 @@ public class VoiceControlView extends View {
 
     private Region circleRegion;
 
-    private int roundRectHeight = dp2px(4);
+    private int roundRectHeight = dp2px(2);
 
     private Path circlePath;
 
@@ -123,7 +123,7 @@ public class VoiceControlView extends View {
 
         circlePath.reset();
 
-        circlePath.addCircle(getMeasuredWidth() / 2 + mOffSet, halfHeight, halfHeight, Path.Direction.CW);
+        circlePath.addCircle(getMeasuredWidth() / 2 + mOffSet, halfHeight, halfHeight / 2, Path.Direction.CW);
 
         circleRegion.set(getMeasuredWidth() / 2 - (int) halfHeight + (int) mOffSet, 0, getMeasuredWidth() / 2 + (int) halfHeight + (int) mOffSet, getMeasuredHeight());
 
@@ -218,7 +218,7 @@ public class VoiceControlView extends View {
             videoVolume = 1;
         }
 
-        Log.d(TAG, " currentPercent : " + currentPercent);
+        Log.d(TAG, " currentPercent : " + currentPercent + ",audioVolume :" + audioVolume + ",videoVolume :" + videoVolume);
 
         if (audioVolume > 1) {
             audioVolume = 1;
@@ -237,7 +237,7 @@ public class VoiceControlView extends View {
         }
 
         if (mOnVolumeListener != null) {
-            mOnVolumeListener.onVolume(audioVolume, videoVolume);
+            mOnVolumeListener.onVolume(videoVolume, audioVolume);
         }
     }
 

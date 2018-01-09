@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="next">ถัดไป</string>
+    <string name="photo">รูปภาพ</string>
+    <string name="cancel">ยกเลิก</string>
+    <string name="preview">ดูตัวอย่าง</string>
+    <string name="complete">สำเร็จ</string>
+    <string name="original_film">ที่มา</string>
+    <string name="add_music">เพิ่มเพลง</string>
+    <string name="click_fast">คลิกเร็วเกินไป</string>
+    <string name="processing">กำลังโหลด…</string>
+    <string name="video_max_duration">视频不能大于60s</string>
+    <string name="video_min_duration">视频不能小于5s</string>
+    <string name="unknow_error">未知错误</string>
+</resources>
