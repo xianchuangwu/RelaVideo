@@ -59,7 +59,7 @@ public class MusicActivity extends BaseActivity implements MusicCategoryAdapter.
 
     private boolean isAutoDismiss = true;
 
-//    private MusicBean item;
+    //    private MusicBean item;
     private float audioVolume = 1.0f;
     private float videoVolume = 1.0f;
 
@@ -202,21 +202,21 @@ public class MusicActivity extends BaseActivity implements MusicCategoryAdapter.
         final LottieAnimationView playAnim = holder.getView(R.id.play_anim);
         if (currentMusic != null && currentMusic.musicId == item.musicId) {
             if (currentMusic.isPause) {
-                startMusic(item);
+                startMusic();
                 playIcon.setVisibility(View.INVISIBLE);
                 playAnim.setVisibility(View.VISIBLE);
-                playAnim.setProgress(0);
                 playAnim.playAnimation();
             } else {
                 pauseMusic();
                 playIcon.setVisibility(View.VISIBLE);
                 playAnim.setVisibility(View.INVISIBLE);
-                if (playAnim.isAnimating()) playAnim.cancelAnimation();
+                if (playAnim.isAnimating()) playAnim.pauseAnimation();
             }
         } else {
-            startMusic(item);
+            currentMusic = item;
             currentMusic.isLoading = true;
             musicListAdapter.notifyDataSetChanged();
+            startMusic();
         }
     }
 
@@ -288,16 +288,15 @@ public class MusicActivity extends BaseActivity implements MusicCategoryAdapter.
 
     private boolean isIDEL = false;
 
-    public void startMusic(MusicBean item) {
+    public void startMusic() {
 
         if (ksyMediaPlayer == null) return;
         if (!isIDEL) {
 
-            currentMusic = item;
             try {
                 ksyMediaPlayer.setScreenOnWhilePlaying(true);
                 ksyMediaPlayer.setLooping(true);
-                ksyMediaPlayer.setDataSource(item.url);
+                ksyMediaPlayer.setDataSource(currentMusic.url);
                 ksyMediaPlayer.prepareAsync();
             } catch (IOException e) {
                 e.printStackTrace();
@@ -305,7 +304,7 @@ public class MusicActivity extends BaseActivity implements MusicCategoryAdapter.
             return;
         }
         if (currentMusic.isPause) {
-            if (currentMusic.musicId == item.musicId)
+            if (currentMusic.musicId == currentMusic.musicId)
                 restartMusic();
             else {
                 switchMusic();

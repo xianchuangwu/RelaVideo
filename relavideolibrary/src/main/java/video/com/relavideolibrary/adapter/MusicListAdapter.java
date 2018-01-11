@@ -59,17 +59,16 @@ public class MusicListAdapter extends BaseRecyclerAdapter<MusicBean> {
             if (!musicBean.isPause) {
                 playIcon.setVisibility(View.INVISIBLE);
                 playAnim.setVisibility(View.VISIBLE);
-                playAnim.setProgress(0);
                 playAnim.playAnimation();
+                if (musicBean.isLoading) {
+                    loading.playAnimation();
+                } else {
+                    loading.pauseAnimation();
+                }
             } else {
                 playIcon.setVisibility(View.VISIBLE);
                 playAnim.setVisibility(View.INVISIBLE);
-                if (playAnim.isAnimating()) playAnim.cancelAnimation();
-            }
-            if (musicBean.isLoading) {
-                loading.playAnimation();
-            } else {
-                loading.pauseAnimation();
+                if (playAnim.isAnimating()) playAnim.pauseAnimation();
             }
             progress.setVisibility(View.VISIBLE);
             progress.setProgress(musicBean.progress, mData.get(position).musicHours * 1000 / 100);
