@@ -25,9 +25,13 @@ public class MusicBean implements Serializable {
 
     public int collectStatus;
 
-    public boolean isPause;
-
     public long startTime;
 
     public long endTime;
+
+    public boolean isPause;
+
+    public boolean isLoading;
+
+    public int progress;
 }

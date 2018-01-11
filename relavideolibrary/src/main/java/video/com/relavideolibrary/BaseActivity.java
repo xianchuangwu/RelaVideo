@@ -170,10 +170,26 @@ public class BaseActivity extends AppCompatActivity {
     }
 
     protected void showDialog() {
-        mProgressDialog.show();
+        if (mProgressDialog != null && !mProgressDialog.isShowing()) {
+            mProgressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+            mProgressDialog.show();
+        }
+    }
+
+    protected void showProgressDialog() {
+        if (mProgressDialog != null && !mProgressDialog.isShowing()) {
+            mProgressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+            mProgressDialog.show();
+        }
+    }
+
+    protected void setDialogProgress(int progress) {
+        if (mProgressDialog != null && mProgressDialog.isShowing())
+            mProgressDialog.setProgress(progress);
     }
 
     protected void dismissDialog() {
-        mProgressDialog.dismiss();
+        if (mProgressDialog != null && mProgressDialog.isShowing())
+            mProgressDialog.dismiss();
     }
 }

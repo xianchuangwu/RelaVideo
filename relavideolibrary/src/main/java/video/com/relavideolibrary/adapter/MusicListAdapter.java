@@ -35,6 +35,7 @@ public class MusicListAdapter extends BaseRecyclerAdapter<MusicBean> {
         super(layoutId, recyclerView, list);
 
         this.activity = (MusicActivity) recyclerView.getContext();
+
     }
 
     @Override
@@ -52,8 +53,7 @@ public class MusicListAdapter extends BaseRecyclerAdapter<MusicBean> {
         final ImageView playIcon = holder.getView(R.id.play_icon);
         final LottieAnimationView playAnim = holder.getView(R.id.play_anim);
         ShaderView progress = holder.getView(R.id.progress);
-        LottieAnimationView loading = holder.getView(R.id.loading);
-        loading.setVisibility(View.INVISIBLE);
+        final LottieAnimationView loading = holder.getView(R.id.loading);
         final MusicBean musicBean = activity.getCurrentMusic();
         if (musicBean != null && item.musicId == musicBean.musicId) {
             if (!musicBean.isPause) {
@@ -66,8 +66,13 @@ public class MusicListAdapter extends BaseRecyclerAdapter<MusicBean> {
                 playAnim.setVisibility(View.INVISIBLE);
                 if (playAnim.isAnimating()) playAnim.cancelAnimation();
             }
+            if (musicBean.isLoading) {
+                loading.playAnimation();
+            } else {
+                loading.pauseAnimation();
+            }
             progress.setVisibility(View.VISIBLE);
-            progress.setProgress(activity.getCurrentProgress(), mData.get(position).musicHours * 1000 / 100);
+            progress.setProgress(musicBean.progress, mData.get(position).musicHours * 1000 / 100);
             itemview.setBackgroundColor(mContext.getResources().getColor(R.color.click_feedback));
         } else {
             playIcon.setVisibility(View.VISIBLE);

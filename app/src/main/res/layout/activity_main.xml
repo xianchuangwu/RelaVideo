@@ -6,6 +6,7 @@
     android:background="@color/rela_color"
     android:gravity="center_horizontal"
     android:orientation="vertical"
+    android:paddingTop="20dp"
     tools:context="video.com.relavideodemo.MainActivity">
 
     <Button
@@ -33,6 +34,14 @@
         android:layout_width="200dp"
         android:layout_height="300dp"
         android:scaleType="centerCrop"
-        android:src="@mipmap/app_lockscreen_bg" />
+        android:src="@mipmap/app_lockscreen_bg"
+        android:visibility="gone" />
 
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:onClick="test"
+        android:text="test"
+        android:textAllCaps="false"
+        android:visibility="gone" />
 </LinearLayout>

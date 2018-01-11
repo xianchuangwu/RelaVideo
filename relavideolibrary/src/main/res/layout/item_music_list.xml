@@ -13,13 +13,6 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
-    <com.airbnb.lottie.LottieAnimationView
-        android:id="@+id/loading"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        app:lottie_fileName="music_loading.json"
-        app:lottie_loop="true" />
-
     <RelativeLayout
         android:id="@+id/play_container"
         android:layout_width="40dp"
@@ -111,4 +104,11 @@
                 tools:text="Jessie Newman" />
         </LinearLayout>
     </LinearLayout>
+
+    <com.airbnb.lottie.LottieAnimationView
+        android:id="@+id/loading"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:lottie_fileName="music_loading.json"
+        app:lottie_loop="true" />
 </RelativeLayout>

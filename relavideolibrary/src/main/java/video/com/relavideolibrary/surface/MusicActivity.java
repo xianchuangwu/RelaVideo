@@ -1,7 +1,6 @@
 package video.com.relavideolibrary.surface;
 
 import android.app.Activity;
-import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.os.Handler;
@@ -58,30 +57,16 @@ public class MusicActivity extends BaseActivity implements MusicCategoryAdapter.
 
     private KSYProxyService proxy;
 
-    private String currentUrl;
-
     private boolean isAutoDismiss = true;
 
-    private ProgressDialog mProgressDialog;
-
-    private MusicBean currentMusic;
-
-    private MusicBean item;
+//    private MusicBean item;
     private float audioVolume = 1.0f;
     private float videoVolume = 1.0f;
 
+    private MusicBean currentMusic;
+
     public MusicBean getCurrentMusic() {
         return currentMusic;
-    }
-
-    public void setCurrentMusic(MusicBean musicBean) {
-        this.currentMusic = musicBean;
-    }
-
-    private int currentProgress;
-
-    public int getCurrentProgress() {
-        return currentProgress;
     }
 
     @Override
@@ -174,7 +159,7 @@ public class MusicActivity extends BaseActivity implements MusicCategoryAdapter.
         int id = v.getId();
         if (id == R.id.complete) {
             ScreenUtils.preventViewMultipleTouch(v, 2000);
-            downloadMusic(currentMusic);
+            downloadMusic();
         } else if (id == R.id.cancel) {
             setResult(Activity.RESULT_CANCELED);
             finish();
@@ -230,13 +215,8 @@ public class MusicActivity extends BaseActivity implements MusicCategoryAdapter.
             }
         } else {
             startMusic(item);
+            currentMusic.isLoading = true;
             musicListAdapter.notifyDataSetChanged();
-            MusicProgressEvent musicProgressEvent = new MusicProgressEvent();
-            musicProgressEvent.setLoading(true);
-            MusicPlayEventListener musicPlayEventListener = (MusicPlayEventListener) CallbackManager.getInstance().getCallbackMap().get(MusicPlayEventListener.class.getSimpleName());
-            if (musicPlayEventListener != null) {
-                musicPlayEventListener.progress(musicProgressEvent);
-            }
         }
     }
 
@@ -263,8 +243,8 @@ public class MusicActivity extends BaseActivity implements MusicCategoryAdapter.
             ksyMediaPlayer = null;
         }
 
-        if (proxy != null && musicCacheListener != null && mOnErrorListener != null && currentUrl != null) {
-            proxy.unregisterCacheStatusListener(musicCacheListener, currentUrl);
+        if (proxy != null && musicCacheListener != null && mOnErrorListener != null && currentMusic.url != null) {
+            proxy.unregisterCacheStatusListener(musicCacheListener, currentMusic.url);
             proxy.unregisterErrorListener(mOnErrorListener);
             proxy.shutDownServer();
         }
@@ -292,13 +272,9 @@ public class MusicActivity extends BaseActivity implements MusicCategoryAdapter.
             case IMediaPlayer.MEDIA_INFO_RELOADED:
                 interval();
                 break;
-            case IMediaPlayer.MEDIA_INFO_AUDIO_RENDERING_START:
-                MusicProgressEvent musicProgressEvent = new MusicProgressEvent();
-                musicProgressEvent.setLoading(false);
-                MusicPlayEventListener musicPlayEventListener = (MusicPlayEventListener) CallbackManager.getInstance().getCallbackMap().get(MusicPlayEventListener.class.getSimpleName());
-                if (musicPlayEventListener != null) {
-                    musicPlayEventListener.progress(musicProgressEvent);
-                }
+            case IMediaPlayer.MEDIA_INFO_AUDIO_RENDERING_START://音频开始播放
+                currentMusic.isLoading = false;
+                musicListAdapter.notifyDataSetChanged();
                 break;
         }
         return false;
@@ -314,11 +290,10 @@ public class MusicActivity extends BaseActivity implements MusicCategoryAdapter.
 
     public void startMusic(MusicBean item) {
 
-        this.item = item;
         if (ksyMediaPlayer == null) return;
         if (!isIDEL) {
 
-            setCurrentMusic(item);
+            currentMusic = item;
             try {
                 ksyMediaPlayer.setScreenOnWhilePlaying(true);
                 ksyMediaPlayer.setLooping(true);
@@ -333,54 +308,46 @@ public class MusicActivity extends BaseActivity implements MusicCategoryAdapter.
             if (currentMusic.musicId == item.musicId)
                 restartMusic();
             else {
-                switchMusic(item);
+                switchMusic();
             }
 
         } else {
-            switchMusic(item);
+            switchMusic();
         }
     }
 
-    public void downloadMusic(final MusicBean item) {
-
-        this.item = item;
+    public void downloadMusic() {
 
         isJumped = false;
 
         isAutoDismiss = true;
 
-        currentUrl = item.url;
+        File musicCacheFile = proxy.getCacheFile(currentMusic.url);
 
-        File musicCacheFile = proxy.getCacheFile(currentUrl);
-
-        Log.d(TAG, "getCachingPercent :" + proxy.getCachingPercent(currentUrl).toString());
+        Log.d(TAG, "getCachingPercent :" + proxy.getCachingPercent(currentMusic.url).toString());
 
         if (musicCacheFile != null) {
-            jumpMusicEditorActivity(item);
+            jumpMusicEditorActivity();
             return;
         }
 
         showProgress();
 
-        proxy.registerCacheStatusListener(musicCacheListener, currentUrl);
+        proxy.registerCacheStatusListener(musicCacheListener, currentMusic.url);
 
         proxy.registerErrorListener(mOnErrorListener);
 
-        proxy.startPreDownload(currentUrl);
+        proxy.startPreDownload(currentMusic.url);
     }
 
     private OnCacheStatusListener musicCacheListener = new OnCacheStatusListener() {
         @Override
         public void OnCacheStatus(String url, long sourceLength, int percentsAvailable) {
-            if (mProgressDialog != null) {
-                mProgressDialog.setProgress(percentsAvailable);
-            }
+            setDialogProgress(percentsAvailable);
             if (percentsAvailable == 100) {
                 if (isAutoDismiss) {
-                    jumpMusicEditorActivity(item);
+                    jumpMusicEditorActivity();
                 }
-
-
             }
         }
     };
@@ -388,19 +355,17 @@ public class MusicActivity extends BaseActivity implements MusicCategoryAdapter.
     private OnErrorListener mOnErrorListener = new OnErrorListener() {
         @Override
         public void OnError(int i) {
-            if (mProgressDialog != null && mProgressDialog.isShowing()) {
-                mProgressDialog.dismiss();
-            }
+            dismissDialog();
         }
     };
 
     boolean isJumped = false;
 
-    private void jumpMusicEditorActivity(final MusicBean item) {
+    private void jumpMusicEditorActivity() {
 
         if (!isJumped) {
 
-            File musicCacheFile = proxy.getCacheFile(item.url);
+            File musicCacheFile = proxy.getCacheFile(currentMusic.url);
 
             Log.d(TAG, " cacheFile : " + musicCacheFile);
 
@@ -414,12 +379,10 @@ public class MusicActivity extends BaseActivity implements MusicCategoryAdapter.
 
             Log.d(TAG, " musicUrl : " + musicUrl);
 
-            if (mProgressDialog != null && mProgressDialog.isShowing()) {
-                mProgressDialog.dismiss();
-            }
+            dismissDialog();
             isJumped = true;
 
-            VideoManager.getInstance().setMusicBean(item);
+            VideoManager.getInstance().setMusicBean(currentMusic);
             VideoManager.getInstance().setMusicVolumn(audioVolume);
             VideoManager.getInstance().setVideoVolumn(videoVolume);
             setResult(Activity.RESULT_OK);
@@ -443,10 +406,7 @@ public class MusicActivity extends BaseActivity implements MusicCategoryAdapter.
         }
     }
 
-    public void switchMusic(MusicBean item) {
-        this.item = item;
-
-        setCurrentMusic(item);
+    public void switchMusic() {
 
         ksyMediaPlayer.stop();
         ksyMediaPlayer.reset();
@@ -454,7 +414,7 @@ public class MusicActivity extends BaseActivity implements MusicCategoryAdapter.
         ksyMediaPlayer.setLooping(true);
         ksyMediaPlayer.setOnPreparedListener(this);
         try {
-            ksyMediaPlayer.setDataSource(item.url);
+            ksyMediaPlayer.setDataSource(currentMusic.url);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -466,23 +426,6 @@ public class MusicActivity extends BaseActivity implements MusicCategoryAdapter.
     }
 
     private void showProgress() {
-
-        if (mProgressDialog != null) {
-            mProgressDialog.dismiss();
-            mProgressDialog = null;
-        }
-
-        mProgressDialog = new ProgressDialog(this);
-        mProgressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
-        mProgressDialog.setTitle("加载中");
-        mProgressDialog.setCancelable(true);
-        mProgressDialog.setCanceledOnTouchOutside(false);
-        mProgressDialog.setOnCancelListener(
-                new DialogInterface.OnCancelListener() {
-                    public void onCancel(DialogInterface dialog) {
-                        Log.d(TAG, " onCancel ");
-                    }
-                });
 
         mProgressDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
             @Override
@@ -496,7 +439,7 @@ public class MusicActivity extends BaseActivity implements MusicCategoryAdapter.
 
             }
         });
-        mProgressDialog.show();
+        showProgressDialog();
     }
 
     private Handler handler = new Handler();
@@ -535,27 +478,13 @@ public class MusicActivity extends BaseActivity implements MusicCategoryAdapter.
         for (int i = 0; i < musicListAdapter.getData().size(); i++) {
             if (i >= firstPosition &&
                     i <= lastPosition &&
-                    getCurrentMusic().musicId == musicListAdapter.getData().get(i).musicId) {
+                    currentMusic.musicId == musicListAdapter.getData().get(i).musicId) {
                 View holder = manager.findViewByPosition(i);
-                if (currentProgress != musicProgressEvent.getMusicPorgress()) {
+                if (currentMusic.progress != musicProgressEvent.getMusicPorgress()) {
                     ShaderView progress = (ShaderView) holder.findViewById(R.id.progress);
-                    currentProgress = musicProgressEvent.getMusicPorgress();
-                    progress.setProgress(currentProgress, musicListAdapter.getData().get(i).musicHours * 1000 / 100);
+                    currentMusic.progress = musicProgressEvent.getMusicPorgress();
+                    progress.setProgress(currentMusic.progress, musicListAdapter.getData().get(i).musicHours * 1000 / 100);
                 }
-                LottieAnimationView loading = (LottieAnimationView) holder.findViewById(R.id.loading);
-                if (musicProgressEvent.isLoading()) {
-                    if (!loading.isAnimating()) {
-                        loading.setVisibility(View.VISIBLE);
-                        loading.setProgress(0);
-                        loading.playAnimation();
-                    }
-                } else {
-                    if (loading.isAnimating()) {
-                        loading.setVisibility(View.INVISIBLE);
-                        loading.cancelAnimation();
-                    }
-                }
-
             }
         }
     }

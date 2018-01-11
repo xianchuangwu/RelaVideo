@@ -311,7 +311,7 @@ public class EditActivity extends BaseActivity implements TextureView.SurfaceTex
         } else if (id == R.id.next) {
             ScreenUtils.preventViewMultipleTouch(v, 2000);
             VideoManager.getInstance().getVideoBean().filterId = currentFilterId;
-            showDialog();
+            showProgressDialog();
 //            new EditVideoThread(this).start();
             new EditVideoThread2(this).start();
             isEdit = true;
@@ -321,6 +321,16 @@ public class EditActivity extends BaseActivity implements TextureView.SurfaceTex
                 play.setVisibility(View.VISIBLE);
             }
         }
+    }
+
+    @Override
+    public void onEditVideoProgress(final int progress) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                setDialogProgress(progress);
+            }
+        });
     }
 
     @Override

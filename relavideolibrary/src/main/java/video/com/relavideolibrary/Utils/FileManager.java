@@ -29,7 +29,10 @@ public class FileManager {
         sb.append('-');
         sb.append(System.currentTimeMillis());
         sb.append(".mp4");
-        return sb.toString();
+        String path = sb.toString();
+        File file = new File(path);
+        if (file.exists()) file.delete();
+        return path;
     }
 
     public static String getOtherFile(String fileName) {
@@ -38,7 +41,10 @@ public class FileManager {
         sb.append("/other");
         sb.append('-');
         sb.append(fileName);
-        return sb.toString();
+        String path = sb.toString();
+        File file = new File(path);
+        if (file.exists()) file.delete();
+        return path;
     }
 
     public static String getMusicPath() {

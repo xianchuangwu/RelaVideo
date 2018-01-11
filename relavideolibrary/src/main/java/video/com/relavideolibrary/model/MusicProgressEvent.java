@@ -9,20 +9,11 @@ import java.io.Serializable;
  * Description: TODO
  */
 
-public class MusicProgressEvent implements Serializable{
+public class MusicProgressEvent implements Serializable {
 
     private int musicId;
     private String musicUrl;
     private int musicPorgress;
-    private boolean isLoading;
-
-    public boolean isLoading() {
-        return isLoading;
-    }
-
-    public void setLoading(boolean loading) {
-        isLoading = loading;
-    }
 
     public int getMusicId() {
         return musicId;
@@ -54,7 +45,6 @@ public class MusicProgressEvent implements Serializable{
                 "musicId='" + musicId + '\'' +
                 ", musicUrl='" + musicUrl + '\'' +
                 ", musicPorgress=" + musicPorgress +
-                ", isLoading=" + isLoading +
                 '}';
     }
 }

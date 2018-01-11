@@ -3,13 +3,13 @@ package video.com.relavideolibrary.adapter;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.media.MediaMetadataRetriever;
+import android.media.MediaExtractor;
+import android.media.MediaFormat;
 import android.net.Uri;
 import android.os.SystemClock;
 import android.support.annotation.LayoutRes;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
-import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.widget.Chronometer;
@@ -62,24 +62,35 @@ public class GalleryVideoAdapter extends BaseRecyclerAdapter<MediaModel> {
                         Toast.makeText(mContext, mContext.getString(R.string.unknow_error), Toast.LENGTH_SHORT).show();
                         return;
                     }
-                    MediaMetadataRetriever retr = new MediaMetadataRetriever();
+                    MediaExtractor audioExtractor = null;
                     try {
-                        retr.setDataSource(item.url);
-//                        String heightStr = retr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT); // 视频高度
-//                        String widthStr = retr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH); // 视频宽度
-                        String durationStr = retr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);
+
+                        audioExtractor = new MediaExtractor();
+                        audioExtractor.setDataSource(item.url);
+                        int audioTrack = -1;
+                        int audioChannelCount = 0;
+                        long duration = 0;
+                        for (int i = 0; i < audioExtractor.getTrackCount(); i++) {
+                            MediaFormat audioFormat = audioExtractor.getTrackFormat(i);
+                            String mimeType = audioFormat.getString(MediaFormat.KEY_MIME);
+                            if (mimeType.startsWith("audio/")) {
+                                audioTrack = i;
+                                audioChannelCount = audioFormat.getInteger(MediaFormat.KEY_CHANNEL_COUNT);
+                                duration = audioFormat.getLong(MediaFormat.KEY_DURATION) / 1000;
+                                break;
+                            }
+                        }
                         Log.i("MediaGalleryActivity", "url :" + item.url
 //                                + "\nwidth :" + widthStr
 //                                + "\nheight :" + heightStr
-                                        + "\nduration :" + durationStr
+                                        + "\naudioTrack :" + audioTrack
+                                        + "\naudioChannelCount :" + audioChannelCount
+                                        + "\nduration :" + duration
                         );
 //                        int height = 0;
 //                        int width = 0;
-                        long duration = 0;
 //                        if (!TextUtils.isEmpty(heightStr)) height = Integer.parseInt(heightStr);
 //                        if (!TextUtils.isEmpty(widthStr)) width = Integer.parseInt(widthStr);
-                        if (!TextUtils.isEmpty(durationStr))
-                            duration = Long.parseLong(durationStr);
 
 //                        int bigBorder;
 //                        int smallBorder;
@@ -95,7 +106,13 @@ public class GalleryVideoAdapter extends BaseRecyclerAdapter<MediaModel> {
 //                            Toast.makeText(mContext, mContext.getString(R.string.video_format_not_support), Toast.LENGTH_SHORT).show();
 //                            return;
 //                        }
-                        if (duration > Constant.VideoConfig.MAX_VIDEO_DURATION) {
+                        if (audioTrack == -1) {//无声
+                            Toast.makeText(mContext, mContext.getString(R.string.format_not_support), Toast.LENGTH_SHORT).show();
+                            return;
+                        } else if (audioChannelCount != 2) {//非双声道
+                            Toast.makeText(mContext, mContext.getString(R.string.format_not_support), Toast.LENGTH_SHORT).show();
+                            return;
+                        } else if (duration > Constant.VideoConfig.MAX_VIDEO_DURATION) {
                             Toast.makeText(mContext, mContext.getString(R.string.video_max_duration), Toast.LENGTH_SHORT).show();
                             return;
                         } else if (duration < Constant.VideoConfig.MIN_VIDEO_DURATION) {
@@ -107,7 +124,8 @@ public class GalleryVideoAdapter extends BaseRecyclerAdapter<MediaModel> {
                         Toast.makeText(mContext, mContext.getString(R.string.unknow_error), Toast.LENGTH_SHORT).show();
                         return;
                     } finally {
-                        retr.release();
+                        if (audioExtractor != null)
+                            audioExtractor.release();
                     }
                 }
 

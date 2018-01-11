@@ -325,6 +325,9 @@ public class EditVideoThread extends Thread implements ExtractDecodeEditEncodeMu
     }
 
     public interface EditVideoListener {
+
+        void onEditVideoProgress(int progress);
+
         void onEditVideoSuccess(String path);
 
         void onEditVideoError(String message);

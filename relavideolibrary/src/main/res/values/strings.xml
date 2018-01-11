@@ -13,4 +13,5 @@
     <string name="video_max_duration">视频不能大于60s</string>
     <string name="video_min_duration">视频不能小于5s</string>
     <string name="unknow_error">未知错误</string>
+    <string name="format_not_support">暂不支持此格式</string>
 </resources>
