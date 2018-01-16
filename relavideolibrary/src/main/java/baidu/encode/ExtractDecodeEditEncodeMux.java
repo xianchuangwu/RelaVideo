@@ -53,7 +53,7 @@ public class ExtractDecodeEditEncodeMux {
         mAppContext = context.getApplicationContext();
     }
 
-    private static final String TAG = EditVideoThread.TAG;
+    private static final String TAG = "EditVideoThread";
     private static final boolean VERBOSE = true; // lots of logging
     /**
      * How long to wait for the next buffer to become available.

@@ -41,7 +41,17 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:onClick="test"
-        android:text="test"
+        android:text="big gift preview"
         android:textAllCaps="false"
-        android:visibility="gone" />
+        android:visibility="visible" />
+
+    <FrameLayout
+        android:id="@+id/container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"/>
+
+    <!--<video.com.relavideolibrary.view.RelaBigGiftView
+        android:id="@+id/big_gift"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />-->
 </LinearLayout>

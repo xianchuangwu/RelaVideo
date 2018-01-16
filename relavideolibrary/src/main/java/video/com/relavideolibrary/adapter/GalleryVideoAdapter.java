@@ -70,6 +70,7 @@ public class GalleryVideoAdapter extends BaseRecyclerAdapter<MediaModel> {
                         int audioTrack = -1;
                         int audioChannelCount = 0;
                         long duration = 0;
+                        int sampleRate = 0;
                         for (int i = 0; i < audioExtractor.getTrackCount(); i++) {
                             MediaFormat audioFormat = audioExtractor.getTrackFormat(i);
                             String mimeType = audioFormat.getString(MediaFormat.KEY_MIME);
@@ -77,6 +78,7 @@ public class GalleryVideoAdapter extends BaseRecyclerAdapter<MediaModel> {
                                 audioTrack = i;
                                 audioChannelCount = audioFormat.getInteger(MediaFormat.KEY_CHANNEL_COUNT);
                                 duration = audioFormat.getLong(MediaFormat.KEY_DURATION) / 1000;
+                                sampleRate = audioFormat.getInteger(MediaFormat.KEY_SAMPLE_RATE);
                                 break;
                             }
                         }
@@ -86,6 +88,7 @@ public class GalleryVideoAdapter extends BaseRecyclerAdapter<MediaModel> {
                                         + "\naudioTrack :" + audioTrack
                                         + "\naudioChannelCount :" + audioChannelCount
                                         + "\nduration :" + duration
+                                        + "\nsampleRate :" + sampleRate
                         );
 //                        int height = 0;
 //                        int width = 0;
@@ -107,12 +110,15 @@ public class GalleryVideoAdapter extends BaseRecyclerAdapter<MediaModel> {
 //                            return;
 //                        }
                         if (audioTrack == -1) {//无声
-                            Toast.makeText(mContext, mContext.getString(R.string.format_not_support), Toast.LENGTH_SHORT).show();
+                            Toast.makeText(mContext, "暂不支持无声视频!", Toast.LENGTH_SHORT).show();
                             return;
                         } else if (audioChannelCount != 2) {//非双声道
-                            Toast.makeText(mContext, mContext.getString(R.string.format_not_support), Toast.LENGTH_SHORT).show();
+                            Toast.makeText(mContext, "暂不支持单声道视频!", Toast.LENGTH_SHORT).show();
                             return;
-                        } else if (duration > Constant.VideoConfig.MAX_VIDEO_DURATION) {
+                        } /*else if (sampleRate != Constant.EncodeConfig.OUTPUT_AUDIO_SAMPLE_RATE_HZ) {
+                            Toast.makeText(mContext, "暂不支持非44100采样率视频!", Toast.LENGTH_SHORT).show();
+                            return;
+                        } */else if (duration > Constant.VideoConfig.MAX_VIDEO_DURATION) {
                             Toast.makeText(mContext, mContext.getString(R.string.video_max_duration), Toast.LENGTH_SHORT).show();
                             return;
                         } else if (duration < Constant.VideoConfig.MIN_VIDEO_DURATION) {

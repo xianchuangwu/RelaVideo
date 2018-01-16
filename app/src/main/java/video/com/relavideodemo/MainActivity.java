@@ -13,14 +13,24 @@ import android.os.Bundle;
 import android.os.StrictMode;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.FrameLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.coremedia.iso.boxes.Container;
+import com.googlecode.mp4parser.FileDataSourceImpl;
+import com.googlecode.mp4parser.authoring.Movie;
+import com.googlecode.mp4parser.authoring.Track;
+import com.googlecode.mp4parser.authoring.builder.DefaultMp4Builder;
+import com.googlecode.mp4parser.authoring.container.mp4.MovieCreator;
+import com.googlecode.mp4parser.authoring.tracks.AACTrackImpl;
 import com.tbruyelle.rxpermissions2.RxPermissions;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -37,13 +47,13 @@ import video.com.relavideolibrary.model.FilterBean;
 import video.com.relavideolibrary.model.MusicBean;
 import video.com.relavideolibrary.model.MusicCategoryBean;
 import video.com.relavideolibrary.surface.RecordingActivity;
-import video.com.relavideolibrary.thread.EditVideoThread;
-import video.com.relavideolibrary.thread.EditVideoThread2;
+import video.com.relavideolibrary.view.RelaBigGiftView;
 
 public class MainActivity extends AppCompatActivity implements FilterDataCallback, MusicCategoryCallback, MusicListCallback {
 
     private TextView textView;
     private String path;
+    private RelaBigGiftView bigGiftView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -95,6 +105,29 @@ public class MainActivity extends AppCompatActivity implements FilterDataCallbac
 //
 //            }
 //        });
+
+        if (bigGiftView == null) {
+            FrameLayout container = findViewById(R.id.container);
+            bigGiftView = new RelaBigGiftView(this, "http://live-yf-hdl.huomaotv.cn/live/bcfpxN35275.flv?from=huomaoroom");
+            FrameLayout.LayoutParams layoutParams = new FrameLayout.LayoutParams(-1, -1);
+//            layoutParams.addRule(RelativeLayout.CENTER_IN_PARENT);
+            container.addView(bigGiftView, layoutParams);
+        } else {
+            bigGiftView.reload("http://pro.thel.co/gift/video/1514199928405jendak.mp4");
+        }
+
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (bigGiftView != null) bigGiftView.onResume();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        if (bigGiftView != null) bigGiftView.onPause();
     }
 
     @Override
@@ -227,100 +260,134 @@ public class MainActivity extends AppCompatActivity implements FilterDataCallbac
     }
 
     public void test(View view) {
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    MediaExtractor videoExtractor = new MediaExtractor();
-                    videoExtractor.setDataSource("/storage/emulated/0/test2.mp4");
-                    MediaFormat videoFormat = null;
-                    int videoTrackIndex = -1;
-                    int videoTrackCount = videoExtractor.getTrackCount();
-                    for (int i = 0; i < videoTrackCount; i++) {
-                        videoFormat = videoExtractor.getTrackFormat(i);
-                        String mimeType = videoFormat.getString(MediaFormat.KEY_MIME);
-                        if (mimeType.startsWith("video/")) {
-                            videoTrackIndex = i;
-                            break;
-                        }
-                    }
+        bigGiftView.reload("http://pro.thel.co/gift/video/1514199928405jendak.mp4");
+    }
 
-                    MediaExtractor audioExtractor = new MediaExtractor();
-                    audioExtractor.setDataSource("/storage/emulated/0/Rela/other-merge.aac");
-                    MediaFormat audioFormat = null;
-                    int audioTrackIndex = -1;
-                    int audioTrackCount = audioExtractor.getTrackCount();
-                    for (int i = 0; i < audioTrackCount; i++) {
-                        audioFormat = audioExtractor.getTrackFormat(i);
-                        String mimeType = audioFormat.getString(MediaFormat.KEY_MIME);
-                        if (mimeType.startsWith("audio/")) {
-                            audioTrackIndex = i;
-                            break;
-                        }
-                    }
+    public static void trackMuxer(String videoPath, String audioPath, String outPath) {
+        MediaExtractor videoExtractor = new MediaExtractor();
+        try {
+            videoExtractor.setDataSource(videoPath);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        MediaFormat videoFormat = null;
+        int videoTrackIndex = -1;
+        int videoTrackCount = videoExtractor.getTrackCount();
+        for (int i = 0; i < videoTrackCount; i++) {
+            videoFormat = videoExtractor.getTrackFormat(i);
+            String mime = videoFormat.getString(MediaFormat.KEY_MIME);
+            if (mime.startsWith("video/")) {
+                videoTrackIndex = i;
+                break;
+            }
+        }
 
-                    videoExtractor.selectTrack(videoTrackIndex);
-                    audioExtractor.selectTrack(audioTrackIndex);
+        MediaExtractor audioExtractor = new MediaExtractor();
+        try {
+            audioExtractor.setDataSource(audioPath);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        MediaFormat audioFormat = null;
+        int audioTrackIndex = -1;
+        int audioTrackCount = audioExtractor.getTrackCount();
+        for (int i = 0; i < audioTrackCount; i++) {
+            audioFormat = audioExtractor.getTrackFormat(i);
+            String mime = audioFormat.getString(MediaFormat.KEY_MIME);
+            if (mime.startsWith("audio/")) {
+                audioTrackIndex = i;
+                break;
+            }
+        }
 
-                    MediaCodec.BufferInfo videoBufferInfo = new MediaCodec.BufferInfo();
-                    MediaCodec.BufferInfo audioBufferInfo = new MediaCodec.BufferInfo();
+        videoExtractor.selectTrack(videoTrackIndex);
+        audioExtractor.selectTrack(audioTrackIndex);
 
-                    MediaMuxer mediaMuxer = new MediaMuxer("/storage/emulated/0/test-merge.mp4", MediaMuxer.OutputFormat.MUXER_OUTPUT_MPEG_4);
-                    int writeVideoTrackIndex = mediaMuxer.addTrack(videoFormat);
-                    int writeAudioTrackIndex = mediaMuxer.addTrack(audioFormat);
-                    mediaMuxer.start();
+        MediaCodec.BufferInfo videoBufferInfo = new MediaCodec.BufferInfo();
+        MediaCodec.BufferInfo audioBufferInfo = new MediaCodec.BufferInfo();
 
-                    ByteBuffer byteBuffer = ByteBuffer.allocate(500 * 1024);
-                    long sampleTime = 0;
-                    {
-                        videoExtractor.readSampleData(byteBuffer, 0);
-                        if (videoExtractor.getSampleFlags() == MediaExtractor.SAMPLE_FLAG_SYNC) {
-                            videoExtractor.advance();
-                        }
-                        videoExtractor.readSampleData(byteBuffer, 0);
-                        long secondTime = videoExtractor.getSampleTime();
-                        videoExtractor.advance();
-                        long thirdTime = videoExtractor.getSampleTime();
-                        sampleTime = Math.abs(thirdTime - secondTime);
-                    }
-                    videoExtractor.unselectTrack(videoTrackIndex);
-                    videoExtractor.selectTrack(videoTrackIndex);
+        MediaMuxer mediaMuxer = null;
+        try {
+            mediaMuxer = new MediaMuxer(outPath, MediaMuxer.OutputFormat.MUXER_OUTPUT_MPEG_4);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        int writeVideoTrackIndex = mediaMuxer.addTrack(videoFormat);
+        int writeAudioTrackIndex = mediaMuxer.addTrack(audioFormat);
+        mediaMuxer.start();
+        ByteBuffer byteBuffer = ByteBuffer.allocate(1024 * 1000);
+        long videoSampleTime = getSampleTime(videoExtractor, byteBuffer);
+        while (true) {
+            int readVideoSampleSize = videoExtractor.readSampleData(byteBuffer, 0);
+            if (readVideoSampleSize < 0) {
+                break;
+            }
+            videoBufferInfo.size = readVideoSampleSize;
+            videoBufferInfo.presentationTimeUs += videoSampleTime;
+            videoBufferInfo.offset = 0;
+            videoBufferInfo.flags = videoExtractor.getSampleFlags();
+            mediaMuxer.writeSampleData(writeVideoTrackIndex, byteBuffer, videoBufferInfo);
+            videoExtractor.advance();
+        }
+        long audioSampleTime = getSampleTime(audioExtractor, byteBuffer);
+        while (true) {
+            int readAudioSampleSize = audioExtractor.readSampleData(byteBuffer, 0);
+            if (readAudioSampleSize < 0) {
+                break;
+            }
 
-                    while (true) {
-                        int readVideoSampleSize = videoExtractor.readSampleData(byteBuffer, 0);
-                        if (readVideoSampleSize < 0) {
-                            break;
-                        }
-                        videoBufferInfo.size = readVideoSampleSize;
-                        videoBufferInfo.presentationTimeUs += sampleTime;
-                        videoBufferInfo.offset = 0;
-                        videoBufferInfo.flags = videoExtractor.getSampleFlags();
-                        mediaMuxer.writeSampleData(writeVideoTrackIndex, byteBuffer, videoBufferInfo);
-                        videoExtractor.advance();
-                    }
+            audioBufferInfo.size = readAudioSampleSize;
+            audioBufferInfo.presentationTimeUs += audioSampleTime;
+            audioBufferInfo.offset = 0;
+            audioBufferInfo.flags = audioExtractor.getSampleFlags();
+            mediaMuxer.writeSampleData(writeAudioTrackIndex, byteBuffer, audioBufferInfo);
+            audioExtractor.advance();
+        }
 
-                    while (true) {
-                        int readAudioSampleSize = audioExtractor.readSampleData(byteBuffer, 0);
-                        if (readAudioSampleSize < 0) {
-                            break;
-                        }
+        mediaMuxer.stop();
+        mediaMuxer.release();
+        videoExtractor.release();
+        audioExtractor.release();
+    }
 
-                        audioBufferInfo.size = readAudioSampleSize;
-                        audioBufferInfo.presentationTimeUs += sampleTime;
-                        audioBufferInfo.offset = 0;
-                        audioBufferInfo.flags = videoExtractor.getSampleFlags();
-                        mediaMuxer.writeSampleData(writeAudioTrackIndex, byteBuffer, audioBufferInfo);
-                        audioExtractor.advance();
-                    }
+    private static long getSampleTime(MediaExtractor mediaExtractor, ByteBuffer buffer) {
+        long videoSampleTime;
+//            mediaExtractor.readSampleData(buffer, 0);
+//            //skip first I frame
+//            if (mediaExtractor.getSampleFlags() == MediaExtractor.SAMPLE_FLAG_SYNC)
+//                mediaExtractor.advance();
+        mediaExtractor.readSampleData(buffer, 0);
+        long firstVideoPTS = mediaExtractor.getSampleTime();
+        mediaExtractor.advance();
+        mediaExtractor.readSampleData(buffer, 0);
+        long SecondVideoPTS = mediaExtractor.getSampleTime();
+        videoSampleTime = Math.abs(SecondVideoPTS - firstVideoPTS);
+        Log.d("MediaMuxerUtil", "videoSampleTime is " + videoSampleTime);
+        return videoSampleTime;
+    }
 
-                    mediaMuxer.stop();
-                    mediaMuxer.release();
-                    videoExtractor.release();
-                    audioExtractor.release();
-                } catch (IOException e) {
-                    e.printStackTrace();
+    public static boolean muxAacMp4(String aacPath, String mp4Path, String outPath) {
+        try {
+            AACTrackImpl aacTrack = new AACTrackImpl(new FileDataSourceImpl(aacPath));
+            Movie videoMovie = MovieCreator.build(mp4Path);
+            Track videoTracks = null;// 获取视频的单纯视频部分
+            for (Track videoMovieTrack : videoMovie.getTracks()) {
+                if ("vide".equals(videoMovieTrack.getHandler())) {
+                    videoTracks = videoMovieTrack;
                 }
             }
-        }).start();
+
+            Movie resultMovie = new Movie();
+            resultMovie.addTrack(videoTracks);// 视频部分
+            resultMovie.addTrack(aacTrack);// 音频部分
+
+            Container out = new DefaultMp4Builder().build(resultMovie);
+            FileOutputStream fos = new FileOutputStream(new File(outPath));
+            out.writeContainer(fos.getChannel());
+            fos.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return true;
     }
 }

@@ -51,6 +51,7 @@ import com.github.hiteshsondhi88.libffmpeg.exceptions.FFmpegCommandAlreadyRunnin
 import com.github.hiteshsondhi88.libffmpeg.exceptions.FFmpegNotSupportedException;
 
 import java.io.File;
+import java.io.IOException;
 import java.lang.ref.WeakReference;
 
 import video.com.relavideolibrary.R;
@@ -58,6 +59,7 @@ import video.com.relavideolibrary.RelaVideoSDK;
 import video.com.relavideolibrary.Utils.Constant;
 import video.com.relavideolibrary.Utils.FFmpegUtils;
 import video.com.relavideolibrary.Utils.FileManager;
+import video.com.relavideolibrary.Utils.Mp4ParserUtil;
 import video.com.relavideolibrary.Utils.ScreenUtils;
 import video.com.relavideolibrary.videotrimmer.interfaces.OnK4LVideoListener;
 import video.com.relavideolibrary.videotrimmer.interfaces.OnProgressVideoListener;
@@ -70,7 +72,6 @@ import video.com.relavideolibrary.videotrimmer.view.Thumb;
 import video.com.relavideolibrary.videotrimmer.view.ThumbRecyclerView;
 
 import static video.com.relavideolibrary.Utils.DensityUtils.HYYstringForTime;
-import static video.com.relavideolibrary.Utils.DensityUtils.stringForTime;
 import static video.com.relavideolibrary.Utils.DensityUtils.stringForTimeFFmpeg;
 
 
@@ -285,33 +286,48 @@ public class K4LVideoTrimmer extends FrameLayout {
             if (mOnTrimVideoListener != null)
                 mOnTrimVideoListener.onTrimStarted();
 
-            FFmpeg fFmpeg = FFmpeg.getInstance(RelaVideoSDK.context);
-            try {
-                fFmpeg.loadBinary(new LoadBinaryResponseHandler() {
-                    @Override
-                    public void onFailure() {
-                        Log.e(TAG, "FFmpeg is not supported on your device");
-                    }
-                });
-            } catch (FFmpegNotSupportedException e) {
-                Log.e(TAG, "FFmpeg is not supported on your device");
-            }
+            final String output = FileManager.getVideoFile();
 
             try {
-                final String output = FileManager.getVideoFile();
-                FFmpegUtils.getInstance().splitVideo(fFmpeg, stringForTimeFFmpeg(mStartPosition), stringForTimeFFmpeg(mEndPosition)
-                        , mSrc.getPath(), output, new FFmpegUtils.FFmpegResponseListener() {
-                            @Override
-                            public void onSuccess(String s) {
-                                super.onSuccess(s);
-                                if (mOnTrimVideoListener != null) {
-                                    mOnTrimVideoListener.getResult(Uri.parse(output));
-                                }
-                            }
-                        });
-            } catch (FFmpegCommandAlreadyRunningException e) {
+                Mp4ParserUtil.cropMp4(mSrc.getPath(),mStartPosition,mEndPosition,output);
+                if (mOnTrimVideoListener != null) {
+                    mOnTrimVideoListener.getResult(Uri.parse(output));
+                }
+            } catch (IOException e) {
                 e.printStackTrace();
+                if (mOnTrimVideoListener != null) {
+                    mOnTrimVideoListener.onError(e.getMessage());
+                }
             }
+
+//            FFmpeg fFmpeg = FFmpeg.getInstance(RelaVideoSDK.context);
+//            try {
+//                fFmpeg.loadBinary(new LoadBinaryResponseHandler() {
+//                    @Override
+//                    public void onFailure() {
+//                        Log.e(TAG, "FFmpeg is not supported on your device");
+//                    }
+//                });
+//            } catch (FFmpegNotSupportedException e) {
+//                Log.e(TAG, "FFmpeg is not supported on your device");
+//            }
+//
+//            try {
+//
+//                FFmpegUtils.getInstance().splitVideo(fFmpeg, stringForTimeFFmpeg(mStartPosition), stringForTimeFFmpeg(mEndPosition)
+//                        , mSrc.getPath(), output, new FFmpegUtils.FFmpegResponseListener() {
+//                            @Override
+//                            public void onSuccess(String s) {
+//                                super.onSuccess(s);
+//                                if (mOnTrimVideoListener != null) {
+//                                    mOnTrimVideoListener.getResult(Uri.parse(output));
+//                                }
+//                            }
+//                        });
+//            } catch (FFmpegCommandAlreadyRunningException e) {
+//                e.printStackTrace();
+//            }
+
         }
     }
 

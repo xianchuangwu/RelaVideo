@@ -14,10 +14,16 @@ import android.text.TextUtils;
 import android.util.ArrayMap;
 import android.util.Log;
 import android.util.TimingLogger;
+import android.view.animation.DecelerateInterpolator;
 
-import com.github.hiteshsondhi88.libffmpeg.FFmpeg;
-import com.github.hiteshsondhi88.libffmpeg.LoadBinaryResponseHandler;
-import com.github.hiteshsondhi88.libffmpeg.exceptions.FFmpegNotSupportedException;
+import com.coremedia.iso.boxes.Container;
+import com.googlecode.mp4parser.FileDataSourceImpl;
+import com.googlecode.mp4parser.authoring.Movie;
+import com.googlecode.mp4parser.authoring.Track;
+import com.googlecode.mp4parser.authoring.builder.DefaultMp4Builder;
+import com.googlecode.mp4parser.authoring.container.mp4.MovieCreator;
+import com.googlecode.mp4parser.authoring.tracks.AACTrackImpl;
+import com.googlecode.mp4parser.util.Matrix;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -33,7 +39,6 @@ import jp.co.cyberagent.android.gpuimage.GPUImageFilter;
 import jp.co.cyberagent.android.gpuimage.GPUImageLookupFilter;
 import video.com.relavideolibrary.RelaVideoSDK;
 import video.com.relavideolibrary.Utils.Constant;
-import video.com.relavideolibrary.Utils.FFmpegUtils;
 import video.com.relavideolibrary.Utils.FileManager;
 import video.com.relavideolibrary.jni.AudioJniUtils;
 import video.com.relavideolibrary.manager.VideoManager;
@@ -54,6 +59,7 @@ public class EditVideoThread2 extends Thread implements ExtractDecodeEditEncodeM
     private final String mVideoPath;
     private final String mMusicPath;
     private final int filterId;
+    private int videoSampleRate;//根据视频的音频采样率统一背景乐采样率
     //adb shell setprop log.tag.EditVideoThread VERBOSE
     private final TimingLogger timingLogger;
 
@@ -67,17 +73,37 @@ public class EditVideoThread2 extends Thread implements ExtractDecodeEditEncodeM
         //模拟progress
         ValueAnimator valueAnimator = ValueAnimator.ofInt(100);
         long valueDuration = 0;
-        MediaMetadataRetriever videoRetriever = new MediaMetadataRetriever();
-        videoRetriever.setDataSource(mVideoPath);
-        String videoDurationStr = videoRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);
-        long videoDuration = Long.parseLong(videoDurationStr);
+//        MediaMetadataRetriever videoRetriever = new MediaMetadataRetriever();
+//        videoRetriever.setDataSource(mVideoPath);
+//        String videoDurationStr = videoRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);
+//        long videoDuration = Long.parseLong(videoDurationStr);
+        MediaExtractor audioExtractor = null;
+        long videoDuration = 0;
+        try {
+            audioExtractor = new MediaExtractor();
+            audioExtractor.setDataSource(mVideoPath);
+            for (int i = 0; i < audioExtractor.getTrackCount(); i++) {
+                MediaFormat audioFormat = audioExtractor.getTrackFormat(i);
+                String mimeType = audioFormat.getString(MediaFormat.KEY_MIME);
+                if (mimeType.startsWith("audio/")) {
+                    videoDuration = audioFormat.getLong(MediaFormat.KEY_DURATION) / 1000;
+                    videoSampleRate = audioFormat.getInteger(MediaFormat.KEY_SAMPLE_RATE);
+                    break;
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            audioExtractor.release();
+        }
         if (filterId != -1) {
-            valueDuration += videoDuration * 1.3;
+            valueDuration += videoDuration * 1.5;
         }
         if (!TextUtils.isEmpty(mMusicPath)) {
-            valueDuration += videoDuration / 3;
+            valueDuration += videoDuration / 2;
         }
         valueAnimator.setDuration(valueDuration);
+        valueAnimator.setInterpolator(new DecelerateInterpolator());//先加速再减速
         valueAnimator.addUpdateListener(this);
         valueAnimator.start();
     }
@@ -137,8 +163,9 @@ public class EditVideoThread2 extends Thread implements ExtractDecodeEditEncodeM
             mulitPCMMix(mp4AudioPCM, mp3AudioPCM, audioMergePath, VideoManager.getInstance().getVideoVolumn(), VideoManager.getInstance().getMusicVolumn(), new AudioDecodeListener() {
                 @Override
                 public void decodeOver() {
-                    mixVideo(path, audioMergePath, setFile("final.mp4"));
+//                    mixVideo(path, audioMergePath, setFile("final.mp4"));
 //                    mixVideoWithFFMPEG(path, audioMergePath, setFile("final.mp4"));
+                    muxAacMp4(audioMergePath, path, setFile("final.mp4"));
                 }
 
                 @Override
@@ -191,10 +218,8 @@ public class EditVideoThread2 extends Thread implements ExtractDecodeEditEncodeM
                 ByteBuffer buffer = ByteBuffer.allocate(SAMPLE_SIZE);
                 int sampleSize = extractor.readSampleData(buffer, 0);
                 long timeStamp = extractor.getSampleTime();
-                // >= 1000000是要裁剪停止和指定的裁剪结尾不小于1秒，否则可能产生需要9秒音频
-                //裁剪到只有8.6秒，大多数音乐播放器是向下取整，这样对于播放器变成了8秒，
-                // 所以要裁剪比9秒多一秒的边界
-                if (timeStamp > end && timeStamp - end >= 1000000) {
+//                if (timeStamp > end) {
+                if (timeStamp > end * (videoSampleRate / Constant.EncodeConfig.OUTPUT_AUDIO_SAMPLE_RATE_HZ)) {
                     break;
                 }
                 if (sampleSize <= 0) {
@@ -593,7 +618,7 @@ public class EditVideoThread2 extends Thread implements ExtractDecodeEditEncodeM
                     outputBuffer.position(encodeBufferInfo.offset);
                     outputBuffer.limit(encodeBufferInfo.offset + outBitSize);
                     chunkAudio = new byte[outPacketSize];
-                    addADTStoPacket(chunkAudio, outPacketSize);//添加ADTS 代码后面会贴上
+                    addADTStoPacket(chunkAudio, outPacketSize, videoSampleRate);//添加ADTS 代码后面会贴上
                     outputBuffer.get(chunkAudio, 7, outBitSize);//将编码得到的AAC数据 取出到byte[]中 偏移量offset=7 你懂得
                     outputBuffer.position(encodeBufferInfo.offset);
                     try {
@@ -623,96 +648,137 @@ public class EditVideoThread2 extends Thread implements ExtractDecodeEditEncodeM
 
     /**
      * pcm to aac有问题，暂时通过ffmpeg合成
-     * @param srcVideo
-     * @param srcAudio
-     * @param dstPath
+     * <p>
+     * //     * @param srcVideo
+     * //     * @param srcAudio
+     * //     * @param dstPath
      */
-    private void mixVideoWithFFMPEG(final String srcVideo, final String srcAudio, final String dstPath) {
+//    private void mixVideoWithFFMPEG(final String srcVideo, final String srcAudio, final String dstPath) {
+//        try {
+//            final FFmpeg fFmpeg = getFfmepgObj();
+//            printMsg("提取视频信道");
+//            final String videoAviPath = setFile("avi.mp4");
+//            String[] commands = new String[6];
+//            commands[0] = "-i";
+//            commands[1] = srcVideo;
+//            commands[2] = "-an";
+//            commands[3] = "-vcodec";
+//            commands[4] = "copy";
+//            commands[5] = videoAviPath;
+//            fFmpeg.execute(commands, new FFmpegUtils.FFmpegResponseListener() {
+//                @Override
+//                public void onSuccess(String s) {
+//                    super.onSuccess(s);
+//                    try {
+//                        final FFmpeg fFmpeg = getFfmepgObj();
+//                        String[] commands = new String[7];
+//                        commands[0] = "-i";
+//                        commands[1] = videoAviPath;
+//                        commands[2] = "-i";
+//                        commands[3] = srcAudio;
+////                        commands[4] = "-bsf:a";
+//                        commands[4] = "-c";
+////                        commands[5] = "aac_adtstoasc";
+//                        commands[5] = "copy";
+//                        commands[6] = dstPath;
+//                        fFmpeg.execute(commands, new FFmpegUtils.FFmpegResponseListener() {
+//                            @Override
+//                            public void onSuccess(String s) {
+//                                super.onSuccess(s);
+//                                printMsg("视频信道与音频合成");
+//                                timingLogger.addSplit("add bgm");
+//                                timingLogger.dumpToLog();
+//                                if (editVideoListener != null) {
+//                                    editVideoListener.onEditVideoProgress(100);
+//                                    editVideoListener.onEditVideoSuccess(dstPath);
+//                                }
+//                            }
+//
+//                            @Override
+//                            public void onFailure(String s) {
+//                                super.onFailure(s);
+//                                if (editVideoListener != null)
+//                                    editVideoListener.onEditVideoError(s);
+//                            }
+//                        });
+//                    } catch (Exception e) {
+//                        e.printStackTrace();
+//                        if (editVideoListener != null)
+//                            editVideoListener.onEditVideoError(e.getMessage());
+//                    }
+//                }
+//
+//                @Override
+//                public void onFailure(String s) {
+//                    super.onFailure(s);
+//                    if (editVideoListener != null)
+//                        editVideoListener.onEditVideoError(s);
+//                }
+//            });
+//
+//        } catch (Exception e) {
+//            Log.e(TAG, "FFmpeg is not supported on your device");
+//            if (editVideoListener != null) editVideoListener.onEditVideoError(e.getMessage());
+//        }
+//    }
+//
+//    private synchronized FFmpeg getFfmepgObj() {
+//        FFmpeg fFmpeg = FFmpeg.getInstance(RelaVideoSDK.context);
+//        try {
+//            fFmpeg.loadBinary(new LoadBinaryResponseHandler() {
+//                @Override
+//                public void onFailure() {
+//                    if (editVideoListener != null)
+//                        editVideoListener.onEditVideoError("FFmpeg is not supported on your device");
+//                    Log.e(TAG, "FFmpeg is not supported on your device");
+//                }
+//            });
+//        } catch (FFmpegNotSupportedException e) {
+//            if (editVideoListener != null)
+//                editVideoListener.onEditVideoError("FFmpeg is not supported on your device");
+//            Log.e(TAG, "FFmpeg is not supported on your device");
+//        }
+//        return fFmpeg;
+//    }
+    private void muxAacMp4(String aacPath, String mp4Path, String outPath) {
         try {
-            final FFmpeg fFmpeg = getFfmepgObj();
-            printMsg("提取视频信道");
-            final String videoAviPath = setFile("avi.mp4");
-            String[] commands = new String[6];
-            commands[0] = "-i";
-            commands[1] = srcVideo;
-            commands[2] = "-an";
-            commands[3] = "-vcodec";
-            commands[4] = "copy";
-            commands[5] = videoAviPath;
-            fFmpeg.execute(commands, new FFmpegUtils.FFmpegResponseListener() {
-                @Override
-                public void onSuccess(String s) {
-                    super.onSuccess(s);
-                    try {
-                        final FFmpeg fFmpeg = getFfmepgObj();
-                        String[] commands = new String[7];
-                        commands[0] = "-i";
-                        commands[1] = videoAviPath;
-                        commands[2] = "-i";
-                        commands[3] = srcAudio;
-//                        commands[4] = "-bsf:a";
-                        commands[4] = "-c";
-//                        commands[5] = "aac_adtstoasc";
-                        commands[5] = "copy";
-                        commands[6] = dstPath;
-                        fFmpeg.execute(commands, new FFmpegUtils.FFmpegResponseListener() {
-                            @Override
-                            public void onSuccess(String s) {
-                                super.onSuccess(s);
-                                printMsg("视频信道与音频合成");
-                                timingLogger.addSplit("add bgm");
-                                timingLogger.dumpToLog();
-                                if (editVideoListener != null) {
-                                    editVideoListener.onEditVideoProgress(100);
-                                    editVideoListener.onEditVideoSuccess(dstPath);
-                                }
-                            }
 
-                            @Override
-                            public void onFailure(String s) {
-                                super.onFailure(s);
-                                if (editVideoListener != null)
-                                    editVideoListener.onEditVideoError(s);
-                            }
-                        });
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                        if (editVideoListener != null)
-                            editVideoListener.onEditVideoError(e.getMessage());
-                    }
+            AACTrackImpl aacTrack = new AACTrackImpl(new FileDataSourceImpl(aacPath));
+            Movie videoMovie = MovieCreator.build(mp4Path);
+            Track videoTracks = null;// 获取视频的单纯视频部分
+            for (Track videoMovieTrack : videoMovie.getTracks()) {
+                if ("vide".equals(videoMovieTrack.getHandler())) {
+                    videoTracks = videoMovieTrack;
                 }
+            }
 
-                @Override
-                public void onFailure(String s) {
-                    super.onFailure(s);
-                    if (editVideoListener != null)
-                        editVideoListener.onEditVideoError(s);
-                }
-            });
+            Movie resultMovie = new Movie();
+            resultMovie.addTrack(videoTracks);// 视频部分
+            resultMovie.addTrack(aacTrack);// 音频部分
 
+            MediaMetadataRetriever metaRetriever = new MediaMetadataRetriever();
+            metaRetriever.setDataSource(mp4Path);
+            String height = metaRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT);
+            String width = metaRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH);
+            if (16.0 / 9.0 == Float.valueOf(width) / Float.valueOf(height)) {
+                resultMovie.setMatrix(Matrix.ROTATE_90);
+            }
+
+
+            Container out = new DefaultMp4Builder().build(resultMovie);
+            FileOutputStream fos = new FileOutputStream(new File(outPath));
+            out.writeContainer(fos.getChannel());
+            fos.close();
+            timingLogger.addSplit("add bgm");
+            timingLogger.dumpToLog();
+            if (editVideoListener != null) {
+                editVideoListener.onEditVideoProgress(100);
+                editVideoListener.onEditVideoSuccess(outPath);
+            }
         } catch (Exception e) {
-            Log.e(TAG, "FFmpeg is not supported on your device");
+            e.printStackTrace();
             if (editVideoListener != null) editVideoListener.onEditVideoError(e.getMessage());
         }
-    }
-
-    private synchronized FFmpeg getFfmepgObj() {
-        FFmpeg fFmpeg = FFmpeg.getInstance(RelaVideoSDK.context);
-        try {
-            fFmpeg.loadBinary(new LoadBinaryResponseHandler() {
-                @Override
-                public void onFailure() {
-                    if (editVideoListener != null)
-                        editVideoListener.onEditVideoError("FFmpeg is not supported on your device");
-                    Log.e(TAG, "FFmpeg is not supported on your device");
-                }
-            });
-        } catch (FFmpegNotSupportedException e) {
-            if (editVideoListener != null)
-                editVideoListener.onEditVideoError("FFmpeg is not supported on your device");
-            Log.e(TAG, "FFmpeg is not supported on your device");
-        }
-        return fFmpeg;
     }
 
     /**
@@ -754,62 +820,6 @@ public class EditVideoThread2 extends Thread implements ExtractDecodeEditEncodeM
 
             videoExtractor.selectTrack(videoTrackIndex);
             audioExtractor.selectTrack(audioTrackIndex);
-//
-//            MediaCodec.BufferInfo videoBufferInfo = new MediaCodec.BufferInfo();
-//            MediaCodec.BufferInfo audioBufferInfo = new MediaCodec.BufferInfo();
-//
-//            MediaMuxer mediaMuxer = new MediaMuxer(dstPath, MediaMuxer.OutputFormat.MUXER_OUTPUT_MPEG_4);
-//            int writeVideoTrackIndex = mediaMuxer.addTrack(videoFormat);
-//            int writeAudioTrackIndex = mediaMuxer.addTrack(audioFormat);
-//            mediaMuxer.start();
-//
-//            ByteBuffer byteBuffer = ByteBuffer.allocate(500 * 1024);
-//            long sampleTime = 0;
-//            {
-//                videoExtractor.readSampleData(byteBuffer, 0);
-//                if (videoExtractor.getSampleFlags() == MediaExtractor.SAMPLE_FLAG_SYNC) {
-//                    videoExtractor.advance();
-//                }
-//                videoExtractor.readSampleData(byteBuffer, 0);
-//                long secondTime = videoExtractor.getSampleTime();
-//                videoExtractor.advance();
-//                long thirdTime = videoExtractor.getSampleTime();
-//                sampleTime = Math.abs(thirdTime - secondTime);
-//            }
-//            videoExtractor.unselectTrack(videoTrackIndex);
-//            videoExtractor.selectTrack(videoTrackIndex);
-//
-//            while (true) {
-//                int readVideoSampleSize = videoExtractor.readSampleData(byteBuffer, 0);
-//                if (readVideoSampleSize < 0) {
-//                    break;
-//                }
-//                videoBufferInfo.size = readVideoSampleSize;
-//                videoBufferInfo.presentationTimeUs += sampleTime;
-//                videoBufferInfo.offset = 0;
-//                videoBufferInfo.flags = videoExtractor.getSampleFlags();
-//                mediaMuxer.writeSampleData(writeVideoTrackIndex, byteBuffer, videoBufferInfo);
-//                videoExtractor.advance();
-//            }
-//
-//            while (true) {
-//                int readAudioSampleSize = audioExtractor.readSampleData(byteBuffer, 0);
-//                if (readAudioSampleSize < 0) {
-//                    break;
-//                }
-//
-//                audioBufferInfo.size = readAudioSampleSize;
-//                audioBufferInfo.presentationTimeUs += sampleTime;
-//                audioBufferInfo.offset = 0;
-//                audioBufferInfo.flags = videoExtractor.getSampleFlags();
-//                mediaMuxer.writeSampleData(writeAudioTrackIndex, byteBuffer, audioBufferInfo);
-//                audioExtractor.advance();
-//            }
-//
-//            mediaMuxer.stop();
-//            mediaMuxer.release();
-//            videoExtractor.release();
-//            audioExtractor.release();
 
             MediaMuxer mediaMuxer = new MediaMuxer(dstPath, MediaMuxer.OutputFormat.MUXER_OUTPUT_MPEG_4);
             videoTrackIndex = mediaMuxer.addTrack(videoFormat);
@@ -825,7 +835,7 @@ public class EditVideoThread2 extends Thread implements ExtractDecodeEditEncodeM
             if (Build.VERSION.SDK_INT == 21) {
                 int videoProfile = videoFormat.getInteger(MediaFormat.KEY_PROFILE);
                 if (videoProfile != MediaCodecInfo.CodecProfileLevel.AVCProfileBaseline) {
-//                    convertBaseLine();
+                    convertBaseLine();
                 }
             }
 
@@ -853,7 +863,6 @@ public class EditVideoThread2 extends Thread implements ExtractDecodeEditEncodeM
                 }
 
                 videoExtractor.release();
-                videoExtractor = null;
                 printMsg("rawMp4VideoExtractor release");
             }
 
@@ -878,14 +887,12 @@ public class EditVideoThread2 extends Thread implements ExtractDecodeEditEncodeM
                 }
 
                 audioExtractor.release();
-                audioExtractor = null;
                 printMsg("audioExtractor release");
             }
 
             printMsg("bgm video mix complete");
             mediaMuxer.stop();
             mediaMuxer.release();
-            mediaMuxer = null;
             printMsg("mediaMuxer release");
 
             timingLogger.addSplit("add bgm");
@@ -898,6 +905,14 @@ public class EditVideoThread2 extends Thread implements ExtractDecodeEditEncodeM
             e.printStackTrace();
             if (editVideoListener != null) editVideoListener.onEditVideoError(e.getMessage());
         }
+    }
+
+    /**
+     * android目前只支持h.264 baseline规格,如果不是这个规格，MediaMuxer合成时会报错（时间戳不是线性增长）
+     */
+    private void convertBaseLine() {
+        printMsg("raw video is not h.264 baseline");
+        //经过ExtractDecodeEditEncodeMuxUtils解码编码，视频已经被转成android默认的baseline规格
     }
 
     /**
@@ -942,9 +957,26 @@ public class EditVideoThread2 extends Thread implements ExtractDecodeEditEncodeM
     /**
      * 写入ADTS头部数据
      */
-    private void addADTStoPacket(byte[] packet, int packetLen) {
+//    private void addADTStoPacket(byte[] packet, int packetLen) {
+//        int profile = 2; // AAC LC
+//        int freqIdx = 4; // 44.1KHz
+//        int chanCfg = 2; // CPE
+//
+//        packet[0] = (byte) 0xFF;
+//        packet[1] = (byte) 0xF9;
+//        packet[2] = (byte) (((profile - 1) << 6) + (freqIdx << 2) + (chanCfg >> 2));
+//        packet[3] = (byte) (((chanCfg & 3) << 6) + (packetLen >> 11));
+//        packet[4] = (byte) ((packetLen & 0x7FF) >> 3);
+//        packet[5] = (byte) (((packetLen & 7) << 5) + 0x1F);
+//        packet[6] = (byte) 0xFC;
+//    }
+
+    /**
+     * 写入ADTS头部数据
+     */
+    public static void addADTStoPacket(byte[] packet, int packetLen, int sampleRate) {
         int profile = 2; // AAC LC
-        int freqIdx = 4; // 44.1KHz
+        int freqIdx = frequencyIndex(sampleRate);
         int chanCfg = 2; // CPE
 
         packet[0] = (byte) 0xFF;
@@ -954,6 +986,39 @@ public class EditVideoThread2 extends Thread implements ExtractDecodeEditEncodeM
         packet[4] = (byte) ((packetLen & 0x7FF) >> 3);
         packet[5] = (byte) (((packetLen & 7) << 5) + 0x1F);
         packet[6] = (byte) 0xFC;
+    }
+
+    public static int frequencyIndex(int sampleRate) {
+        switch (sampleRate) {
+            case 96000:
+                return 0;
+            case 88200:
+                return 1;
+            case 64000:
+                return 2;
+            case 48000:
+                return 3;
+            case 44100:
+                return 4;
+            case 32000:
+                return 5;
+            case 24000:
+                return 6;
+            case 22050:
+                return 7;
+            case 16000:
+                return 8;
+            case 12000:
+                return 9;
+            case 11025:
+                return 10;
+            case 8000:
+                return 11;
+            case 7350:
+                return 12;
+            default:
+                return -1;
+        }
     }
 
     private GPUImageFilter generateGPUImageFilter(int resId) {

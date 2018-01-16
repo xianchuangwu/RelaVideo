@@ -14,10 +14,10 @@ import com.ksyun.media.player.IMediaPlayer;
 
 import java.io.IOException;
 
-import video.com.relavideolibrary.BaseActivity;
-import video.com.relavideolibrary.R;
 import baidu.measure.IRenderView;
 import baidu.measure.SurfaceRenderView;
+import video.com.relavideolibrary.BaseActivity;
+import video.com.relavideolibrary.R;
 
 public class PreviewActivity extends BaseActivity implements View.OnClickListener, SurfaceHolder.Callback, MediaPlayer.OnPreparedListener, MediaPlayer.OnInfoListener, MediaPlayer.OnVideoSizeChangedListener {
 

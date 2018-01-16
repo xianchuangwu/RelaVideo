@@ -76,6 +76,7 @@ public class Constant {
         public static final int OUTPUT_AUDIO_FORMAT = AudioFormat.ENCODING_PCM_16BIT; //音频录制格式，默认为PCM16Bit
         public static final int OUTPUT_AUDIO_AAC_PROFILE = MediaCodecInfo.CodecProfileLevel.AACObjectLC;
         public static final int OUTPUT_AUDIO_BIT_RATE = 128000;//音频编码的密钥比特率
-        public static final int OUTPUT_AUDIO_SAMPLE_RATE_HZ = 48000; // Must match the input stream.
+//        public static final int OUTPUT_AUDIO_SAMPLE_RATE_HZ = 48000; // Must match the input stream.
+        public static final int OUTPUT_AUDIO_SAMPLE_RATE_HZ = 44100; // Must match the input stream.
     }
 }

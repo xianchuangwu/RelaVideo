@@ -57,4 +57,5 @@ dependencies {
     compile 'com.airbnb.android:lottie:2.0.0-beta4'
     compile files('libs/libksyhttpcache.jar')
     compile 'com.writingminds:FFmpegAndroid:0.3.2'
+    compile 'com.googlecode.mp4parser:isoparser:1.1.21'
 }

@@ -243,7 +243,7 @@ public class MusicActivity extends BaseActivity implements MusicCategoryAdapter.
             ksyMediaPlayer = null;
         }
 
-        if (proxy != null && musicCacheListener != null && mOnErrorListener != null && currentMusic.url != null) {
+        if (proxy != null && musicCacheListener != null && mOnErrorListener != null && currentMusic != null && currentMusic.url != null) {
             proxy.unregisterCacheStatusListener(musicCacheListener, currentMusic.url);
             proxy.unregisterErrorListener(mOnErrorListener);
             proxy.shutDownServer();

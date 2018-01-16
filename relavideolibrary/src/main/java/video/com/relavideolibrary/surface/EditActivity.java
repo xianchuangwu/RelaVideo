@@ -24,9 +24,7 @@ import android.util.Log;
 import android.view.Surface;
 import android.view.TextureView;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -114,9 +112,7 @@ public class EditActivity extends BaseActivity implements TextureView.SurfaceTex
         play = findViewById(R.id.play);
         filter_image.setOnClickListener(this);
 
-        initVideoView();
         initFilterList();
-        createRenderThread();
     }
 
     private void initFilterList() {
@@ -150,15 +146,21 @@ public class EditActivity extends BaseActivity implements TextureView.SurfaceTex
         textureView.setOnClickListener(this);
     }
 
-    private void createRenderThread() {
+    @Override
+    protected void onResume() {
+        super.onResume();
+        play.setVisibility(View.INVISIBLE);
+        initVideoView();
         mRenderThread = new RenderThread(this);
         mRenderThread.setName("TexFromCam Render");
         mRenderThread.start();
         mRenderThread.waitUntilReady();
     }
 
-    private void destroyRenderThread() {
-        if (mRenderThread == null) return;
+    @Override
+    protected void onPause() {
+        super.onPause();
+        play.setVisibility(View.VISIBLE);
         RenderHandler rh = mRenderThread.getHandler();
         rh.sendMediaPlayerRelease();
         rh.sendShutdown();
@@ -169,33 +171,8 @@ public class EditActivity extends BaseActivity implements TextureView.SurfaceTex
             throw new RuntimeException("join was interrupted", ie);
         }
         mRenderThread = null;
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        if (!isEdit && mRenderThread != null) {
-            RenderHandler mRenderThreadHandler = mRenderThread.getHandler();
-            mRenderThreadHandler.sendResume();
-            play.setVisibility(View.INVISIBLE);
-        }
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-        if (mRenderThread != null) {
-            RenderHandler mRenderThreadHandler = mRenderThread.getHandler();
-            mRenderThreadHandler.sendPause();
-            play.setVisibility(View.VISIBLE);
-        }
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        destroyRenderThread();
         Log.i(TAG, "onPause END");
+
     }
 
     @Override
