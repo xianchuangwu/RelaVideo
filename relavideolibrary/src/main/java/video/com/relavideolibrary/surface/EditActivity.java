@@ -81,9 +81,7 @@ public class EditActivity extends BaseActivity implements TextureView.SurfaceTex
 
     private RecyclerView filter_recyclerView;
 
-    private int currentFilterId = -1;
-    //是否正在编辑中
-    private boolean isEdit = false;
+    private int currentFilterId = -1;//默认－1，表示未选择滤镜
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -291,7 +289,6 @@ public class EditActivity extends BaseActivity implements TextureView.SurfaceTex
             showProgressDialog();
 //            new EditVideoThread(this).start();
             new EditVideoThread2(this).start();
-            isEdit = true;
             if (mRenderThread != null) {
                 RenderHandler mRenderThreadHandler = mRenderThread.getHandler();
                 mRenderThreadHandler.sendPause();
@@ -820,7 +817,7 @@ public class EditActivity extends BaseActivity implements TextureView.SurfaceTex
 
 
                 Log.i(TAG, "surfaceChanged should only once here");
-                gpuImageFilter = generateGPUImageFilter(-1);
+                gpuImageFilter = generateGPUImageFilter(currentFilterId);
                 gpuImageFilter.init();
 
                 surfaceWidth = width;

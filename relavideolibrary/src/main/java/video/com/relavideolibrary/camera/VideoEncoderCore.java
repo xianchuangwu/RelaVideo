@@ -78,6 +78,8 @@ public class VideoEncoderCore {
 
     private Object lock = new Object();
 
+    private boolean isKeyframeArrived = false;
+    private long presentTimeOffset = 0;
 
     /**
      * Configures encoder and muxer state, and prepares the input Surface.
@@ -218,7 +220,7 @@ public class VideoEncoderCore {
 
                     // now that we have the Magic Goodies, start the muxer
                     mVideoTrackIndex = mMuxer.addTrack(newFormat);
-                    if (mVideoTrackIndex >= 0 && mAudioTrackIndex >= 0) {
+                    if (mVideoTrackIndex >= 0 && mAudioTrackIndex >= 0 && !mMuxerStarted) {
                         mMuxer.start();
                         mMuxerStarted = true;
                     }
@@ -249,8 +251,18 @@ public class VideoEncoderCore {
                     // adjust the ByteBuffer values to match BufferInfo (not needed?)
 //                    encodedData.position(mBufferInfo.offset);
 //                    encodedData.limit(mBufferInfo.offset + mBufferInfo.size);
-                    if (mMuxerStarted) {
-                        mMuxer.writeSampleData(mVideoTrackIndex, encodedData, mBufferInfo);
+
+                    if (mMuxerStarted && !isKeyframeArrived) {
+                        isKeyframeArrived = (mBufferInfo.flags & MediaCodec.BUFFER_FLAG_SYNC_FRAME) != 0;
+                        if (isKeyframeArrived) {
+                            presentTimeOffset = mBufferInfo.presentationTimeUs;
+                        }
+                    }
+
+                    if (mMuxerStarted && isKeyframeArrived) {
+                        MediaCodec.BufferInfo info = mBufferInfo;
+                        info.presentationTimeUs -= presentTimeOffset;
+                        mMuxer.writeSampleData(mVideoTrackIndex, encodedData, info);
                         if (VERBOSE) {
                             Log.d(TAG, "sent " + mBufferInfo.size + " bytes to muxer, ts=" +
                                     mBufferInfo.presentationTimeUs);
@@ -417,7 +429,10 @@ public class VideoEncoderCore {
                     buffer.position(mInfo.offset);
                     if (mMuxerStarted && mInfo.presentationTimeUs > 0) {
                         try {
-                            mMuxer.writeSampleData(mAudioTrackIndex, buffer, mInfo);
+                            if (isKeyframeArrived) {
+                                mInfo.presentationTimeUs -= presentTimeOffset;
+                                mMuxer.writeSampleData(mAudioTrackIndex, buffer, mInfo);
+                            }
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
@@ -429,7 +444,7 @@ public class VideoEncoderCore {
                     synchronized (lock) {
                         mAudioTrackIndex = mMuxer.addTrack(mAudioEnc.getOutputFormat());
                         Log.e(TAG, "add audio track-->" + mAudioTrackIndex);
-                        if (mAudioTrackIndex >= 0 && mVideoTrackIndex >= 0) {
+                        if (mAudioTrackIndex >= 0 && mVideoTrackIndex >= 0 && !mMuxerStarted) {
                             mMuxer.start();
                             mMuxerStarted = true;
                         }

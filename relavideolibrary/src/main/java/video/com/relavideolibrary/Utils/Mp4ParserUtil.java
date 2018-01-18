@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.channels.FileChannel;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -34,7 +35,7 @@ public class Mp4ParserUtil {
     public static final String TAG = "Mp4ParserUtil";
 
     /**
-     * 对Mp4文件集合进行追加合并(按照顺序一个一个拼接起来)
+     * 对Mp4文件集合进行追加合并(按照顺序一个一个拼接起来) 兼容性差，可用于简单的视频合成操作！！！
      *
      * @param mp4PathList [输入]Mp4文件路径的集合(支持m4a)(不支持wav)
      * @param outPutPath  [输出]结果文件全部名称包含后缀(比如.mp4)
@@ -43,7 +44,14 @@ public class Mp4ParserUtil {
     public static void appendMp4List(List<String> mp4PathList, String outPutPath) throws IOException {
         List<Movie> mp4MovieList = new ArrayList<>();// Movie对象集合[输入]
         for (String mp4Path : mp4PathList) {// 将每个文件路径都构建成一个Movie对象
-            mp4MovieList.add(MovieCreator.build(mp4Path));
+            Movie movie = null;
+            try {
+                movie = MovieCreator.build(mp4Path);
+            } catch (Exception e) {
+                Log.e(TAG, "MovieCreator.build exception");
+            } finally {
+                if (movie != null) mp4MovieList.add(movie);
+            }
         }
         Log.d(TAG, "mp4MovieList size :" + mp4MovieList.size());
 
@@ -216,7 +224,7 @@ public class Mp4ParserUtil {
     }
 
     /**
-     * 将 MP4 切割
+     * 将 MP4 切割(剪裁不精准，会有误差)
      *
      * @param mp4Path    .mp4
      * @param fromSample 起始位置
@@ -224,27 +232,105 @@ public class Mp4ParserUtil {
      * @param outPath    .mp4
      */
     public static void cropMp4(String mp4Path, long fromSample, long toSample, String outPath) throws IOException {
-        Movie mp4Movie = MovieCreator.build(mp4Path);
-        Track videoTracks = null;// 获取视频的单纯视频部分
-        for (Track videoMovieTrack : mp4Movie.getTracks()) {
-            if ("vide".equals(videoMovieTrack.getHandler())) {
-                videoTracks = videoMovieTrack;
-            }
-        }
-        Track audioTracks = null;// 获取视频的单纯音频部分
-        for (Track audioMovieTrack : mp4Movie.getTracks()) {
-            if ("soun".equals(audioMovieTrack.getHandler())) {
-                audioTracks = audioMovieTrack;
+//        Movie movie = new MovieCreator().build(new RandomAccessFile("/home/sannies/suckerpunch-distantplanet_h1080p/suckerpunch-distantplanet_h1080p.mov", "r").getChannel());
+        Movie movie = MovieCreator.build(mp4Path);
+
+        List<Track> tracks = movie.getTracks();
+        movie.setTracks(new LinkedList<Track>());
+        // remove all tracks we will create new tracks from the old
+
+        double startTime1 = fromSample / 1000;
+        double endTime1 = toSample / 1000;
+
+        boolean timeCorrected = false;
+
+        // Here we try to find a track that has sync samples. Since we can only start decoding
+        // at such a sample we SHOULD make sure that the start of the new fragment is exactly
+        // such a frame
+        for (Track track : tracks) {
+            if (track.getSyncSamples() != null && track.getSyncSamples().length > 0) {
+                if (timeCorrected) {
+                    // This exception here could be a false positive in case we have multiple tracks
+                    // with sync samples at exactly the same positions. E.g. a single movie containing
+                    // multiple qualities of the same video (Microsoft Smooth Streaming file)
+
+                    throw new RuntimeException("The startTime has already been corrected by another track with SyncSample. Not Supported.");
+                }
+                startTime1 = correctTimeToSyncSample(track, startTime1, false);
+                endTime1 = correctTimeToSyncSample(track, endTime1, true);
+                timeCorrected = true;
             }
         }
 
-        Movie resultMovie = new Movie();
-        resultMovie.addTrack(new AppendTrack(new CroppedTrack(videoTracks, fromSample, toSample)));// 视频部分
-        resultMovie.addTrack(new AppendTrack(new CroppedTrack(audioTracks, fromSample, toSample)));// 音频部分
+        for (Track track : tracks) {
+            long currentSample = 0;
+            double currentTime = 0;
+            double lastTime = -1;
+            long startSample1 = -1;
+            long endSample1 = -1;
 
-        Container out = new DefaultMp4Builder().build(resultMovie);
+            for (int i = 0; i < track.getSampleDurations().length; i++) {
+                long delta = track.getSampleDurations()[i];
+
+
+                if (currentTime > lastTime && currentTime <= startTime1) {
+                    // current sample is still before the new starttime
+                    startSample1 = currentSample;
+                }
+                if (currentTime > lastTime && currentTime <= endTime1) {
+                    // current sample is after the new start time and still before the new endtime
+                    endSample1 = currentSample;
+                }
+                lastTime = currentTime;
+                currentTime += (double) delta / (double) track.getTrackMetaData().getTimescale();
+                currentSample++;
+            }
+//            movie.addTrack(new AppendTrack(new ClippedTrack(track, startSample1, endSample1)));
+            movie.addTrack(new AppendTrack(new CroppedTrack(track, startSample1, endSample1)));
+        }
+        Container out = new DefaultMp4Builder().build(movie);
         FileOutputStream fos = new FileOutputStream(new File(outPath));
-        out.writeContainer(fos.getChannel());
+        FileChannel fc = fos.getChannel();
+        out.writeContainer(fc);
+
+        fc.close();
         fos.close();
+    }
+
+    /**
+     * 矫正时间到关键帧,mp4parser本身没有编解码功能，不能裁非关键帧
+     *
+     * @param track
+     * @param cutHere
+     * @param next
+     * @return
+     */
+    private static double correctTimeToSyncSample(Track track, double cutHere, boolean next) {
+        double[] timeOfSyncSamples = new double[track.getSyncSamples().length];
+        long currentSample = 0;
+        double currentTime = 0;
+        for (int i = 0; i < track.getSampleDurations().length; i++) {
+            long delta = track.getSampleDurations()[i];
+
+            if (Arrays.binarySearch(track.getSyncSamples(), currentSample + 1) >= 0) {
+                // samples always start with 1 but we start with zero therefore +1
+                timeOfSyncSamples[Arrays.binarySearch(track.getSyncSamples(), currentSample + 1)] = currentTime;
+            }
+            currentTime += (double) delta / (double) track.getTrackMetaData().getTimescale();
+            currentSample++;
+
+        }
+        double previous = 0;
+        for (double timeOfSyncSample : timeOfSyncSamples) {
+            if (timeOfSyncSample > cutHere) {
+                if (next) {
+                    return timeOfSyncSample;
+                } else {
+                    return previous;
+                }
+            }
+            previous = timeOfSyncSample;
+        }
+        return timeOfSyncSamples[timeOfSyncSamples.length - 1];
     }
 }

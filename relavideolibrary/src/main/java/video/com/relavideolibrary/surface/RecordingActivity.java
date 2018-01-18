@@ -18,18 +18,17 @@ import android.widget.Toast;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.resource.bitmap.CenterCrop;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import video.com.relavideolibrary.Utils.codec.MulitVideoMuxer;
 import video.com.relavideolibrary.BaseActivity;
 import video.com.relavideolibrary.R;
 import video.com.relavideolibrary.Utils.Constant;
 import video.com.relavideolibrary.Utils.CornerTransformation;
 import video.com.relavideolibrary.Utils.FileManager;
-import video.com.relavideolibrary.Utils.Mp4ParserUtil;
 import video.com.relavideolibrary.Utils.ScreenUtils;
 import video.com.relavideolibrary.camera.CameraView;
 import video.com.relavideolibrary.camera.utils.Constants;
@@ -38,7 +37,10 @@ import video.com.relavideolibrary.model.VideoBean;
 import video.com.relavideolibrary.view.RecordingButton;
 import video.com.relavideolibrary.view.RecordingLine;
 
-public class RecordingActivity extends BaseActivity implements View.OnClickListener, RecordingButton.OnRecordingListener, RecordingLine.RecordingLineListener {
+public class RecordingActivity extends BaseActivity implements View.OnClickListener
+        , RecordingButton.OnRecordingListener
+        , RecordingLine.RecordingLineListener
+        , MulitVideoMuxer.MediaMuxerListener {
 
     public static final String TAG = "RecordingActivity";
 
@@ -162,44 +164,7 @@ public class RecordingActivity extends BaseActivity implements View.OnClickListe
                 new Thread(new Runnable() {
                     @Override
                     public void run() {
-//                        try {
-//                            String[] outputArr = new String[outputList.size()];
-//                            outputList.toArray(outputArr);
-//                            new MediaMerge(outputArr).startMux(RecordingActivity.this);
-//                        } catch (Exception e) {
-//                            e.printStackTrace();
-//                            runOnUiThread(new Runnable() {
-//                                @Override
-//                                public void run() {
-//                                    dismissDialog();
-//                                    Toast.makeText(RecordingActivity.this, "merge video fail", Toast.LENGTH_SHORT).show();
-//                                }
-//                            });
-//                        }
-                        String mergePath = FileManager.getOtherFile("mp4_merge.mp4");
-                        try {
-                            Mp4ParserUtil.appendMp4List(outputList, mergePath);
-                            Log.d(TAG, "merge path :" + mergePath);
-                            runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    dismissDialog();
-                                }
-                            });
-                            VideoBean bean = new VideoBean();
-                            bean.videoPath = mergePath;
-                            VideoManager.getInstance().setVideoBean(bean);
-                            startActivityForResult(new Intent(RecordingActivity.this, EditActivity.class), Constant.IntentCode.REQUEST_CODE_EDIT);
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                            runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    dismissDialog();
-                                    Toast.makeText(RecordingActivity.this, "merge video fail", Toast.LENGTH_SHORT).show();
-                                }
-                            });
-                        }
+                        new MulitVideoMuxer(outputList).start(RecordingActivity.this);
 
                     }
                 }).start();
@@ -326,20 +291,31 @@ public class RecordingActivity extends BaseActivity implements View.OnClickListe
 
     }
 
-//    @Override
-//    public void videoMergeSuccess(String cameraOutputPath) {
-//        Log.d(TAG, "merge path :" + cameraOutputPath);
-//        runOnUiThread(new Runnable() {
-//            @Override
-//            public void run() {
-//                dismissDialog();
-//            }
-//        });
-//        VideoBean bean = new VideoBean();
-//        bean.videoPath = cameraOutputPath;
-//        VideoManager.getInstance().setVideoBean(bean);
-//        startActivityForResult(new Intent(RecordingActivity.this, EditActivity.class), Constant.IntentCode.REQUEST_CODE_EDIT);
-//    }
+    @Override
+    public void videoMergeSuccess(String cameraOutputPath) {
+        Log.d(TAG, "merge path :" + cameraOutputPath);
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                dismissDialog();
+            }
+        });
+        VideoBean bean = new VideoBean();
+        bean.videoPath = cameraOutputPath;
+        VideoManager.getInstance().setVideoBean(bean);
+        startActivityForResult(new Intent(RecordingActivity.this, EditActivity.class), Constant.IntentCode.REQUEST_CODE_EDIT);
+    }
+
+    @Override
+    public void videoMergeError(String messge) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                dismissDialog();
+                Toast.makeText(RecordingActivity.this, "merge video fail", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
 
     @SuppressLint("SetTextI18n")
     @Override
