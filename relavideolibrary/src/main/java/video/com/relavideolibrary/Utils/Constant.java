@@ -51,6 +51,7 @@ public class Constant {
         public static final String RESULT_VIDEO_WIDTH = "return width";
         public static final String RESULT_VIDEO_HEIGHT = "return height";
         public static final String RESULT_VIDEO_THUMB = "return thumbnail";
+        public static final String RESULT_VIDEO_MAIN_COLOR = "return main color";
     }
 
     public static final class BroadcastAction {
@@ -65,7 +66,7 @@ public class Constant {
         // parameters for the video encoder
         public static final String OUTPUT_VIDEO_MIME_TYPE = "video/avc"; // H.264 Advanced Video Coding
         public static int OUTPUT_VIDEO_BIT_RATE = 3500000; // 2Mbps
-        public static int OUTPUT_VIDEO_FRAME_RATE = 30; // 30fps
+        public static int OUTPUT_VIDEO_FRAME_RATE = 15; // 15fps
         public static final int OUTPUT_VIDEO_IFRAME_INTERVAL = 1; // 1 seconds between I-frames
         public static final int OUTPUT_VIDEO_COLOR_FORMAT = MediaCodecInfo.CodecCapabilities.COLOR_FormatSurface;
 

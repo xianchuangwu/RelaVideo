@@ -5,6 +5,7 @@ import android.app.ActivityManager;
 import android.app.ProgressDialog;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.pm.ActivityInfo;
 import android.graphics.Color;
 import android.os.Build;
@@ -24,7 +25,7 @@ import java.util.List;
  * Description: TODO
  */
 
-public class BaseActivity extends AppCompatActivity {
+public class BaseActivity extends AppCompatActivity implements DialogInterface.OnCancelListener {
 
     /**
      * 应用是否在前台
@@ -41,8 +42,9 @@ public class BaseActivity extends AppCompatActivity {
 
         //setting progressbar
         mProgressDialog = new ProgressDialog(this);
-        mProgressDialog.setCancelable(false);
         mProgressDialog.setMessage(getString(R.string.processing));
+        mProgressDialog.setCancelable(false);
+        mProgressDialog.setOnCancelListener(this);
     }
 
     @Override
@@ -191,5 +193,10 @@ public class BaseActivity extends AppCompatActivity {
     protected void dismissDialog() {
         if (mProgressDialog != null && mProgressDialog.isShowing())
             mProgressDialog.dismiss();
+    }
+
+    @Override
+    public void onCancel(DialogInterface dialog) {
+
     }
 }

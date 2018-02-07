@@ -296,6 +296,7 @@ public class TextureMovieEncoder implements Runnable {
 
             switch (what) {
                 case MSG_START_RECORDING:
+
                     encoder.handleStartRecording((EncoderConfig) obj);
                     break;
                 case MSG_STOP_RECORDING:
@@ -334,6 +335,7 @@ public class TextureMovieEncoder implements Runnable {
         Log.d(TAG, "handleStartRecording " + config);
         prepareEncoder(config.mEglContext, config.mWidth, config.mHeight,
                 config.path);
+//        mVideoEncoder.startAudioRecord();
     }
 
     /**
@@ -347,6 +349,11 @@ public class TextureMovieEncoder implements Runnable {
      * @param timestampNanos The frame's timestamp, from SurfaceTexture.
      */
     private void handleFrameAvailable(float[] transform, long timestampNanos) {
+        if (startAudiotimestampNanos == 0) {
+            startAudiotimestampNanos = timestampNanos;
+            mVideoEncoder.startAudioRecord();
+        }
+        if (timestampNanos - startAudiotimestampNanos < 100 * 1000000) return;
         if (VERBOSE) Log.d(TAG, "handleFrameAvailable tr=" + transform);
         mVideoEncoder.drainEncoder(false);
         Log.e("hero", "---setTextureId==" + mTextureId);
@@ -354,7 +361,7 @@ public class TextureMovieEncoder implements Runnable {
         mShowFilter.draw();
         if (baseTimeStamp == -1) {
             baseTimeStamp = System.nanoTime();
-            mVideoEncoder.startRecord();
+//            mVideoEncoder.startAudioRecord();
         }
         long nano = System.nanoTime();
         long time = nano - baseTimeStamp - pauseDelayTime;
@@ -362,6 +369,8 @@ public class TextureMovieEncoder implements Runnable {
         mInputWindowSurface.setPresentationTime(time);
         mInputWindowSurface.swapBuffers();
     }
+
+    private long startAudiotimestampNanos = 0;
 
     long pauseDelayTime;
     long onceDelayTime;

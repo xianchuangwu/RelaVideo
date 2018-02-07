@@ -57,9 +57,6 @@ public class MusicActivity extends BaseActivity implements MusicCategoryAdapter.
 
     private KSYProxyService proxy;
 
-    private boolean isAutoDismiss = true;
-
-    //    private MusicBean item;
     private float audioVolume = 1.0f;
     private float videoVolume = 1.0f;
 
@@ -317,20 +314,17 @@ public class MusicActivity extends BaseActivity implements MusicCategoryAdapter.
 
     public void downloadMusic() {
 
-        isJumped = false;
-
-        isAutoDismiss = true;
-
         File musicCacheFile = proxy.getCacheFile(currentMusic.url);
 
         Log.d(TAG, "getCachingPercent :" + proxy.getCachingPercent(currentMusic.url).toString());
 
         if (musicCacheFile != null) {
-            jumpMusicEditorActivity();
+            downloadComplete();
             return;
         }
 
-        showProgress();
+        mProgressDialog.setCancelable(true);
+        showProgressDialog();
 
         proxy.registerCacheStatusListener(musicCacheListener, currentMusic.url);
 
@@ -339,14 +333,19 @@ public class MusicActivity extends BaseActivity implements MusicCategoryAdapter.
         proxy.startPreDownload(currentMusic.url);
     }
 
+    @Override
+    public void onCancel(DialogInterface dialog) {
+        if (proxy != null) {
+            proxy.stopPreDownload(currentMusic.url);
+        }
+    }
+
     private OnCacheStatusListener musicCacheListener = new OnCacheStatusListener() {
         @Override
         public void OnCacheStatus(String url, long sourceLength, int percentsAvailable) {
             setDialogProgress(percentsAvailable);
             if (percentsAvailable == 100) {
-                if (isAutoDismiss) {
-                    jumpMusicEditorActivity();
-                }
+                downloadComplete();
             }
         }
     };
@@ -358,36 +357,16 @@ public class MusicActivity extends BaseActivity implements MusicCategoryAdapter.
         }
     };
 
-    boolean isJumped = false;
+    private void downloadComplete() {
 
-    private void jumpMusicEditorActivity() {
+        dismissDialog();
 
-        if (!isJumped) {
+        VideoManager.getInstance().setMusicBean(currentMusic);
+        VideoManager.getInstance().setMusicVolumn(audioVolume);
+        VideoManager.getInstance().setVideoVolumn(videoVolume);
+        setResult(Activity.RESULT_OK);
+        finish();
 
-            File musicCacheFile = proxy.getCacheFile(currentMusic.url);
-
-            Log.d(TAG, " cacheFile : " + musicCacheFile);
-
-            if (musicCacheFile == null) {
-                return;
-            }
-
-            Log.d(TAG, " cacheFile.getAbsolutePath() : " + musicCacheFile.getAbsolutePath());
-
-            String musicUrl = musicCacheFile.getAbsolutePath();
-
-            Log.d(TAG, " musicUrl : " + musicUrl);
-
-            dismissDialog();
-            isJumped = true;
-
-            VideoManager.getInstance().setMusicBean(currentMusic);
-            VideoManager.getInstance().setMusicVolumn(audioVolume);
-            VideoManager.getInstance().setVideoVolumn(videoVolume);
-            setResult(Activity.RESULT_OK);
-            finish();
-
-        }
     }
 
     public void pauseMusic() {
@@ -422,23 +401,6 @@ public class MusicActivity extends BaseActivity implements MusicCategoryAdapter.
 //        if (ksyMediaPlayer != null) {
 //            ksyMediaPlayer.reload(mDataSource, true);//播放另一个
 //        }
-    }
-
-    private void showProgress() {
-
-        mProgressDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
-            @Override
-            public void onDismiss(DialogInterface dialog) {
-                Log.d(TAG, " onDismiss " + (mProgressDialog.getProgress() < 100));
-                if (mProgressDialog.getProgress() < 100) {
-                    isAutoDismiss = false;
-                } else {
-                    isAutoDismiss = true;
-                }
-
-            }
-        });
-        showProgressDialog();
     }
 
     private Handler handler = new Handler();

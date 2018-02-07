@@ -258,6 +258,7 @@ public class VideoEncoderCore {
                             presentTimeOffset = mBufferInfo.presentationTimeUs;
                         }
                     }
+                    Log.d("isKeyframeArrived","isKeyframeArrived : " + ((mBufferInfo.flags & MediaCodec.BUFFER_FLAG_SYNC_FRAME) != 0) + ",pts : " + mBufferInfo.presentationTimeUs);
 
                     if (mMuxerStarted && isKeyframeArrived) {
                         MediaCodec.BufferInfo info = mBufferInfo;
@@ -302,6 +303,7 @@ public class VideoEncoderCore {
         AudioHandler mHandler;
         private Object mReadyFence = new Object();
         private boolean isReady;
+        private long startAudioRecordTime = 0;
 
         @Override
         public void run() {
@@ -425,6 +427,7 @@ public class VideoEncoderCore {
                         mAudioEnc.releaseOutputBuffer(outIndex, false);
                         return true;
                     }
+                    if (startAudioRecordTime == 0) startAudioRecordTime = mInfo.presentationTimeUs;
                     ByteBuffer buffer = getOutputBuffer(mAudioEnc, outIndex);
                     buffer.position(mInfo.offset);
                     if (mMuxerStarted && mInfo.presentationTimeUs > 0) {
@@ -522,7 +525,7 @@ public class VideoEncoderCore {
         }
     }
 
-    public void startRecord() {
+    public void startAudioRecord() {
         audioRecorder.startRecord();
     }
 

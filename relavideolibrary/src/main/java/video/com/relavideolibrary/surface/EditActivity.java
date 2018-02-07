@@ -17,6 +17,7 @@ import android.os.Looper;
 import android.os.Message;
 import android.support.annotation.RawRes;
 import android.support.v4.content.ContextCompat;
+import android.support.v7.graphics.Palette;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.text.TextUtils;
@@ -61,11 +62,10 @@ import video.com.relavideolibrary.adapter.FilterAdapter;
 import video.com.relavideolibrary.interfaces.FilterDataCallback;
 import video.com.relavideolibrary.manager.VideoManager;
 import video.com.relavideolibrary.model.FilterBean;
-import video.com.relavideolibrary.thread.EditVideoThread;
 import video.com.relavideolibrary.thread.EditVideoThread2;
 
 public class EditActivity extends BaseActivity implements TextureView.SurfaceTextureListener
-        , FilterAdapter.OnItemClickListener, View.OnClickListener, EditVideoThread.EditVideoListener {
+        , FilterAdapter.OnItemClickListener, View.OnClickListener, EditVideoThread2.EditVideoListener {
 
     public static final String TAG = "EditActivity";
 
@@ -183,16 +183,6 @@ public class EditActivity extends BaseActivity implements TextureView.SurfaceTex
                 filter_recyclerView.setVisibility(View.GONE);
                 filter_image.setImageResource(R.mipmap.ic_filter);
             }
-
-            if (mRenderThread != null) {
-                RenderHandler mRenderThreadHandler = mRenderThread.getHandler();
-                mRenderThreadHandler.sendRestartVideo();
-            }
-        } else if (requestCode == Constant.IntentCode.REQUEST_CODE_CUT && resultCode == Activity.RESULT_OK) {
-            if (mRenderThread != null) {
-                RenderHandler mRenderThreadHandler = mRenderThread.getHandler();
-                mRenderThreadHandler.sendReloadVideo();
-            }
         }
     }
 
@@ -308,18 +298,16 @@ public class EditActivity extends BaseActivity implements TextureView.SurfaceTex
     }
 
     @Override
-    public void onEditVideoSuccess(String path) {
-
-        dismissDialog();
+    public void onEditVideoSuccess(final String path) {
 
         MediaMetadataRetriever retr = new MediaMetadataRetriever();
         retr.setDataSource(path);
-        String durationStr = retr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);
-        String heightStr = retr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT); // 视频高度
-        String widthStr = retr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH); // 视频宽度
+        final String durationStr = retr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);
+        final String heightStr = retr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT); // 视频高度
+        final String widthStr = retr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH); // 视频宽度
         Bitmap frameAtTime = retr.getFrameAtTime();
         FileOutputStream fos = null;
-        String imagePath = FileManager.getOtherFile(System.currentTimeMillis() + ".jpeg");
+        final String imagePath = FileManager.getOtherFile(System.currentTimeMillis() + ".jpeg");
         try {
             fos = new FileOutputStream(imagePath);
         } catch (FileNotFoundException e) {
@@ -328,16 +316,36 @@ public class EditActivity extends BaseActivity implements TextureView.SurfaceTex
         //第一个参数是图片保存的格式，第二个参数是压缩率（100表示压缩0%，0表示压缩100%）
         frameAtTime.compress(Bitmap.CompressFormat.JPEG, 100, fos);
 
-        Intent intent = getIntent();
-        Bundle bundle = new Bundle();
-        bundle.putString(Constant.BundleConstants.RESULT_VIDEO_PATH, path);
-        bundle.putString(Constant.BundleConstants.RESULT_VIDEO_DURATION, durationStr);
-        bundle.putString(Constant.BundleConstants.RESULT_VIDEO_WIDTH, widthStr);
-        bundle.putString(Constant.BundleConstants.RESULT_VIDEO_HEIGHT, heightStr);
-        bundle.putString(Constant.BundleConstants.RESULT_VIDEO_THUMB, imagePath);
-        intent.putExtras(bundle);
-        setResult(Activity.RESULT_OK, intent);
-        finish();
+        Palette.from(frameAtTime).generate(new Palette.PaletteAsyncListener() {
+            @Override
+            public void onGenerated(Palette palette) {
+
+                dismissDialog();
+
+                Palette.Swatch vibrant = palette.getVibrantSwatch();//有活力
+                //默认Rela主色
+                String mLoadColor = "#4bbabc";
+                if (vibrant != null) {
+                    int rgb = vibrant.getRgb();
+                    //去掉alpha
+                    mLoadColor = "#" + Integer.toHexString(rgb).substring(2, 8);
+                    Log.d(TAG, "主色调: " + mLoadColor);
+                }
+                Intent intent = getIntent();
+                Bundle bundle = new Bundle();
+                bundle.putString(Constant.BundleConstants.RESULT_VIDEO_PATH, path);
+                bundle.putString(Constant.BundleConstants.RESULT_VIDEO_DURATION, durationStr);
+                bundle.putString(Constant.BundleConstants.RESULT_VIDEO_WIDTH, widthStr);
+                bundle.putString(Constant.BundleConstants.RESULT_VIDEO_HEIGHT, heightStr);
+                bundle.putString(Constant.BundleConstants.RESULT_VIDEO_THUMB, imagePath);
+                bundle.putString(Constant.BundleConstants.RESULT_VIDEO_MAIN_COLOR, mLoadColor);
+                intent.putExtras(bundle);
+                setResult(Activity.RESULT_OK, intent);
+                finish();
+            }
+        });
+
+
     }
 
     @Override
@@ -362,8 +370,6 @@ public class EditActivity extends BaseActivity implements TextureView.SurfaceTex
         private static final int MSG_SWITCH_FILTER = 10;
         private static final int MSG_RESEUME_START_PLAY = 12;
         private static final int MSG_PAUSE_STOP_PLAY = 13;
-        private static final int MSG_RELOAD_VIDEO = 14;
-        private static final int MSG_RESTART_VIDEO = 15;
 
         // This shouldn't need to be a weak ref, since we'll go away when the Looper quits,
         // but no real harm in it.
@@ -447,14 +453,6 @@ public class EditActivity extends BaseActivity implements TextureView.SurfaceTex
             sendMessage(obtainMessage(MSG_SWITCH_FILTER, fiterId));
         }
 
-        public void sendReloadVideo() {
-            sendEmptyMessage(MSG_RELOAD_VIDEO);
-        }
-
-        public void sendRestartVideo() {
-            sendEmptyMessage(MSG_RESTART_VIDEO);
-        }
-
         @Override  // runs on RenderThread
         public void handleMessage(Message msg) {
             int what = msg.what;
@@ -499,12 +497,6 @@ public class EditActivity extends BaseActivity implements TextureView.SurfaceTex
                 case MSG_PAUSE_STOP_PLAY:
                     renderThread.onPause();
                     break;
-                case MSG_RELOAD_VIDEO:
-                    renderThread.reloadVideo();
-                    break;
-                case MSG_RESTART_VIDEO:
-                    renderThread.restartVideo();
-                    break;
                 default:
                     throw new RuntimeException("unknown message " + what);
             }
@@ -515,7 +507,10 @@ public class EditActivity extends BaseActivity implements TextureView.SurfaceTex
      * Thread that handles all rendering and camera operations.
      */
     private class RenderThread extends Thread implements
-            SurfaceTexture.OnFrameAvailableListener {
+            SurfaceTexture.OnFrameAvailableListener, MediaPlayer.OnInfoListener
+            , MediaPlayer.OnVideoSizeChangedListener, MediaPlayer.OnPreparedListener
+            , IMediaPlayer.OnSeekCompleteListener, IMediaPlayer.OnPreparedListener
+            , MediaPlayer.OnCompletionListener, MediaPlayer.OnSeekCompleteListener {
         // Object must be created on render thread to get correct Looper, but is used from
         // UI thread, so we need to declare it volatile to ensure the UI thread sees a fully
         // constructed object.
@@ -556,7 +551,8 @@ public class EditActivity extends BaseActivity implements TextureView.SurfaceTex
 
             // Prepare EGL and open the camera before we start handling messages.
             mEglCore = new EglCore(null, 0);
-            initPlayer();
+            initVideoPlayer();
+            initMusicPlayer();
 
             Looper.loop();
 
@@ -572,157 +568,6 @@ public class EditActivity extends BaseActivity implements TextureView.SurfaceTex
             synchronized (mStartLock) {
                 mReady = false;
             }
-        }
-
-        private MediaPlayer videoPlayer;
-
-        private void initPlayer() {
-            if (TextUtils.isEmpty(VideoManager.getInstance().getVideoBean().videoPath)) return;
-            videoPlayer = new MediaPlayer();
-            try {
-                videoPlayer.setDataSource(VideoManager.getInstance().getVideoBean().videoPath);
-                videoPlayer.prepareAsync();
-                videoPlayer.setLooping(true);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-
-            videoPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
-                @Override
-                public void onPrepared(final MediaPlayer iMediaPlayer) {
-                    if (textureView != null) {
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                textureView.setVideoSize(iMediaPlayer.getVideoWidth(), iMediaPlayer.getVideoHeight());
-                            }
-                        });
-                    }
-
-                    VideoManager.getInstance().getMusicBean().startTime = 0;
-                    VideoManager.getInstance().getMusicBean().endTime = videoPlayer.getDuration();
-
-                    float videoVolumn = VideoManager.getInstance().getVideoVolumn();
-                    videoPlayer.setVolume(videoVolumn, videoVolumn);
-                    videoPlayer.start();
-
-                    long musicSeek = 0;
-                    float musicVolumn = VideoManager.getInstance().getMusicVolumn();
-                    String musicPath = VideoManager.getInstance().getMusicBean().url;
-                    try {
-                        RenderThread.this.musicSeek = musicSeek;
-                        RenderThread.this.musicVolumn = musicVolumn;
-                        playBGM(musicPath);
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }
-            });
-
-            videoPlayer.setOnVideoSizeChangedListener(new MediaPlayer.OnVideoSizeChangedListener() {
-                @Override
-                public void onVideoSizeChanged(final MediaPlayer iMediaPlayer, int width, int height) {
-                    if (textureView != null) {
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                textureView.setVideoSize(iMediaPlayer.getVideoWidth(), iMediaPlayer.getVideoHeight());
-                            }
-                        });
-                    }
-                }
-            });
-
-            videoPlayer.setOnInfoListener(new MediaPlayer.OnInfoListener() {
-                @Override
-                public boolean onInfo(MediaPlayer mp, int what, int extra) {
-                    if (what == IMediaPlayer.MEDIA_INFO_VIDEO_ROTATION_CHANGED) {
-                        if (textureView != null)
-                            textureView.setVideoRotation(extra);
-                    }
-                    return true;
-                }
-            });
-        }
-
-        private void reloadVideo() {
-            if (videoPlayer != null) {
-                videoPlayer.release();
-                videoPlayer = null;
-            }
-            if (musicPlayer != null) musicPlayer.pause();
-            initPlayer();
-        }
-
-        private void restartVideo() {
-            if (videoPlayer != null) {
-                videoPlayer.stop();
-                videoPlayer.prepareAsync();
-            }
-        }
-
-        private KSYMediaPlayer musicPlayer;
-        long musicSeek = 0;
-        float musicVolumn;
-
-        private void playBGM(String url) throws IOException {
-
-            if (TextUtils.isEmpty(url)) {
-                if (musicPlayer != null && musicPlayer.isPlaying())
-                    musicPlayer.stop();
-                return;
-            }
-            if (musicPlayer == null) {
-                musicPlayer = new KSYMediaPlayer.Builder(activity.getApplicationContext()).build();
-                musicPlayer.setOnPreparedListener(new IMediaPlayer.OnPreparedListener() {
-                    @Override
-                    public void onPrepared(IMediaPlayer mp) {
-                        musicPlayer.setVolume(musicVolumn, musicVolumn);
-                        musicPlayer.seekTo(musicSeek);
-                    }
-                });
-                musicPlayer.setOnSeekCompleteListener(new IMediaPlayer.OnSeekCompleteListener() {
-                    @Override
-                    public void onSeekComplete(IMediaPlayer mp) {
-                        musicPlayer.start();
-                    }
-                });
-                musicPlayer.setOnInfoListener(new IMediaPlayer.OnInfoListener() {
-                    @Override
-                    public boolean onInfo(IMediaPlayer mp, int what, int extra) {
-                        if (what == com.ksyun.media.player.IMediaPlayer.MEDIA_INFO_RELOADED) {
-                            musicPlayer.setVolume(musicVolumn, musicVolumn);
-                            musicPlayer.seekTo(musicSeek);
-                        }
-                        return false;
-                    }
-                });
-                musicPlayer.setLooping(true);
-                musicPlayer.setDataSource(url);
-                musicPlayer.prepareAsync();
-            } else {
-                musicPlayer.reload(url, false);
-            }
-
-        }
-
-        private void onResume() {
-            if (videoPlayer != null && !videoPlayer.isPlaying())
-                videoPlayer.start();
-            if (musicPlayer != null && !musicPlayer.isPlaying())
-                musicPlayer.start();
-        }
-
-        private void onPause() {
-            if (videoPlayer != null && videoPlayer.isPlaying())
-                videoPlayer.pause();
-            if (musicPlayer != null && musicPlayer.isPlaying())
-                musicPlayer.pause();
-        }
-
-        private void releaseMediaPlayer() {
-            if (videoPlayer != null) videoPlayer.release();
-            if (musicPlayer != null) musicPlayer.release();
         }
 
         /**
@@ -888,6 +733,7 @@ public class EditActivity extends BaseActivity implements TextureView.SurfaceTex
          */
         private void finishSurfaceSetup() {
             videoPlayer.setSurface(new Surface(mCameraTexture));
+            Log.d(TAG, "player setSurface");
         }
 
         @Override   // SurfaceTexture.OnFrameAvailableListener; runs on arbitrary thread
@@ -931,6 +777,131 @@ public class EditActivity extends BaseActivity implements TextureView.SurfaceTex
             gpuImageFilter.onOutputSizeChanged(surfaceWidth, surfaceHeight);
         }
 
+        private MediaPlayer videoPlayer;
+
+        private void initVideoPlayer() {
+            if (TextUtils.isEmpty(VideoManager.getInstance().getVideoBean().videoPath)) return;
+            videoPlayer = new MediaPlayer();
+            try {
+                videoPlayer.setDataSource(VideoManager.getInstance().getVideoBean().videoPath);
+                videoPlayer.prepareAsync();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            videoPlayer.setOnPreparedListener(this);
+            videoPlayer.setOnInfoListener(this);
+            videoPlayer.setOnVideoSizeChangedListener(this);
+            videoPlayer.setOnCompletionListener(this);
+            videoPlayer.setOnSeekCompleteListener(this);
+        }
+
+        private KSYMediaPlayer musicPlayer;
+
+        private void initMusicPlayer() {
+            String musicPath = VideoManager.getInstance().getMusicBean().url;
+            if (TextUtils.isEmpty(musicPath)) {
+                return;
+            }
+            try {
+                musicPlayer = new KSYMediaPlayer.Builder(activity.getApplicationContext()).build();
+                musicPlayer.setDataSource(musicPath);
+                musicPlayer.prepareAsync();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            musicPlayer.setOnPreparedListener(this);
+            musicPlayer.setOnSeekCompleteListener(this);
+
+        }
+
+        private void onResume() {
+            if (videoPlayer != null && !videoPlayer.isPlaying())
+                videoPlayer.start();
+            if (musicPlayer != null && !musicPlayer.isPlaying())
+                musicPlayer.start();
+        }
+
+        private void onPause() {
+            if (videoPlayer != null && videoPlayer.isPlaying())
+                videoPlayer.pause();
+            if (musicPlayer != null && musicPlayer.isPlaying())
+                musicPlayer.pause();
+        }
+
+        private void releaseMediaPlayer() {
+            if (videoPlayer != null) {
+                videoPlayer.release();
+                videoPlayer = null;
+            }
+            if (musicPlayer != null) {
+                musicPlayer.release();
+                musicPlayer = null;
+            }
+        }
+
+        @Override
+        public boolean onInfo(MediaPlayer mp, int what, int extra) {
+            if (what == IMediaPlayer.MEDIA_INFO_VIDEO_ROTATION_CHANGED) {
+                if (textureView != null)
+                    textureView.setVideoRotation(extra);
+            }
+            return true;
+        }
+
+        @Override
+        public void onVideoSizeChanged(final MediaPlayer iMediaPlayer, int width, int height) {
+            if (textureView != null) {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        textureView.setVideoSize(iMediaPlayer.getVideoWidth(), iMediaPlayer.getVideoHeight());
+                    }
+                });
+            }
+        }
+
+        @Override
+        public void onPrepared(final MediaPlayer iMediaPlayer) {
+            if (textureView != null) {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        textureView.setVideoSize(iMediaPlayer.getVideoWidth(), iMediaPlayer.getVideoHeight());
+                    }
+                });
+            }
+
+            VideoManager.getInstance().getMusicBean().startTime = 0;
+            VideoManager.getInstance().getMusicBean().endTime = videoPlayer.getDuration();
+
+            float videoVolumn = VideoManager.getInstance().getVideoVolumn();
+            videoPlayer.setVolume(videoVolumn, videoVolumn);
+            videoPlayer.start();
+
+        }
+
+        @Override
+        public void onCompletion(MediaPlayer mp) {
+            videoPlayer.seekTo(0);
+            if (musicPlayer != null) musicPlayer.seekTo(0);
+        }
+
+        @Override
+        public void onSeekComplete(MediaPlayer mp) {
+            videoPlayer.start();
+        }
+
+        @Override
+        public void onSeekComplete(IMediaPlayer iMediaPlayer) {
+            musicPlayer.start();
+        }
+
+        @Override
+        public void onPrepared(IMediaPlayer iMediaPlayer) {
+            float musicVolumn = VideoManager.getInstance().getMusicVolumn();
+            musicPlayer.setVolume(musicVolumn, musicVolumn);
+            musicPlayer.seekTo(0);
+        }
     }
 
     float[] mSTMatrix = new float[16];

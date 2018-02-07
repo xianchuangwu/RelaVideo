@@ -115,11 +115,16 @@ public class ExtractDecodeEditEncodeMux {
         retr.setDataSource(videoPath);
         int height = Integer.parseInt(retr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT)); // 视频高度
         int width = Integer.parseInt(retr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH)); // 视频宽度
+        String hasAudio = retr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_HAS_AUDIO); // 是否有音频 yes/null
+        Log.d(TAG, "hasAudio :" + hasAudio);
+
         retr.release();
 
         setSize(width, height);
         setSource(videoPath);
-        setCopyAudio();
+        if (hasAudio != null) {
+            setCopyAudio();
+        }
         setCopyVideo();
         new HandlerThread("completethread") {
             @Override

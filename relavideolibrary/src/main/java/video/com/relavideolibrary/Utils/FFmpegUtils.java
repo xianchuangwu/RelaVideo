@@ -2,9 +2,6 @@ package video.com.relavideolibrary.Utils;
 
 import android.util.Log;
 
-import com.github.hiteshsondhi88.libffmpeg.ExecuteBinaryResponseHandler;
-import com.github.hiteshsondhi88.libffmpeg.FFmpeg;
-import com.github.hiteshsondhi88.libffmpeg.exceptions.FFmpegCommandAlreadyRunningException;
 
 /**
  * Created by chad
@@ -58,32 +55,32 @@ public class FFmpegUtils {
      * -vn 不做视频记录(只提取音频)
      * -y 直接覆盖（如果目录下相同文件名字）
      */
-    public void extractorAudio(FFmpeg fFmpeg, String videoUrl, String outUrl, FFmpegResponseListener fFmpegResponseListener) throws FFmpegCommandAlreadyRunningException {
-        String[] commands = new String[7];
-        commands[0] = "-i";
-        commands[1] = videoUrl;
-        commands[2] = "-acodec";
-        commands[3] = "copy";
-        commands[4] = "-vn";
-        commands[5] = "-y";
-        commands[6] = outUrl;
-        fFmpeg.execute(commands, fFmpegResponseListener);
-    }
+//    public void extractorAudio(FFmpeg fFmpeg, String videoUrl, String outUrl, FFmpegResponseListener fFmpegResponseListener) throws FFmpegCommandAlreadyRunningException {
+//        String[] commands = new String[7];
+//        commands[0] = "-i";
+//        commands[1] = videoUrl;
+//        commands[2] = "-acodec";
+//        commands[3] = "copy";
+//        commands[4] = "-vn";
+//        commands[5] = "-y";
+//        commands[6] = outUrl;
+//        fFmpeg.execute(commands, fFmpegResponseListener);
+//    }
 
     /**
      * 从视频中提取视轨
      */
-    public void extractorVideo(FFmpeg fFmpeg, String videoUrl, String outUrl, FFmpegResponseListener fFmpegResponseListener) throws FFmpegCommandAlreadyRunningException {
-        String[] commands = new String[7];
-        commands[0] = "-i";
-        commands[1] = videoUrl;
-        commands[2] = "-vcodec";
-        commands[3] = "copy";
-        commands[4] = "-an";
-        commands[5] = "-y";
-        commands[6] = outUrl;
-        fFmpeg.execute(commands, fFmpegResponseListener);
-    }
+//    public void extractorVideo(FFmpeg fFmpeg, String videoUrl, String outUrl, FFmpegResponseListener fFmpegResponseListener) throws FFmpegCommandAlreadyRunningException {
+//        String[] commands = new String[7];
+//        commands[0] = "-i";
+//        commands[1] = videoUrl;
+//        commands[2] = "-vcodec";
+//        commands[3] = "copy";
+//        commands[4] = "-an";
+//        commands[5] = "-y";
+//        commands[6] = outUrl;
+//        fFmpeg.execute(commands, fFmpegResponseListener);
+//    }
 
     /**
      * 截取音乐
@@ -93,21 +90,21 @@ public class FFmpegUtils {
      * @param second   字符串格式00:00:00
      * @param outUrl
      */
-    public void splitMusic(FFmpeg fFmpeg, String musicUrl, String start, String second, String outUrl, FFmpegResponseListener fFmpegResponseListener) throws FFmpegCommandAlreadyRunningException {
-        String[] commands = new String[10];
-        commands[0] = "-i";
-        commands[1] = musicUrl;
-        commands[2] = "-ss";
-        commands[3] = start;
-//        commands[4] = "-t";//持续时间
-        commands[4] = "-to";//结束时间
-        commands[5] = second;
-        commands[6] = "-acodec";
-        commands[7] = "copy";
-        commands[8] = "-y";
-        commands[9] = outUrl;
-        fFmpeg.execute(commands, fFmpegResponseListener);
-    }
+//    public void splitMusic(FFmpeg fFmpeg, String musicUrl, String start, String second, String outUrl, FFmpegResponseListener fFmpegResponseListener) throws FFmpegCommandAlreadyRunningException {
+//        String[] commands = new String[10];
+//        commands[0] = "-i";
+//        commands[1] = musicUrl;
+//        commands[2] = "-ss";
+//        commands[3] = start;
+////        commands[4] = "-t";//持续时间
+//        commands[4] = "-to";//结束时间
+//        commands[5] = second;
+//        commands[6] = "-acodec";
+//        commands[7] = "copy";
+//        commands[8] = "-y";
+//        commands[9] = outUrl;
+//        fFmpeg.execute(commands, fFmpegResponseListener);
+//    }
 
     /**
      * @param aacUrl
@@ -116,16 +113,16 @@ public class FFmpegUtils {
      * @param fFmpegResponseListener
      * @throws FFmpegCommandAlreadyRunningException
      */
-    public void setAACVol(FFmpeg fFmpeg, String aacUrl, float vol, String outUrl, FFmpegResponseListener fFmpegResponseListener) throws FFmpegCommandAlreadyRunningException {
-        String[] commands = new String[6];
-        commands[0] = "-i";
-        commands[1] = aacUrl;
-        commands[2] = "-af";
-        commands[3] = "volume=" + vol;
-        commands[4] = "-y";
-        commands[5] = outUrl;
-        fFmpeg.execute(commands, fFmpegResponseListener);
-    }
+//    public void setAACVol(FFmpeg fFmpeg, String aacUrl, float vol, String outUrl, FFmpegResponseListener fFmpegResponseListener) throws FFmpegCommandAlreadyRunningException {
+//        String[] commands = new String[6];
+//        commands[0] = "-i";
+//        commands[1] = aacUrl;
+//        commands[2] = "-af";
+//        commands[3] = "volume=" + vol;
+//        commands[4] = "-y";
+//        commands[5] = outUrl;
+//        fFmpeg.execute(commands, fFmpegResponseListener);
+//    }
 
     /**
      * 混合两个音频文件
@@ -136,25 +133,25 @@ public class FFmpegUtils {
      * @param fFmpegResponseListener
      * @throws FFmpegCommandAlreadyRunningException
      */
-    public void composeAudio(FFmpeg fFmpeg, String audio1, String audio2, String outputUrl, FFmpegResponseListener fFmpegResponseListener) throws FFmpegCommandAlreadyRunningException {
-        String[] commands = new String[14];
-        commands[0] = "-i";
-        commands[1] = audio1;
-        commands[2] = "-i";
-        commands[3] = audio2;
-        commands[4] = "-filter_complex";
-        commands[5] = "[0:a][1:a]amerge=inputs=2[aout]";
-        commands[6] = "-map";
-        commands[7] = "[aout]";
-        commands[8] = "-ac";
-        commands[9] = "2";
-        commands[10] = "-c:a";
-        commands[11] = "aac";
-        commands[12] = "-y";
-        commands[13] = outputUrl;
-        fFmpeg.execute(commands, fFmpegResponseListener);
-
-    }
+//    public void composeAudio(FFmpeg fFmpeg, String audio1, String audio2, String outputUrl, FFmpegResponseListener fFmpegResponseListener) throws FFmpegCommandAlreadyRunningException {
+//        String[] commands = new String[14];
+//        commands[0] = "-i";
+//        commands[1] = audio1;
+//        commands[2] = "-i";
+//        commands[3] = audio2;
+//        commands[4] = "-filter_complex";
+//        commands[5] = "[0:a][1:a]amerge=inputs=2[aout]";
+//        commands[6] = "-map";
+//        commands[7] = "[aout]";
+//        commands[8] = "-ac";
+//        commands[9] = "2";
+//        commands[10] = "-c:a";
+//        commands[11] = "aac";
+//        commands[12] = "-y";
+//        commands[13] = outputUrl;
+//        fFmpeg.execute(commands, fFmpegResponseListener);
+//
+//    }
 
     /**
      * 音频文件合成到视频
@@ -166,41 +163,41 @@ public class FFmpegUtils {
      * @param fFmpegResponseListener
      * @throws FFmpegCommandAlreadyRunningException
      */
-    public void composeVideo(FFmpeg fFmpeg, String videoUrl, String musicOrAudio, String outputUrl, long second, FFmpegResponseListener fFmpegResponseListener) throws FFmpegCommandAlreadyRunningException {
-        String[] commands = new String[16];
-        commands[0] = "-i";
-        commands[1] = videoUrl;
-        commands[2] = "-i";
-        commands[3] = musicOrAudio;
-        commands[4] = "-ss";
-        commands[5] = "00:00:00";
-        commands[6] = "-t";
-        commands[7] = String.valueOf(second);
-        commands[8] = "-vcodec";
-        commands[9] = "copy";
-        commands[10] = "-acodec";
-        commands[11] = "copy";
-        commands[12] = "-y";
-        commands[13] = "-bsf:a";
-        commands[14] = "aac_adtstoasc";
-        commands[15] = outputUrl;
-        fFmpeg.execute(commands, fFmpegResponseListener);
-    }
-
-    public void composeVideo(FFmpeg fFmpeg, String videoUrl, String musicOrAudio, String outputUrl, FFmpegResponseListener fFmpegResponseListener) throws FFmpegCommandAlreadyRunningException {
-        String[] commands = new String[10];
-        commands[0] = "-i";
-        commands[1] = videoUrl;
-        commands[2] = "-i";
-        commands[3] = musicOrAudio;
-        commands[4] = "-c:v";
-        commands[5] = "copy";
-        commands[6] = "-c:a";
-        commands[7] = "copy";
-        commands[8] = "-y";
-        commands[9] = outputUrl;
-        fFmpeg.execute(commands, fFmpegResponseListener);
-    }
+//    public void composeVideo(FFmpeg fFmpeg, String videoUrl, String musicOrAudio, String outputUrl, long second, FFmpegResponseListener fFmpegResponseListener) throws FFmpegCommandAlreadyRunningException {
+//        String[] commands = new String[16];
+//        commands[0] = "-i";
+//        commands[1] = videoUrl;
+//        commands[2] = "-i";
+//        commands[3] = musicOrAudio;
+//        commands[4] = "-ss";
+//        commands[5] = "00:00:00";
+//        commands[6] = "-t";
+//        commands[7] = String.valueOf(second);
+//        commands[8] = "-vcodec";
+//        commands[9] = "copy";
+//        commands[10] = "-acodec";
+//        commands[11] = "copy";
+//        commands[12] = "-y";
+//        commands[13] = "-bsf:a";
+//        commands[14] = "aac_adtstoasc";
+//        commands[15] = outputUrl;
+//        fFmpeg.execute(commands, fFmpegResponseListener);
+//    }
+//
+//    public void composeVideo(FFmpeg fFmpeg, String videoUrl, String musicOrAudio, String outputUrl, FFmpegResponseListener fFmpegResponseListener) throws FFmpegCommandAlreadyRunningException {
+//        String[] commands = new String[10];
+//        commands[0] = "-i";
+//        commands[1] = videoUrl;
+//        commands[2] = "-i";
+//        commands[3] = musicOrAudio;
+//        commands[4] = "-c:v";
+//        commands[5] = "copy";
+//        commands[6] = "-c:a";
+//        commands[7] = "copy";
+//        commands[8] = "-y";
+//        commands[9] = outputUrl;
+//        fFmpeg.execute(commands, fFmpegResponseListener);
+//    }
 
     /**
      * 拼接多段视频 这些视频的profile必须一致
@@ -210,20 +207,20 @@ public class FFmpegUtils {
      * @param fFmpegResponseListener
      * @throws FFmpegCommandAlreadyRunningException
      */
-    public void mergeVideo(FFmpeg fFmpeg, String fileListPath, String outPutPath, FFmpegResponseListener fFmpegResponseListener) throws FFmpegCommandAlreadyRunningException {
-        String[] commands = new String[10];
-        commands[0] = "-f";
-        commands[1] = "concat";
-        commands[2] = "-safe";
-        commands[3] = "0";
-        commands[4] = "-i";
-        commands[5] = fileListPath;
-        commands[6] = "-c";
-        commands[7] = "copy";
-        commands[8] = "-y";
-        commands[9] = outPutPath;
-        fFmpeg.execute(commands, fFmpegResponseListener);
-    }
+//    public void mergeVideo(FFmpeg fFmpeg, String fileListPath, String outPutPath, FFmpegResponseListener fFmpegResponseListener) throws FFmpegCommandAlreadyRunningException {
+//        String[] commands = new String[10];
+//        commands[0] = "-f";
+//        commands[1] = "concat";
+//        commands[2] = "-safe";
+//        commands[3] = "0";
+//        commands[4] = "-i";
+//        commands[5] = fileListPath;
+//        commands[6] = "-c";
+//        commands[7] = "copy";
+//        commands[8] = "-y";
+//        commands[9] = outPutPath;
+//        fFmpeg.execute(commands, fFmpegResponseListener);
+//    }
 
     /**
      * 视频剪裁
@@ -236,50 +233,50 @@ public class FFmpegUtils {
      * @param fFmpegResponseListener
      * @throws FFmpegCommandAlreadyRunningException
      */
-    public void splitVideo(FFmpeg fFmpeg, String startTime, String endTime, String src, String output, FFmpegResponseListener fFmpegResponseListener) throws FFmpegCommandAlreadyRunningException {
-        String[] commands = new String[9];
-        commands[0] = "-ss";
-        commands[1] = startTime;
-        commands[2] = "-i";
-        commands[3] = src;
-        commands[4] = "-c";
-        commands[5] = "copy";
-        commands[6] = "-t";
-        commands[7] = endTime;
-        commands[8] = output;
-        fFmpeg.execute(commands, fFmpegResponseListener);
-    }
-
-    public static class FFmpegResponseListener extends ExecuteBinaryResponseHandler {
-        @Override
-        public void onFailure(String s) {
-//            Log.d(TAG, "Fail command : ffmpeg " + cmd);
-            Log.e(TAG, "FAILED with output : " + s);
-        }
-
-        @Override
-        public void onSuccess(String s) {
-//            Log.d(TAG, "Success command : ffmpeg " + cmd);
-            Log.d(TAG, "SUCCESS with output : " + s);
-        }
-
-        @Override
-        public void onProgress(String s) {
-//            Log.d(TAG, "Started command : ffmpeg " + cmd + "\nprogress : " + s);
-            Log.d(TAG, "progress : " + s);
-        }
-
-        @Override
-        public void onStart() {
-
-//            Log.d(TAG, "Started command : ffmpeg " + cmd);
-            Log.d(TAG, "Started");
-        }
-
-        @Override
-        public void onFinish() {
-//            Log.d(TAG, "Finished command : ffmpeg " + cmd);
-            Log.d(TAG, "Finished");
-        }
-    }
+//    public void splitVideo(FFmpeg fFmpeg, String startTime, String endTime, String src, String output, FFmpegResponseListener fFmpegResponseListener) throws FFmpegCommandAlreadyRunningException {
+//        String[] commands = new String[9];
+//        commands[0] = "-ss";
+//        commands[1] = startTime;
+//        commands[2] = "-i";
+//        commands[3] = src;
+//        commands[4] = "-c";
+//        commands[5] = "copy";
+//        commands[6] = "-t";
+//        commands[7] = endTime;
+//        commands[8] = output;
+//        fFmpeg.execute(commands, fFmpegResponseListener);
+//    }
+//
+//    public static class FFmpegResponseListener extends ExecuteBinaryResponseHandler {
+//        @Override
+//        public void onFailure(String s) {
+////            Log.d(TAG, "Fail command : ffmpeg " + cmd);
+//            Log.e(TAG, "FAILED with output : " + s);
+//        }
+//
+//        @Override
+//        public void onSuccess(String s) {
+////            Log.d(TAG, "Success command : ffmpeg " + cmd);
+//            Log.d(TAG, "SUCCESS with output : " + s);
+//        }
+//
+//        @Override
+//        public void onProgress(String s) {
+////            Log.d(TAG, "Started command : ffmpeg " + cmd + "\nprogress : " + s);
+//            Log.d(TAG, "progress : " + s);
+//        }
+//
+//        @Override
+//        public void onStart() {
+//
+////            Log.d(TAG, "Started command : ffmpeg " + cmd);
+//            Log.d(TAG, "Started");
+//        }
+//
+//        @Override
+//        public void onFinish() {
+////            Log.d(TAG, "Finished command : ffmpeg " + cmd);
+//            Log.d(TAG, "Finished");
+//        }
+//    }
 }

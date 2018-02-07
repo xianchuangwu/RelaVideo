@@ -194,6 +194,7 @@ public class CameraRenderer implements GLSurfaceView.Renderer {
                             savePath, mPreviewWidth, mPreviewHeight, EGL14.eglGetCurrentContext(),
                             null));
                     recordingStatus = RECORDING_ON;
+                    recordingTimestamp = mSurfaceTextrue.getTimestamp();
                     break;
                 case RECORDING_RESUMED:
                     videoEncoder.updateSharedContext(EGL14.eglGetCurrentContext());
@@ -237,11 +238,14 @@ public class CameraRenderer implements GLSurfaceView.Renderer {
         GLES20.glViewport(0, 0, width, height);
         showFilter.setTextureId(mAfFilter.getOutputTexture());
         showFilter.draw();
+
         if (videoEncoder != null && recordingEnabled && recordingStatus == RECORDING_ON) {
             videoEncoder.setTextureId(mAfFilter.getOutputTexture());
             videoEncoder.frameAvailable(mSurfaceTextrue);
         }
     }
+
+    private long recordingTimestamp;
 
     /**
      * 触摸事件的传递

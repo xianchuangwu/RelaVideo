@@ -3,41 +3,30 @@ package video.com.relavideodemo;
 import android.Manifest;
 import android.app.Activity;
 import android.content.Intent;
-import android.media.MediaCodec;
-import android.media.MediaExtractor;
-import android.media.MediaFormat;
-import android.media.MediaMuxer;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.StrictMode;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.coremedia.iso.boxes.Container;
-import com.googlecode.mp4parser.FileDataSourceImpl;
-import com.googlecode.mp4parser.authoring.Movie;
-import com.googlecode.mp4parser.authoring.Track;
-import com.googlecode.mp4parser.authoring.builder.DefaultMp4Builder;
-import com.googlecode.mp4parser.authoring.container.mp4.MovieCreator;
-import com.googlecode.mp4parser.authoring.tracks.AACTrackImpl;
+import com.google.gson.Gson;
 import com.tbruyelle.rxpermissions2.RxPermissions;
 
-
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
 import io.reactivex.functions.Consumer;
+import jp.co.cyberagent.android.gpuimage.GPUImage;
+import jp.co.cyberagent.android.gpuimage.GPUImageLookupFilter;
 import video.com.relavideolibrary.RelaVideoSDK;
 import video.com.relavideolibrary.Utils.Constant;
 import video.com.relavideolibrary.interfaces.FilterDataCallback;
@@ -45,16 +34,16 @@ import video.com.relavideolibrary.interfaces.MusicCategoryCallback;
 import video.com.relavideolibrary.interfaces.MusicListCallback;
 import video.com.relavideolibrary.interfaces.MusicListSyncDataCallback;
 import video.com.relavideolibrary.model.FilterBean;
-import video.com.relavideolibrary.model.MusicBean;
 import video.com.relavideolibrary.model.MusicCategoryBean;
 import video.com.relavideolibrary.surface.RecordingActivity;
 import video.com.relavideolibrary.view.RelaBigGiftView;
 
-public class MainActivity extends AppCompatActivity implements FilterDataCallback, MusicCategoryCallback, MusicListCallback {
+public class MainActivity extends AppCompatActivity implements FilterDataCallback, MusicCategoryCallback, MusicListCallback, View.OnClickListener {
 
     private TextView textView;
     private String path;
     private RelaBigGiftView bigGiftView;
+    private ImageView filter_image;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -68,15 +57,8 @@ public class MainActivity extends AppCompatActivity implements FilterDataCallbac
 
         setContentView(R.layout.activity_main);
         textView = (TextView) findViewById(R.id.path);
-//        ImageView filter_image = findViewById(R.id.filter_image);
-//        GPUImage gpuImage = new GPUImage(this);
-//        gpuImage.setImage(BitmapFactory.decodeResource(getResources(), R.mipmap.app_lockscreen_bg));
-//
-//        GPUImageLookupFilter filter = new GPUImageLookupFilter();
-//        filter.setBitmap(BitmapFactory.decodeResource(getResources(), R.raw.filter_black_white1));
-//        gpuImage.setFilter(filter);
-//
-//        filter_image.setImageBitmap(gpuImage.getBitmapWithFilterApplied());
+        filter_image = findViewById(R.id.filter_image);
+        filter_image.setOnClickListener(this);
 
         new RelaVideoSDK()
                 .init(getApplicationContext())
@@ -84,39 +66,50 @@ public class MainActivity extends AppCompatActivity implements FilterDataCallbac
                 .addMusicCategory(this)
                 .addMusicList(this);
 
-
-//        ListeningExecutorService executorService = MoreExecutors.newDirectExecutorService();
-//        final ListenableFuture<Integer> listenableFuture = executorService.submit(new Callable<Integer>() {
-//            @Override
-//            public Integer call() throws Exception {
-//                System.out.println("call execute..");
-//                TimeUnit.SECONDS.sleep(1);
-//                return 7;
-//            }
-//        });
-//
-//        Futures.addCallback(listenableFuture, new FutureCallback<Integer>() {
-//            @Override
-//            public void onSuccess(@Nullable Integer result) {
-//
-//            }
-//
-//            @Override
-//            public void onFailure(Throwable t) {
-//
-//            }
-//        });
-
         if (bigGiftView == null) {
             FrameLayout container = findViewById(R.id.container);
             bigGiftView = new RelaBigGiftView(this, "http://live-yf-hdl.huomaotv.cn/live/bcfpxN35275.flv?from=huomaoroom");
             FrameLayout.LayoutParams layoutParams = new FrameLayout.LayoutParams(-1, -1);
-//            layoutParams.addRule(RelativeLayout.CENTER_IN_PARENT);
             container.addView(bigGiftView, layoutParams);
         } else {
             bigGiftView.reload("http://pro.thel.co/gift/video/1514199928405jendak.mp4");
         }
 
+    }
+
+
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()) {
+            case R.id.filter_image:
+                GPUImage gpuImage = new GPUImage(this);
+                gpuImage.setImage(BitmapFactory.decodeResource(getResources(), R.mipmap.app_lockscreen_bg));
+
+                GPUImageLookupFilter filter = new GPUImageLookupFilter();
+                int[] filterResId = {R.raw.a1_chenguang
+                        , R.raw.a2_haiyang
+                        , R.raw.a3_qingcao
+                        , R.raw.b1_heibai
+                        , R.raw.b2_mingliang
+                        , R.raw.b3_chenmo
+                        , R.raw.f1_weifeng
+                        , R.raw.f2_lieri
+                        , R.raw.f3_nihong
+                        , R.raw.f4_anyong
+                        , R.raw.f5_huanghun
+                        , R.raw.f6_shiguang
+                        , R.raw.f7_qingcao
+                        , R.raw.y1_zaocan
+                        , R.raw.y2_yanmai
+                        , R.raw.s1_xuanlan
+                        , R.raw.s2_yexing
+                };
+                filter.setBitmap(BitmapFactory.decodeResource(getResources(), filterResId[(int) (Math.random() * filterResId.length)]));
+                gpuImage.setFilter(filter);
+
+                filter_image.setImageBitmap(gpuImage.getBitmapWithFilterApplied());
+                break;
+        }
     }
 
     @Override
@@ -187,20 +180,40 @@ public class MainActivity extends AppCompatActivity implements FilterDataCallbac
 
     @Override
     public List<FilterBean> getFilterData() {
-        int[] filterResId = {-1, R.raw.filter_black_white1, R.raw.filter_black_white2, R.raw.filter_black_white3
-                , R.raw.filter_bopu, R.raw.filter_yecan, R.raw.filter_qingxing, R.raw.filter_guobao
-                , R.raw.filter_fenhong, R.raw.filter_baohe_low, R.raw.filter_honglv, R.raw.filter_huanglv
-                , R.raw.filter_baohe_high, R.raw.filter_test};
+        int[] filterResId = {-1
+                , R.raw.a1_chenguang
+                , R.raw.a2_haiyang
+                , R.raw.a3_qingcao
+                , R.raw.b1_heibai
+                , R.raw.b2_mingliang
+                , R.raw.b3_chenmo
+                , R.raw.f1_weifeng
+                , R.raw.f2_lieri
+                , R.raw.f3_nihong
+                , R.raw.f4_anyong
+                , R.raw.f5_huanghun
+                , R.raw.f6_shiguang
+                , R.raw.f7_qingcao
+                , R.raw.y1_zaocan
+                , R.raw.y2_yanmai
+                , R.raw.s1_xuanlan
+                , R.raw.s2_yexing
+        };
+
+        String[] filterName = {
+                getString(video.com.relavideolibrary.R.string.original_film)
+                , "A1", "A2", "A3"
+                , "B1", "B2", "B3"
+                , "F1", "F2", "F3", "F4", "F5", "F6", "F7"
+                , "Y1", "Y2"
+                , "S1", "S2"
+        };
 
         ArrayList<FilterBean> list = new ArrayList<>();
 
         for (int i = 0; i < filterResId.length; i++) {
             FilterBean filterBean = new FilterBean();
-            if (i == 0) {
-                filterBean.filterName = getString(video.com.relavideolibrary.R.string.original_film);
-            } else {
-                filterBean.filterName = "R" + i;
-            }
+            filterBean.filterName = filterName[i];
             filterBean.filterId = filterResId[i];
             list.add(filterBean);
         }
@@ -242,20 +255,18 @@ public class MainActivity extends AppCompatActivity implements FilterDataCallbac
         new Thread(new Runnable() {
             @Override
             public void run() {
-                List<MusicBean> list = new ArrayList<>();
-                for (int i = 0; i < 10; i++) {
-                    MusicBean musicBean = new MusicBean();
-                    musicBean.musicId = (57 + i);
-                    musicBean.name = "克罗地亚狂想曲";
-                    musicBean.singer = "狄仁杰,王孝杰";
-                    musicBean.musicHours = 151;
-                    musicBean.url = "http://music.fffffive.com/1502085142227.mp3";
-                    musicBean.categoryName = "怀旧";
-                    musicBean.collectStatus = 0;
-                    list.add(musicBean);
-                }
 
-                if (musicListSyncDataCallback != null) musicListSyncDataCallback.onSuccess(list);
+                String json = "{\"result\":\"1\",\"data\":[{\"musicId\":37,\"name\":\"Higekitekina\",\"singer\":\"Fabian Measures\",\"musicHours\":216,\"url\":\"http://music.fffffive.com/1500459192438.mp3\",\"categoryName\":\"忧郁\",\"collectStatus\":0},{\"musicId\":36,\"name\":\"Tomorrow We Continue Solo Piano\",\"singer\":\"Artofescapism\",\"musicHours\":56,\"url\":\"http://music.fffffive.com/1500459184115.mp3\",\"categoryName\":\"忧郁\",\"collectStatus\":0},{\"musicId\":35,\"name\":\"By The Coast 2004\"" +
+                        ",\"singer\":\"Antony Raijekov\",\"musicHours\":182,\"url\":\"http://music.fffffive.com/1500459175352.mp3\",\"categoryName\":\"忧郁\",\"collectStatus\":0},{\"musicId\":34,\"name\":\"The Waning Moon\",\"singer\":\"Anima\",\"musicHours\":363,\"url\":\"http://music.fffffive.com/1500459155032.mp3\",\"categoryName\":\"忧郁\",\"collectStatus\":0},{\"musicId\":33,\"name\":\"Humming\",\"singer\":\"David Szesztay\",\"musicHours\":47,\"url\":\"http://music.fffffive.com/1500459145639.mp3\"" +
+                        ",\"categoryName\":\"浪漫\",\"collectStatus\":0},{\"musicId\":32,\"name\":\"Passing Time\",\"singer\":\"BoxCat Games\",\"musicHours\":89,\"url\":\"http://music.fffffive.com/1500459137518.mp3\",\"categoryName\":\"浪漫\",\"collectStatus\":0},{\"musicId\":30,\"name\":\"Qu Paciencia\",\"singer\":\"Los Sundayers\",\"musicHours\":173,\"url\":\"http://music.fffffive.com/1500459106536.mp3\",\"categoryName\":\"欢乐\",\"collectStatus\":0},{\"musicId\":29,\"name\":\"Hey\",\"singer\":\"Juanitos\"" +
+                        ",\"musicHours\":141,\"url\":\"http://music.fffffive.com/1500459096748.mp3\",\"categoryName\":\"欢乐\",\"collectStatus\":0},{\"musicId\":27,\"name\":\"Wholesome 7\",\"singer\":\"Dave Depper\",\"musicHours\":39,\"url\":\"http://music.fffffive.com/1500459076958.mp3\",\"categoryName\":\"欢乐\",\"collectStatus\":0},{\"musicId\":26,\"name\":\"Hey Hey Hey Happy Birthday\",\"singer\":\"Daniel C Smith\",\"musicHours\":85,\"url\":\"http://music.fffffive.com/1500459067117.mp3\"" +
+                        ",\"categoryName\":\"欢乐\",\"collectStatus\":0},{\"musicId\":25,\"name\":\"Revved Up\",\"singer\":\"Adam Selzer\",\"musicHours\":29,\"url\":\"http://music.fffffive.com/1500459048278.mp3\",\"categoryName\":\"欢乐\",\"collectStatus\":0},{\"musicId\":24,\"name\":\"Hola Hola Bossa Nova\",\"singer\":\"Juanitos\",\"musicHours\":207,\"url\":\"http://music.fffffive.com/1500459038102.mp3\",\"categoryName\":\"怀旧\",\"collectStatus\":0},{\"musicId\":23,\"name\":\"La Couleur Et Lair\"" +
+                        ",\"singer\":\"Byzance Nord\",\"musicHours\":214,\"url\":\"http://music.fffffive.com/1500459028189.mp3\",\"categoryName\":\"怀旧\",\"collectStatus\":0},{\"musicId\":22,\"name\":\"Catarment\",\"singer\":\"Byzance Nord\",\"musicHours\":315,\"url\":\"http://music.fffffive.com/1500459006429.mp3\",\"categoryName\":\"怀旧\",\"collectStatus\":0},{\"musicId\":21,\"name\":\"Bleuacide\",\"singer\":\"Graphiqs Groove\",\"musicHours\":313,\"url\":\"http://music.fffffive.com/1500458989947.mp3\"" +
+                        ",\"categoryName\":\"动感\",\"collectStatus\":0},{\"musicId\":20,\"name\":\"Smudj\",\"singer\":\"Foniqz \",\"musicHours\":315,\"url\":\"http://music.fffffive.com/1500458978086.mp3\",\"categoryName\":\"动感\",\"collectStatus\":0},{\"musicId\":19,\"name\":\"Storm\",\"singer\":\"BoxCat Games\",\"musicHours\":82,\"url\":\"http://music.fffffive.com/1500458967526.mp3\",\"categoryName\":\"动感\",\"collectStatus\":0},{\"musicId\":18,\"name\":\"Hot Salsa Trip\",\"singer\":\"Arsonist\"" +
+                        ",\"musicHours\":262,\"url\":\"http://music.fffffive.com/1500458950020.mp3\",\"categoryName\":\"动感\",\"collectStatus\":0},{\"musicId\":17,\"name\":\"Type Your Name Here (Short)\",\"singer\":\"No Name\",\"musicHours\":290,\"url\":\"http://music.fffffive.com/1500458936824.mp3\",\"categoryName\":\"动感\",\"collectStatus\":0},{\"musicId\":16,\"name\":\"Parasite\",\"singer\":\"Lamprey\",\"musicHours\":214,\"url\":\"http://music.fffffive.com/1500458899890.mp3\",\"categoryName\":\"动感\",\"collectStatus\":0}],\"errcode\":\"\",\"errdesc\":\"\"}";
+                MusicListBean musicListBean = new Gson().fromJson(json, MusicListBean.class);
+                if (musicListSyncDataCallback != null)
+                    musicListSyncDataCallback.onSuccess(musicListBean.data);
             }
         }).start();
     }
@@ -264,131 +275,7 @@ public class MainActivity extends AppCompatActivity implements FilterDataCallbac
         bigGiftView.reload("http://pro.thel.co/gift/video/1514199928405jendak.mp4");
     }
 
-    public static void trackMuxer(String videoPath, String audioPath, String outPath) {
-        MediaExtractor videoExtractor = new MediaExtractor();
-        try {
-            videoExtractor.setDataSource(videoPath);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        MediaFormat videoFormat = null;
-        int videoTrackIndex = -1;
-        int videoTrackCount = videoExtractor.getTrackCount();
-        for (int i = 0; i < videoTrackCount; i++) {
-            videoFormat = videoExtractor.getTrackFormat(i);
-            String mime = videoFormat.getString(MediaFormat.KEY_MIME);
-            if (mime.startsWith("video/")) {
-                videoTrackIndex = i;
-                break;
-            }
-        }
-
-        MediaExtractor audioExtractor = new MediaExtractor();
-        try {
-            audioExtractor.setDataSource(audioPath);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        MediaFormat audioFormat = null;
-        int audioTrackIndex = -1;
-        int audioTrackCount = audioExtractor.getTrackCount();
-        for (int i = 0; i < audioTrackCount; i++) {
-            audioFormat = audioExtractor.getTrackFormat(i);
-            String mime = audioFormat.getString(MediaFormat.KEY_MIME);
-            if (mime.startsWith("audio/")) {
-                audioTrackIndex = i;
-                break;
-            }
-        }
-
-        videoExtractor.selectTrack(videoTrackIndex);
-        audioExtractor.selectTrack(audioTrackIndex);
-
-        MediaCodec.BufferInfo videoBufferInfo = new MediaCodec.BufferInfo();
-        MediaCodec.BufferInfo audioBufferInfo = new MediaCodec.BufferInfo();
-
-        MediaMuxer mediaMuxer = null;
-        try {
-            mediaMuxer = new MediaMuxer(outPath, MediaMuxer.OutputFormat.MUXER_OUTPUT_MPEG_4);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        int writeVideoTrackIndex = mediaMuxer.addTrack(videoFormat);
-        int writeAudioTrackIndex = mediaMuxer.addTrack(audioFormat);
-        mediaMuxer.start();
-        ByteBuffer byteBuffer = ByteBuffer.allocate(1024 * 1000);
-        long videoSampleTime = getSampleTime(videoExtractor, byteBuffer);
-        while (true) {
-            int readVideoSampleSize = videoExtractor.readSampleData(byteBuffer, 0);
-            if (readVideoSampleSize < 0) {
-                break;
-            }
-            videoBufferInfo.size = readVideoSampleSize;
-            videoBufferInfo.presentationTimeUs += videoSampleTime;
-            videoBufferInfo.offset = 0;
-            videoBufferInfo.flags = videoExtractor.getSampleFlags();
-            mediaMuxer.writeSampleData(writeVideoTrackIndex, byteBuffer, videoBufferInfo);
-            videoExtractor.advance();
-        }
-        long audioSampleTime = getSampleTime(audioExtractor, byteBuffer);
-        while (true) {
-            int readAudioSampleSize = audioExtractor.readSampleData(byteBuffer, 0);
-            if (readAudioSampleSize < 0) {
-                break;
-            }
-
-            audioBufferInfo.size = readAudioSampleSize;
-            audioBufferInfo.presentationTimeUs += audioSampleTime;
-            audioBufferInfo.offset = 0;
-            audioBufferInfo.flags = audioExtractor.getSampleFlags();
-            mediaMuxer.writeSampleData(writeAudioTrackIndex, byteBuffer, audioBufferInfo);
-            audioExtractor.advance();
-        }
-
-        mediaMuxer.stop();
-        mediaMuxer.release();
-        videoExtractor.release();
-        audioExtractor.release();
-    }
-
-    private static long getSampleTime(MediaExtractor mediaExtractor, ByteBuffer buffer) {
-        long videoSampleTime;
-//            mediaExtractor.readSampleData(buffer, 0);
-//            //skip first I frame
-//            if (mediaExtractor.getSampleFlags() == MediaExtractor.SAMPLE_FLAG_SYNC)
-//                mediaExtractor.advance();
-        mediaExtractor.readSampleData(buffer, 0);
-        long firstVideoPTS = mediaExtractor.getSampleTime();
-        mediaExtractor.advance();
-        mediaExtractor.readSampleData(buffer, 0);
-        long SecondVideoPTS = mediaExtractor.getSampleTime();
-        videoSampleTime = Math.abs(SecondVideoPTS - firstVideoPTS);
-        Log.d("MediaMuxerUtil", "videoSampleTime is " + videoSampleTime);
-        return videoSampleTime;
-    }
-
-    public static boolean muxAacMp4(String aacPath, String mp4Path, String outPath) {
-        try {
-            AACTrackImpl aacTrack = new AACTrackImpl(new FileDataSourceImpl(aacPath));
-            Movie videoMovie = MovieCreator.build(mp4Path);
-            Track videoTracks = null;// 获取视频的单纯视频部分
-            for (Track videoMovieTrack : videoMovie.getTracks()) {
-                if ("vide".equals(videoMovieTrack.getHandler())) {
-                    videoTracks = videoMovieTrack;
-                }
-            }
-
-            Movie resultMovie = new Movie();
-            resultMovie.addTrack(videoTracks);// 视频部分
-            resultMovie.addTrack(aacTrack);// 音频部分
-
-            Container out = new DefaultMp4Builder().build(resultMovie);
-            FileOutputStream fos = new FileOutputStream(new File(outPath));
-            out.writeContainer(fos.getChannel());
-            fos.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return true;
+    public void playVideo(View view) {
+        startActivity(new Intent(this, VideoListActivity.class));
     }
 }

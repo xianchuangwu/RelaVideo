@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
@@ -23,13 +24,13 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import video.com.relavideolibrary.Utils.codec.MulitVideoMuxer;
 import video.com.relavideolibrary.BaseActivity;
 import video.com.relavideolibrary.R;
 import video.com.relavideolibrary.Utils.Constant;
 import video.com.relavideolibrary.Utils.CornerTransformation;
 import video.com.relavideolibrary.Utils.FileManager;
 import video.com.relavideolibrary.Utils.ScreenUtils;
+import video.com.relavideolibrary.Utils.codec.MulitVideoMuxer;
 import video.com.relavideolibrary.camera.CameraView;
 import video.com.relavideolibrary.camera.utils.Constants;
 import video.com.relavideolibrary.manager.VideoManager;
@@ -102,7 +103,11 @@ public class RecordingActivity extends BaseActivity implements View.OnClickListe
 
         Constants.getInstance().setContext(getApplicationContext());
         executorService = Executors.newSingleThreadExecutor();
+    }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
         initFirstGalleryVideo();
     }
 
@@ -110,16 +115,14 @@ public class RecordingActivity extends BaseActivity implements View.OnClickListe
         new Thread(new Runnable() {
             @Override
             public void run() {
-                final ArrayList<String> videos = new ArrayList<>();
+                String firstVideoUrl = null;
                 ContentResolver resolver = RecordingActivity.this.getContentResolver();
                 Cursor cursor = null;
                 try {
                     //查询数据库，参数分别为（路径，要查询的列名，条件语句，条件参数，排序）
                     cursor = resolver.query(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, null, null, null, null);
-                    if (cursor != null) {
-                        while (cursor.moveToNext()) {
-                            videos.add(cursor.getString(cursor.getColumnIndex(MediaStore.Video.Media.DATA)));
-                        }
+                    if (cursor != null && cursor.moveToLast()) {
+                        firstVideoUrl = cursor.getString(cursor.getColumnIndex(MediaStore.Video.Media.DATA));
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -128,12 +131,13 @@ public class RecordingActivity extends BaseActivity implements View.OnClickListe
                         cursor.close();
                     }
                 }
-                if (videos.size() > 0) {
+                if (!TextUtils.isEmpty(firstVideoUrl)) {
+                    final String finalFirstVideoUrl = firstVideoUrl;
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
                             Glide.with(RecordingActivity.this)
-                                    .load(videos.get(videos.size() - 1))
+                                    .load(finalFirstVideoUrl)
                                     .transform(new CenterCrop(RecordingActivity.this)
                                             , new CornerTransformation(RecordingActivity.this, 10))
                                     .placeholder(R.mipmap.ic_default)
@@ -312,7 +316,7 @@ public class RecordingActivity extends BaseActivity implements View.OnClickListe
             @Override
             public void run() {
                 dismissDialog();
-                Toast.makeText(RecordingActivity.this, "merge video fail", Toast.LENGTH_SHORT).show();
+                Toast.makeText(RecordingActivity.this, "video fragment error! ", Toast.LENGTH_SHORT).show();
             }
         });
     }

@@ -10,6 +10,7 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.util.SparseIntArray;
 
+import java.io.File;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
@@ -48,16 +49,26 @@ public class MulitVideoMuxer {
         }
 
         MediaMuxer muxer = null;
+        boolean sawEOS = false;
         try {
 
             //当由于录制时间过短，可能有些视频会有问题，在这里过滤一边
             List<String> list = new ArrayList<>();
             for (int i = 0; i < sources.size(); i++) {
-                MediaExtractor mediaExtractor = new MediaExtractor();
-                mediaExtractor.setDataSource(sources.get(i));
-                int trackCount = mediaExtractor.getTrackCount();
-                if (trackCount == 2) list.add(sources.get(i));
-                mediaExtractor.release();
+                MediaExtractor mediaExtractor = null;
+                try {
+                    mediaExtractor = new MediaExtractor();
+                    mediaExtractor.setDataSource(sources.get(i));
+                    int trackCount = mediaExtractor.getTrackCount();
+                    //只合成包含视频信道和音频信道的视频
+                    if (trackCount == 2) list.add(sources.get(i));
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    Log.d(TAG, "No such file or directory");
+                } finally {
+                    if (mediaExtractor != null) mediaExtractor.release();
+                }
+
             }
             sources = list;
             if (sources.size() == 0 && mediaMuxerListener != null) {
@@ -90,7 +101,6 @@ public class MulitVideoMuxer {
                 indexMap.put(i, dstIndex);
             }
             // Copy the samples from MediaExtractor to MulitVideoMuxer.
-            boolean sawEOS = false;
             int frameCount = 0;
             int offset = 100;
             ByteBuffer dstBuf = ByteBuffer.allocate(MAX_SAMPLE_SIZE);
@@ -148,7 +158,6 @@ public class MulitVideoMuxer {
                             " Size(KB) " + bufferInfo.size / 1024);
                 }
             }
-            if (mediaMuxerListener != null) mediaMuxerListener.videoMergeSuccess(outputPath);
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -158,6 +167,8 @@ public class MulitVideoMuxer {
                 muxer.stop();
                 muxer.release();
             }
+            if (sawEOS && mediaMuxerListener != null)
+                mediaMuxerListener.videoMergeSuccess(outputPath);
         }
     }
 

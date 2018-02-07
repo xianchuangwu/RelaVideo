@@ -1,57 +1,65 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/rela_color"
-    android:gravity="center_horizontal"
-    android:orientation="vertical"
-    android:paddingTop="20dp"
     tools:context="video.com.relavideodemo.MainActivity">
 
-    <Button
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:onClick="recoder"
-        android:text="recording"
-        android:textAllCaps="false" />
+        android:layout_height="match_parent"
+        android:background="@color/rela_color"
+        android:gravity="center_horizontal"
+        android:orientation="vertical"
+        android:paddingTop="20dp">
 
-    <TextView
-        android:id="@+id/path"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        tools:text="/storage/0/emulated/rela/video/1e43242.mp4" />
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:onClick="recoder"
+            android:text="recording"
+            android:textAllCaps="false" />
 
-    <Button
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:onClick="preview"
-        android:text="preview"
-        android:textAllCaps="false" />
+        <TextView
+            android:id="@+id/path"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            tools:text="/storage/0/emulated/rela/video/1e43242.mp4" />
 
-    <ImageView
-        android:id="@+id/filter_image"
-        android:layout_width="200dp"
-        android:layout_height="300dp"
-        android:scaleType="centerCrop"
-        android:src="@mipmap/app_lockscreen_bg"
-        android:visibility="gone" />
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:onClick="preview"
+            android:text="preview"
+            android:textAllCaps="false" />
 
-    <Button
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:onClick="test"
-        android:text="big gift preview"
-        android:textAllCaps="false"
-        android:visibility="visible" />
+        <ImageView
+            android:id="@+id/filter_image"
+            android:layout_width="200dp"
+            android:layout_height="300dp"
+            android:scaleType="centerCrop"
+            android:src="@mipmap/app_lockscreen_bg" />
 
-    <FrameLayout
-        android:id="@+id/container"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:onClick="test"
+            android:text="big gift preview"
+            android:textAllCaps="false"
+            android:visibility="visible" />
 
-    <!--<video.com.relavideolibrary.view.RelaBigGiftView
-        android:id="@+id/big_gift"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent" />-->
-</LinearLayout>
+        <FrameLayout
+            android:id="@+id/container"
+            android:layout_width="match_parent"
+            android:layout_height="400dp" />
+
+        <Button
+            android:onClick="playVideo"
+            android:textAllCaps="false"
+            android:text="list play video"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+    </LinearLayout>
+
+
+</ScrollView>
