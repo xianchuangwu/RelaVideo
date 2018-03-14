@@ -99,6 +99,7 @@ public class RecordingActivity extends BaseActivity implements View.OnClickListe
         findViewById(R.id.camera_switch).setOnClickListener(this);
         delete = findViewById(R.id.delete);
         delete.setOnClickListener(this);
+        delete.setEnabled(false);
         findViewById(R.id.beautiful).setOnClickListener(this);
 
         Constants.getInstance().setContext(getApplicationContext());

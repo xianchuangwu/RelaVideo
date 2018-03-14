@@ -52,6 +52,7 @@ public class Constant {
         public static final String RESULT_VIDEO_HEIGHT = "return height";
         public static final String RESULT_VIDEO_THUMB = "return thumbnail";
         public static final String RESULT_VIDEO_MAIN_COLOR = "return main color";
+        public static final String CUT_VIDEO_PATH = "cut video path";
     }
 
     public static final class BroadcastAction {

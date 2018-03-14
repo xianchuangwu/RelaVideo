@@ -54,7 +54,7 @@ public class GalleryVideoAdapter extends BaseRecyclerAdapter<MediaModel> {
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
+                long duration = 0;
                 if (!item.status) {
                     File file = new File(item.url);
                     if (!file.exists()) {
@@ -62,8 +62,6 @@ public class GalleryVideoAdapter extends BaseRecyclerAdapter<MediaModel> {
                         return;
                     }
                     try {
-
-                        long duration = 0;
                         //MediaExtractor在有的视频拿不到的duration。。。
                         MediaMetadataRetriever retriever = new MediaMetadataRetriever();
                         retriever.setDataSource(item.url);
@@ -109,10 +107,11 @@ public class GalleryVideoAdapter extends BaseRecyclerAdapter<MediaModel> {
                             Toast.makeText(mContext, "暂不支持非44100采样率视频!", Toast.LENGTH_SHORT).show();
                             return;
                         } */
-                        if (duration > Constant.VideoConfig.MAX_VIDEO_DURATION) {
+                        /*if (duration > Constant.VideoConfig.MAX_VIDEO_DURATION) {
                             Toast.makeText(mContext, mContext.getString(R.string.video_max_duration), Toast.LENGTH_SHORT).show();
                             return;
-                        } else if (duration < Constant.VideoConfig.MIN_VIDEO_DURATION) {
+                        } else*/
+                        if (duration < Constant.VideoConfig.MIN_VIDEO_DURATION) {
                             Toast.makeText(mContext, mContext.getString(R.string.video_min_duration), Toast.LENGTH_SHORT).show();
                             return;
                         }
@@ -130,11 +129,11 @@ public class GalleryVideoAdapter extends BaseRecyclerAdapter<MediaModel> {
                         else mData.get(i).status = true;
                     }
                     notifyDataSetChanged();
-                    if (selectCallback != null) selectCallback.selected(item.url);
+                    if (selectCallback != null) selectCallback.selected(item.url, duration);
                 } else {
                     item.status = !item.status;
                     notifyItemChanged(position);
-                    if (selectCallback != null) selectCallback.selected("");
+                    if (selectCallback != null) selectCallback.selected("", 0);
                 }
             }
         });
@@ -183,6 +182,6 @@ public class GalleryVideoAdapter extends BaseRecyclerAdapter<MediaModel> {
     }
 
     public interface SelectCallback {
-        void selected(String path);
+        void selected(String path, long duration);
     }
 }

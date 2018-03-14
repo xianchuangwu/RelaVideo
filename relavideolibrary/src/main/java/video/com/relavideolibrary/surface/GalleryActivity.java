@@ -39,6 +39,8 @@ public class GalleryActivity extends BaseActivity implements ScanningVideoServic
 
     private String selectVideoPath;
 
+    private long selectVideoDuration;
+
     private ServiceConnection serviceConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
@@ -139,22 +141,35 @@ public class GalleryActivity extends BaseActivity implements ScanningVideoServic
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == Constant.IntentCode.REQUEST_CODE_PREVIEW && resultCode == Activity.RESULT_OK) {
             complete();
-        }
-    }
-
-    @Override
-    public void selected(String path) {
-        btn_container.setVisibility(TextUtils.isEmpty(path) ? View.INVISIBLE : View.VISIBLE);
-        selectVideoPath = path;
-    }
-
-    private void complete() {
-        if (!TextUtils.isEmpty(selectVideoPath)) {
+        } else if (requestCode == Constant.IntentCode.REQUEST_CODE_CUT && resultCode == Activity.RESULT_OK) {
+            selectVideoPath = data.getStringExtra(Constant.BundleConstants.CUT_VIDEO_PATH);
             VideoBean videoBean = new VideoBean();
             videoBean.videoPath = selectVideoPath;
             VideoManager.getInstance().setVideoBean(videoBean);
             setResult(Constant.IntentCode.RESULT_CODE_GALLERY_OK);
             finish();
+        }
+    }
+
+    @Override
+    public void selected(String path, long duration) {
+        btn_container.setVisibility(TextUtils.isEmpty(path) ? View.INVISIBLE : View.VISIBLE);
+        selectVideoPath = path;
+        selectVideoDuration = duration;
+    }
+
+    private void complete() {
+        if (!TextUtils.isEmpty(selectVideoPath)) {
+            //超过最大时长限制，跳到裁剪页
+            if (selectVideoDuration > Constant.VideoConfig.MAX_VIDEO_DURATION) {
+                CutActivity.startCut(this, selectVideoPath);
+            } else {
+                VideoBean videoBean = new VideoBean();
+                videoBean.videoPath = selectVideoPath;
+                VideoManager.getInstance().setVideoBean(videoBean);
+                setResult(Constant.IntentCode.RESULT_CODE_GALLERY_OK);
+                finish();
+            }
         } else {
             Toast.makeText(this, "video path empty", Toast.LENGTH_SHORT).show();
         }

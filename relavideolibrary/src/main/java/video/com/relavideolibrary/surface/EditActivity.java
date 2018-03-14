@@ -183,6 +183,8 @@ public class EditActivity extends BaseActivity implements TextureView.SurfaceTex
                 filter_recyclerView.setVisibility(View.GONE);
                 filter_image.setImageResource(R.mipmap.ic_filter);
             }
+        } else if (requestCode == Constant.IntentCode.REQUEST_CODE_CUT && resultCode == Activity.RESULT_OK) {
+            VideoManager.getInstance().getVideoBean().videoPath = data.getStringExtra(Constant.BundleConstants.CUT_VIDEO_PATH);
         }
     }
 
@@ -258,7 +260,7 @@ public class EditActivity extends BaseActivity implements TextureView.SurfaceTex
             startActivityForResult(new Intent(this, MusicActivity.class), Constant.IntentCode.REQUEST_CODE_MUSIC);
         } else if (id == R.id.cut_img) {
             ScreenUtils.preventViewMultipleTouch(v, 2000);
-            startActivityForResult(new Intent(this, CutActivity.class), Constant.IntentCode.REQUEST_CODE_CUT);
+            CutActivity.startCut(this, VideoManager.getInstance().getVideoBean().videoPath);
         } else if (id == R.id.edit_video_id) {
             if (play.getVisibility() == View.INVISIBLE) {
                 play.setVisibility(View.VISIBLE);

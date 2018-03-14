@@ -1,6 +1,8 @@
 package video.com.relavideolibrary.surface;
 
 import android.app.Activity;
+import android.content.Context;
+import android.content.Intent;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
@@ -11,6 +13,7 @@ import android.widget.Toast;
 
 import video.com.relavideolibrary.BaseActivity;
 import video.com.relavideolibrary.R;
+import video.com.relavideolibrary.Utils.Constant;
 import video.com.relavideolibrary.manager.VideoManager;
 import video.com.relavideolibrary.videotrimmer.K4LVideoTrimmer;
 import video.com.relavideolibrary.videotrimmer.interfaces.OnK4LVideoListener;
@@ -19,6 +22,12 @@ import video.com.relavideolibrary.videotrimmer.interfaces.OnTrimVideoListener;
 public class CutActivity extends BaseActivity implements OnTrimVideoListener, OnK4LVideoListener {
 
     private K4LVideoTrimmer mVideoTrimmer;
+
+    public static void startCut(Context context, String path) {
+        Intent intent = new Intent(context, CutActivity.class);
+        intent.putExtra(Constant.BundleConstants.CUT_VIDEO_PATH, path);
+        ((Activity) context).startActivityForResult(intent, Constant.IntentCode.REQUEST_CODE_CUT);
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,7 +51,7 @@ public class CutActivity extends BaseActivity implements OnTrimVideoListener, On
         if (mVideoTrimmer != null) {
             mVideoTrimmer.setOnTrimVideoListener(this);
             mVideoTrimmer.setOnK4LVideoListener(this);
-            mVideoTrimmer.setVideoURI(Uri.parse(VideoManager.getInstance().getVideoBean().videoPath));
+            mVideoTrimmer.setVideoURI(Uri.parse(getIntent().getStringExtra(Constant.BundleConstants.CUT_VIDEO_PATH)));
         }
     }
 
@@ -54,8 +63,9 @@ public class CutActivity extends BaseActivity implements OnTrimVideoListener, On
     @Override
     public void getResult(final Uri uri) {
         dismissDialog();
-        VideoManager.getInstance().getVideoBean().videoPath = uri.getPath();
-        setResult(Activity.RESULT_OK);
+        Intent intent = getIntent();
+        intent.putExtra(Constant.BundleConstants.CUT_VIDEO_PATH, uri.getPath());
+        setResult(Activity.RESULT_OK, intent);
         finish();
     }
 
