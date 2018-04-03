@@ -305,8 +305,20 @@ public class EditActivity extends BaseActivity implements TextureView.SurfaceTex
         MediaMetadataRetriever retr = new MediaMetadataRetriever();
         retr.setDataSource(path);
         final String durationStr = retr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);
-        final String heightStr = retr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT); // 视频高度
-        final String widthStr = retr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH); // 视频宽度
+        String heightStr = retr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT); // 视频高度
+        String widthStr = retr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH); // 视频宽度
+        String rotationStr = retr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_ROTATION);
+        Log.d("VideoParams", "durationStr: " + durationStr
+                + ",\nrotationStr: " + rotationStr
+                + ",\nheightStr: " + heightStr
+                + ",\nwidthStr: " + widthStr);
+        int rotation = Integer.parseInt(rotationStr);
+        if (rotation == 90 || rotation == 270) {
+            String widthTrans = heightStr;
+            String heightTrans = widthStr;
+            heightStr = heightTrans;
+            widthStr = widthTrans;
+        }
         Bitmap frameAtTime = retr.getFrameAtTime();
         FileOutputStream fos = null;
         final String imagePath = FileManager.getOtherFile(System.currentTimeMillis() + ".jpeg");
@@ -318,6 +330,8 @@ public class EditActivity extends BaseActivity implements TextureView.SurfaceTex
         //第一个参数是图片保存的格式，第二个参数是压缩率（100表示压缩0%，0表示压缩100%）
         frameAtTime.compress(Bitmap.CompressFormat.JPEG, 100, fos);
 
+        final String finalHeightStr = heightStr;
+        final String finalWidthStr = widthStr;
         Palette.from(frameAtTime).generate(new Palette.PaletteAsyncListener() {
             @Override
             public void onGenerated(Palette palette) {
@@ -337,8 +351,8 @@ public class EditActivity extends BaseActivity implements TextureView.SurfaceTex
                 Bundle bundle = new Bundle();
                 bundle.putString(Constant.BundleConstants.RESULT_VIDEO_PATH, path);
                 bundle.putString(Constant.BundleConstants.RESULT_VIDEO_DURATION, durationStr);
-                bundle.putString(Constant.BundleConstants.RESULT_VIDEO_WIDTH, widthStr);
-                bundle.putString(Constant.BundleConstants.RESULT_VIDEO_HEIGHT, heightStr);
+                bundle.putString(Constant.BundleConstants.RESULT_VIDEO_WIDTH, finalWidthStr);
+                bundle.putString(Constant.BundleConstants.RESULT_VIDEO_HEIGHT, finalHeightStr);
                 bundle.putString(Constant.BundleConstants.RESULT_VIDEO_THUMB, imagePath);
                 bundle.putString(Constant.BundleConstants.RESULT_VIDEO_MAIN_COLOR, mLoadColor);
                 intent.putExtras(bundle);

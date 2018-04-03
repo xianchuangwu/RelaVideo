@@ -2,11 +2,15 @@ package video.com.relavideodemo;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.ActivityManager;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.os.StrictMode;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
@@ -60,8 +64,8 @@ public class MainActivity extends AppCompatActivity implements FilterDataCallbac
         filter_image = findViewById(R.id.filter_image);
         filter_image.setOnClickListener(this);
 
+        RelaVideoSDK.init(getApplicationContext());
         new RelaVideoSDK()
-                .init(getApplicationContext())
                 .addFilter(this)
                 .addMusicCategory(this)
                 .addMusicList(this);
@@ -75,7 +79,18 @@ public class MainActivity extends AppCompatActivity implements FilterDataCallbac
             bigGiftView.reload("http://pro.thel.co/gift/video/1514199928405jendak.mp4");
         }
 
+//        handler.sendEmptyMessageDelayed(0, 2000);
     }
+
+//    private Handler handler = new Handler(new Handler.Callback() {
+//        @Override
+//        public boolean handleMessage(Message msg) {
+//            boolean b = isAppOnForeground();
+//            Toast.makeText(MainActivity.this, "isAppOnForeground: " + b, Toast.LENGTH_SHORT).show();
+//            handler.sendEmptyMessageDelayed(0, 2000);
+//            return false;
+//        }
+//    });
 
 
     @Override
@@ -277,5 +292,25 @@ public class MainActivity extends AppCompatActivity implements FilterDataCallbac
 
     public void playVideo(View view) {
         startActivity(new Intent(this, VideoListActivity.class));
+    }
+
+    public boolean isAppOnForeground() {
+        try {
+            ActivityManager activityManager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+            List<ActivityManager.RunningAppProcessInfo> appProcesses = activityManager.getRunningAppProcesses();
+            String packageName = getPackageName();
+            if (appProcesses == null) {
+                return false;
+            }
+            for (ActivityManager.RunningAppProcessInfo appProcess : appProcesses) {
+                if (appProcess.processName.equals(packageName) && appProcess.importance == ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND) {
+                    return true;
+                }
+            }
+            return false;
+        } catch (Exception e) {
+            return false;
+        }
+
     }
 }
