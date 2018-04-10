@@ -244,55 +244,56 @@ public class RecordingActivity extends BaseActivity implements View.OnClickListe
 
     @Override
     public void startRecording() {
-        if (recordingLine.getLastDuration() == Constant.VideoConfig.MAX_VIDEO_DURATION) {
+        if (recordingLine.getLastDuration() < Constant.VideoConfig.MAX_VIDEO_DURATION) {
+            executorService.execute(new Runnable() {
+                @Override
+                public void run() {
+                    cameraOutputPath = FileManager.getVideoFile();
+                    cameraView.setSavePath(cameraOutputPath);
+                    cameraView.startRecord();
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            next.setAlpha(0.5f);
+                            next.setEnabled(false);
+                            delete.setAlpha(0.5f);
+                            delete.setEnabled(false);
+                            gallery_container.setAlpha(0.5f);
+                            gallery.setEnabled(false);
+                            recordingLine.start();
+                        }
+                    });
+                }
+            });
+        } else {
             Toast.makeText(this, getString(R.string.video_max_duration), Toast.LENGTH_SHORT).show();
-            return;
         }
-        executorService.execute(new Runnable() {
-            @Override
-            public void run() {
-                cameraOutputPath = FileManager.getVideoFile();
-                cameraView.setSavePath(cameraOutputPath);
-                cameraView.startRecord();
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        next.setAlpha(0.5f);
-                        next.setEnabled(false);
-                        delete.setAlpha(0.5f);
-                        delete.setEnabled(false);
-                        gallery_container.setAlpha(0.5f);
-                        gallery.setEnabled(false);
-                        recordingLine.start();
-                    }
-                });
-            }
-        });
-
     }
 
     @Override
     public void stopRecording() {
-        executorService.execute(new Runnable() {
-            @Override
-            public void run() {
-                cameraView.stopRecord();
-                outputList.add(cameraOutputPath);
-                Log.d(TAG, "outputList size :" + outputList.size());
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (recordingLine.getLastDuration() > Constant.VideoConfig.MIN_VIDEO_DURATION) {
-                            next.setAlpha(1.0f);
-                            next.setEnabled(true);
+        if (!TextUtils.isEmpty(cameraOutputPath))
+            executorService.execute(new Runnable() {
+                @Override
+                public void run() {
+                    cameraView.stopRecord();
+                    outputList.add(cameraOutputPath);
+                    cameraOutputPath = "";
+                    Log.d(TAG, "outputList size :" + outputList.size());
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            if (recordingLine.getLastDuration() > Constant.VideoConfig.MIN_VIDEO_DURATION) {
+                                next.setAlpha(1.0f);
+                                next.setEnabled(true);
+                            }
+                            delete.setAlpha(1.0f);
+                            delete.setEnabled(true);
+                            recordingLine.stop();
                         }
-                        delete.setAlpha(1.0f);
-                        delete.setEnabled(true);
-                        recordingLine.stop();
-                    }
-                });
-            }
-        });
+                    });
+                }
+            });
 
     }
 
@@ -327,5 +328,8 @@ public class RecordingActivity extends BaseActivity implements View.OnClickListe
     public void recordProgress(long progress) {
         @SuppressLint("DefaultLocale") String result = String.format("%.1f", (float) progress / 1000);
         second_txt.setText(result + " S");
+        if (progress == Constant.VideoConfig.MAX_VIDEO_DURATION) {
+            recording.autoUp();
+        }
     }
 }

@@ -1,12 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="jp.co.cyberagent.android.gpuimage"
-    xmlns:android="http://schemas.android.com/apk/res/android"
     android:versionCode="9"
     android:versionName="1.4.0" >
 
     <uses-sdk
         android:minSdkVersion="14"
-        android:targetSdkVersion="23" />
+        android:targetSdkVersion="27" />
 
 </manifest>

@@ -60,6 +60,14 @@ public class RecordingButton extends android.support.v7.widget.AppCompatImageBut
         return false;
     }
 
+    /**
+     * 达到最大视频时常时，自动抬起
+     */
+    public void autoUp() {
+        scaleTo(RecordingButton.this, 1.0f);
+        handler.sendEmptyMessage(MSG_UP);
+    }
+
     private final int MSG_DOWN = 0;
     private final int MSG_UP = 1;
     private final int MSG_TIME_PROTECT = 2;
@@ -75,7 +83,7 @@ public class RecordingButton extends android.support.v7.widget.AppCompatImageBut
                     if (is500msProtection) {
                         if (toast == null) {
                             toast = Toast.makeText(RecordingButton.this.getContext(), RecordingButton.this.getContext().getString(R.string.click_fast), Toast.LENGTH_SHORT);
-                            toast.setGravity(Gravity.CENTER, 0, 0);
+//                            toast.setGravity(Gravity.CENTER, 0, 0);
                         }
                         toast.show();
                         break;
@@ -86,9 +94,9 @@ public class RecordingButton extends android.support.v7.widget.AppCompatImageBut
                     is500msProtection = true;
                     break;
                 case MSG_UP:
-                    isUp = true;
-                    if (!is500msProtection && onRecordingListener != null)
+                    if (!isUp && !is500msProtection && onRecordingListener != null)
                         onRecordingListener.stopRecording();
+                    isUp = true;
                     break;
                 case MSG_TIME_PROTECT:
                     is500msProtection = false;

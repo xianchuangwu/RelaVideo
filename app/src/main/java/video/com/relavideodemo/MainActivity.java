@@ -291,7 +291,7 @@ public class MainActivity extends AppCompatActivity implements FilterDataCallbac
     }
 
     public void playVideo(View view) {
-        startActivity(new Intent(this, VideoListActivity.class));
+//        startActivity(new Intent(this, VideoListActivity.class));
     }
 
     public boolean isAppOnForeground() {

@@ -1,12 +1,12 @@
 apply plugin: 'com.android.library'
 
 android {
-    compileSdkVersion 23
-    buildToolsVersion '26.0.2'
+    compileSdkVersion 27
+    buildToolsVersion '27.0.3'
 
     defaultConfig {
         minSdkVersion 14
-        targetSdkVersion 23
+        targetSdkVersion 27
 
         versionCode = 9
         versionName = "1.4.0"
@@ -35,7 +35,7 @@ android {
             jni.srcDirs = ['jni']
         }
 
-        instrumentTest.setRoot('tests')
+        androidTest.setRoot('tests')
     }
 
     lintOptions {
