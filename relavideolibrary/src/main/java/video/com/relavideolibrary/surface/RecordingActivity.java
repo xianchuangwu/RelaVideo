@@ -109,6 +109,7 @@ public class RecordingActivity extends BaseActivity implements View.OnClickListe
     @Override
     protected void onResume() {
         super.onResume();
+        cameraView.onResume();
         initFirstGalleryVideo();
     }
 
@@ -151,9 +152,10 @@ public class RecordingActivity extends BaseActivity implements View.OnClickListe
     }
 
     @Override
-    protected void onDestroy() {
-        super.onDestroy();
+    protected void onPause() {
+        super.onPause();
         cameraView.onDestroy();
+
     }
 
     @Override
