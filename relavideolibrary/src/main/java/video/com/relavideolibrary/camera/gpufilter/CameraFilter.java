@@ -18,11 +18,14 @@ public class CameraFilter extends OesFilter {
     public void setFlag(int flag) {
         super.setFlag(flag);
         float[] coord;
-        if(getFlag()==1) {
+        if (getFlag() == 1) {
             coord = VertexPosition.Left_And_Flip_Horizontal.matrix();
-        }
-        else {
-            coord = VertexPosition.Right.matrix();
+        } else {
+            if (android.os.Build.MODEL.contains("Nexus")) {
+                coord = VertexPosition.Left.matrix();
+            } else {
+                coord = VertexPosition.Right.matrix();
+            }
         }
         mTexBuffer.clear();
         mTexBuffer.put(coord);

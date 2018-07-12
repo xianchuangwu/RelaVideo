@@ -3,7 +3,7 @@
 
 extern "C"{
 jbyteArray
-Java_video_com_relavideolibrary_jni_AudioJniUtils_audioMix(
+Java_video_com_relavideolibrary_jni_RelaVideoJniUtils_audioMix(
         JNIEnv *env, jclass type, jbyteArray sourceA_, jbyteArray sourceB_, jbyteArray dst_,
         jfloat firstVol, jfloat secondVol)
 {

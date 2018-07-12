@@ -6,9 +6,16 @@ import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
 import android.opengl.GLSurfaceView;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.MotionEvent;
+import android.view.ViewGroup;
 
+import java.util.Locale;
+
+import javax.microedition.khronos.egl.EGL10;
 import javax.microedition.khronos.egl.EGLConfig;
+import javax.microedition.khronos.egl.EGLContext;
+import javax.microedition.khronos.egl.EGLDisplay;
 import javax.microedition.khronos.opengles.GL10;
 
 import video.com.relavideolibrary.camera.renderer.CameraRenderer;
@@ -19,13 +26,17 @@ import video.com.relavideolibrary.camera.renderer.CameraRenderer;
  * desc
  */
 
-public class CameraView extends GLSurfaceView implements GLSurfaceView.Renderer, SurfaceTexture.OnFrameAvailableListener {
+public class CameraView extends GLSurfaceView implements GLSurfaceView.Renderer, SurfaceTexture.OnFrameAvailableListener, ICamera.PreviewFrameCallback {
+    private static final String LOG_TAG = "CameraView";
+
     private Context mContext;
 
-    private CameraRenderer mCameraRenderer;
-    private CameraController mCamera;
+    private EGLContext mEGLCurrentContext;
 
-    private int dataWidth = 0, dataHeight = 0;
+    protected CameraRenderer mCameraRenderer;
+    protected CameraController mCamera;
+
+    private int renderWidth = 0, renderHeight = 0;
 
     private boolean isSetParm = false;
 
@@ -43,6 +54,7 @@ public class CameraView extends GLSurfaceView implements GLSurfaceView.Renderer,
 
     private void init() {
         /**初始化OpenGL的相关信息*/
+        setEGLContextFactory(new MyContextFactory(this));
         setEGLContextClientVersion(2);//设置版本
         setRenderer(this);//设置Renderer
         setRenderMode(RENDERMODE_WHEN_DIRTY);//主动调用渲染
@@ -60,11 +72,12 @@ public class CameraView extends GLSurfaceView implements GLSurfaceView.Renderer,
         mCamera.close();
         mCamera.open(cameraId);
         mCameraRenderer.setCameraId(cameraId);
-        final Point previewSize = mCamera.getPreviewSize();
-        dataWidth = previewSize.x;
-        dataHeight = previewSize.y;
+        final Camera.Size previewSize = mCamera.getPreviewSize();
+        renderWidth = previewSize.height;
+        renderHeight = previewSize.width;
         SurfaceTexture texture = mCameraRenderer.getTexture();
         texture.setOnFrameAvailableListener(this);
+        mCamera.setOnPreviewFrameCallback(this);
         mCamera.setPreviewTexture(texture);
         mCamera.preview();
     }
@@ -81,7 +94,10 @@ public class CameraView extends GLSurfaceView implements GLSurfaceView.Renderer,
             open(cameraId);
             stickerInit();
         }
-        mCameraRenderer.setPreviewSize(dataWidth, dataHeight);
+        mCameraRenderer.setPreviewSize(renderWidth, renderHeight);
+        if (mOnEGLContextHandler != null) {
+            mOnEGLContextHandler.onEGLContextReady();
+        }
     }
 
     @Override
@@ -93,6 +109,10 @@ public class CameraView extends GLSurfaceView implements GLSurfaceView.Renderer,
     public void onDrawFrame(GL10 gl) {
         if (isSetParm) {
             mCameraRenderer.onDrawFrame(gl);
+
+            if (mOnFrameAvailableHandler != null) {
+                mOnFrameAvailableHandler.onFrameAvailable(mEGLCurrentContext, mCameraRenderer.getPreviewTextureID(), renderWidth, renderHeight);
+            }
         }
     }
 
@@ -110,7 +130,11 @@ public class CameraView extends GLSurfaceView implements GLSurfaceView.Renderer,
     public void onDestroy() {
         if (mCamera != null) {
             mCamera.close();
+            if (getParent() != null && getParent() instanceof ViewGroup) {
+                ((ViewGroup) getParent()).removeView(this);
+            }
         }
+        mEGLCurrentContext = null;
     }
 
     /**
@@ -187,7 +211,7 @@ public class CameraView extends GLSurfaceView implements GLSurfaceView.Renderer,
     }
 
     private void stickerInit() {
-        if (!isSetParm && dataWidth > 0 && dataHeight > 0) {
+        if (!isSetParm && renderWidth > 0 && renderHeight > 0) {
             isSetParm = true;
         }
     }
@@ -197,5 +221,71 @@ public class CameraView extends GLSurfaceView implements GLSurfaceView.Renderer,
         this.requestRender();
     }
 
+    public void setOnEGLContextHandler(OnEGLContextListener listener) {
+        this.mOnEGLContextHandler = listener;
+    }
 
+    public void setOnFrameAvailableHandler(OnFrameAvailableListener listener) {
+        this.mOnFrameAvailableHandler = listener;
+    }
+
+    @Override
+    public void onPreviewFrame(byte[] data, int rotation, int width, int height) {
+
+    }
+
+    public interface OnFrameAvailableListener {
+        void onFrameAvailable(EGLContext eglContext, int textureId, int width, int height);
+    }
+
+    private OnFrameAvailableListener mOnFrameAvailableHandler;
+
+    public interface OnEGLContextListener {
+        void onEGLContextReady();
+    }
+
+    private OnEGLContextListener mOnEGLContextHandler;
+
+    private static class MyContextFactory implements EGLContextFactory {
+        private static int EGL_CONTEXT_CLIENT_VERSION = 0x3098;
+
+        private CameraView mRenderer;
+
+        public MyContextFactory(CameraView renderer) {
+            Log.d(LOG_TAG, "MyContextFactory " + renderer);
+            this.mRenderer = renderer;
+        }
+
+        public EGLContext createContext(EGL10 egl, EGLDisplay display, EGLConfig eglConfig) {
+            Log.d(LOG_TAG, "createContext " + egl + " " + display + " " + eglConfig);
+            checkEglError("before createContext", egl);
+            int[] attrib_list = {EGL_CONTEXT_CLIENT_VERSION, 2, EGL10.EGL_NONE};
+
+            EGLContext ctx;
+
+            if (mRenderer.mEGLCurrentContext == null) {
+                mRenderer.mEGLCurrentContext = egl.eglCreateContext(display, eglConfig,
+                        EGL10.EGL_NO_CONTEXT, attrib_list);
+                ctx = mRenderer.mEGLCurrentContext;
+            } else {
+                ctx = mRenderer.mEGLCurrentContext;
+            }
+            checkEglError("after createContext", egl);
+            return ctx;
+        }
+
+        public void destroyContext(EGL10 egl, EGLDisplay display, EGLContext context) {
+            Log.d(LOG_TAG, "destroyContext " + egl + " " + display + " " + context + " " + mRenderer.mEGLCurrentContext);
+            if (mRenderer.mEGLCurrentContext == null) {
+                egl.eglDestroyContext(display, context);
+            }
+        }
+
+        private static void checkEglError(String prompt, EGL10 egl) {
+            int error;
+            while ((error = egl.eglGetError()) != EGL10.EGL_SUCCESS) {
+                Log.d(LOG_TAG, String.format(Locale.US, "%s: EGL error: 0x%x", prompt, error));
+            }
+        }
+    }
 }

@@ -7,7 +7,8 @@ public enum PrepreadShader {
     F_DEFAULT,
     V_OES_DEFAULT,
     F_OES_DEFAULT,
-    F_BEAUTY;
+    F_BEAUTY,
+    F_BIG_EYE_AND_THIN_FACE;
 
     @Override
     public String toString() {
@@ -152,6 +153,135 @@ public enum PrepreadShader {
                         + " vec3 satcolor = gl_FragColor.rgb * saturateMatrix;\n"
                         + " gl_FragColor.rgb = mix(gl_FragColor.rgb, satcolor, params.a);\n"
                         + " }\n" + "";
+                break;
+            case F_BIG_EYE_AND_THIN_FACE:
+                shader = "precision highp float;\n" +
+                        "#define MAX_CONTOUR_POINT_COUNT 20\n" +
+                        "#define VIDEO_WIDTH 720.0\n" +
+                        "#define VIDEO_HEIGHT 1280.0\n" +
+                        " varying  vec2 textureCoordinate;\n" +
+                        " uniform sampler2D inputImageTexture;\n" +
+
+                        " uniform  float maxFaceWidth;\n" +
+                        " uniform  float mouthOpen;\n" +
+                        " uniform  float mouthPoint_x;\n" +
+                        " uniform  float mouthPoint_y;\n" +
+                        " uniform  float leftEyePoint_x;\n" +
+                        " uniform  float leftEyePoint_y;\n" +
+                        " uniform  float rightEyePoint_x;\n" +
+                        " uniform  float rightEyePoint_y;\n" +
+                        " uniform  float eyesScale;\n" +
+                        " uniform  int arraySize;\n" +
+                        " uniform float leftContourPoints[MAX_CONTOUR_POINT_COUNT*2];\n" +
+                        " uniform float rightContourPoints[MAX_CONTOUR_POINT_COUNT*2];\n" +
+                        " uniform float faceScale;\n" +
+                        " vec2 warpPositionToUse(vec2 centerPostion, vec2 currentPosition, float radius, float scaleRatio, float aspectRatio)\n" +
+                        " {\n" +
+                        "     vec2 positionToUse = currentPosition;\n" +
+                        "     \n" +
+                        "     vec2 currentPositionToUse = vec2(currentPosition.x, currentPosition.y * aspectRatio + 0.5 - 0.5 * aspectRatio);\n" +
+                        "     vec2 centerPostionToUse = vec2(centerPostion.x, centerPostion.y * aspectRatio + 0.5 - 0.5 * aspectRatio);\n" +
+                        "     \n" +
+                        "     float r = distance(currentPositionToUse, centerPostionToUse);\n" +
+                        "     \n" +
+                        "     if(r < radius)\n" +
+                        "     {\n" +
+                        "         float alpha = 1.0 - scaleRatio * (r/radius-1.0)*(r/radius-1.0);\n" +
+                        "         positionToUse = centerPostion + alpha * (currentPosition - centerPostion);\n" +
+                        "     }\n" +
+                        "     \n" +
+                        "     return positionToUse;\n" +
+                        " }\n" +
+                        " \n" +
+                        "vec2 warpPositionToThinFace(vec2 currentPoint, vec2 contourPointA,  vec2 contourPointB, float radius, float delta, float aspectRatio)\n" +
+                        "{\n" +
+                        "    vec2 positionToUse = currentPoint;\n" +
+                        "    \n" +
+                        "    vec2 currentPointToUse = vec2(currentPoint.x, currentPoint.y * aspectRatio);\n" +
+                        "    vec2 contourPointAToUse = vec2(contourPointA.x, contourPointA.y * aspectRatio);\n" +
+                        "    \n" +
+                        "    float r = distance(currentPointToUse, contourPointAToUse);\n" +
+                        "    if(r < radius)\n" +
+                        "    {\n" +
+                        "        vec2 dir = normalize(contourPointB - contourPointA);\n" +
+                        "        float dist = radius * radius - r * r;\n" +
+                        "        float alpha = dist / (dist + (r-delta) * (r-delta));\n" +
+                        "        alpha = alpha * alpha;\n" +
+                        "        \n" +
+                        "        positionToUse = positionToUse - alpha * delta * dir;\n" +
+                        "        \n" +
+                        "    }\n" +
+                        "    return positionToUse;\n" +
+                        "}\n" +
+                        " void main()\n" +
+                        " {\n" +
+                        " vec2 st = textureCoordinate;\n" +
+                        "     vec2 leftEyesCenterPostion = vec2(leftEyePoint_x,leftEyePoint_y);\n" +
+                        "     vec2 rightEyeCenterPosition = vec2(rightEyePoint_x,rightEyePoint_y);\n" +
+                        "     vec2 mouthCenterPosition = vec2(mouthPoint_x,mouthPoint_y);\n" +
+                        "     float radius = maxFaceWidth;\n" +
+                        "     float scaleRatio = eyesScale;\n" +
+                        "     float aspectRatio = 1.77777;\n" +
+                        "     vec2 positionToUse = textureCoordinate;\n" +
+                        "     if ( arraySize > 0) {\n" +
+                        "         positionToUse = warpPositionToUse(leftEyesCenterPostion, positionToUse,radius, scaleRatio, aspectRatio);\n" +
+                        "         positionToUse = warpPositionToUse(rightEyeCenterPosition, positionToUse, radius, scaleRatio, aspectRatio);\n" +
+//                        "         positionToUse = warpPositionToUse(leftEyesCenterPostion, positionToUse, 0.05, 0.4, aspectRatio);\n" +
+//                        "         positionToUse = warpPositionToUse(rightEyeCenterPosition, positionToUse, 0.05, 0.4, aspectRatio);\n" +
+                        "     }\n" +
+                        "     float s = 6.0;\n" +
+                        "     float dd = 1.0;\n" +
+                        "     \n" +
+                        "     if (arraySize > 0) {\n" +
+                        "         vec2 p0 = vec2(leftContourPoints[0], leftContourPoints[1]);\n" +
+                        "         vec2 p1 = vec2(leftContourPoints[2], leftContourPoints[3]);\n" +
+                        "         dd = sqrt((p0.x - p1.x) * (p0.x - p1.x) + (p0.y - p1.y) * (p0.y - p1.y));\n" +
+                        "     }\n" +
+                        "     \n" +
+                        "     float rrr = dd * faceScale;\n" +
+                        "     \n" +
+                        "     for(int i = 0; i < arraySize; i++) {\n" +
+                        "         float delta = dd * 0.12;\n" +
+                        "         \n" +
+                        "         vec2 leftPoint = vec2(leftContourPoints[i * 2], leftContourPoints[i * 2 + 1]);\n" +
+                        "         vec2 rightPoint = vec2(rightContourPoints[i * 2], rightContourPoints[i * 2 + 1]);\n" +
+                        "         \n" +
+                        "         if (leftPoint != rightPoint) {\n" +
+                        "             positionToUse = warpPositionToThinFace(\n" +
+                        "                                                    positionToUse,\n" +
+                        "                                                    leftPoint,\n" +
+                        "                                                    rightPoint,\n" +
+                        "                                                    rrr,\n" +
+                        "                                                    delta,\n" +
+                        "                                                    aspectRatio\n" +
+                        "                                                    );\n" +
+                        "             positionToUse = warpPositionToThinFace(\n" +
+                        "                                                    positionToUse,\n" +
+                        "                                                    rightPoint,\n" +
+                        "                                                    leftPoint,\n" +
+                        "                                                    rrr,\n" +
+                        "                                                    delta,\n" +
+                        "                                                    aspectRatio\n" +
+                        "                                                    );\n" +
+                        "         }\n" +
+                        "         else {\n" +
+                        "             int j = 0; " +
+                        "             vec2 centerPoint = (vec2(leftContourPoints[j], leftContourPoints[j + 1]) + vec2(rightContourPoints[j], rightContourPoints[j + 1])) * 0.5;\n" +
+                        "             positionToUse = warpPositionToThinFace(\n" +
+                        "                                                    positionToUse,\n" +
+                        "                                                    leftPoint,\n" +
+                        "                                                    centerPoint,\n" +
+                        "                                                    rrr,\n" +
+                        "                                                    delta * faceScale * 0.3,\n" +
+                        "                                                    aspectRatio\n" +
+                        "                                                    );\n" +
+                        "         }\n" +
+                        "     }\n" +
+                        "     vec4 img = texture2D(inputImageTexture, positionToUse);\n" +
+//                        " if (positionToUse != st) { img = vec4(mix(img.rgb, vec3(1.0), 0.5), 1.0); }" +
+//                        "     gl_FragColor = vec4(img.r, leftEyePoint_x, leftEyePoint_y, 1.);\n" +
+                        "     gl_FragColor = img;\n" +
+                        " }";
                 break;
         }
         return shader;

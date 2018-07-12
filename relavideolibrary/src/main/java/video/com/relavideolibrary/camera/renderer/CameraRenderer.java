@@ -18,9 +18,11 @@ import video.com.relavideolibrary.camera.gpufilter.CameraFilter;
 import video.com.relavideolibrary.camera.gpufilter.GroupFilter;
 import video.com.relavideolibrary.camera.gpufilter.NoFilter;
 import video.com.relavideolibrary.camera.gpufilter.ProcessFilter;
+import video.com.relavideolibrary.camera.gpufilter.filter.BigEyesThinFaceFilter;
 import video.com.relavideolibrary.camera.gpufilter.filter.MagicBeautyFilter;
 import video.com.relavideolibrary.camera.utils.EasyGlUtils;
 import video.com.relavideolibrary.camera.utils.MatrixUtils;
+import video.com.relavideolibrary.interfaces.OnFaceDetectPointListener;
 
 /**
  * Created by cj on 2017/8/2.
@@ -28,7 +30,7 @@ import video.com.relavideolibrary.camera.utils.MatrixUtils;
  * 主要用于管理各种滤镜、画面旋转、视频编码录制等
  */
 
-public class CameraRenderer implements GLSurfaceView.Renderer {
+public class CameraRenderer implements GLSurfaceView.Renderer, OnFaceDetectPointListener {
 
     /**
      * 显示画面的filter
@@ -51,6 +53,10 @@ public class CameraRenderer implements GLSurfaceView.Renderer {
      * 美白的filter
      */
     private MagicBeautyFilter mBeautyFilter;
+    /**
+     * 大眼瘦脸的filter
+     */
+    private BigEyesThinFaceFilter mBigEyesThinFaceFilter;
 
     private SurfaceTexture mSurfaceTextrue;
     /**
@@ -88,6 +94,7 @@ public class CameraRenderer implements GLSurfaceView.Renderer {
         mBeFilter = new GroupFilter(resources);
         mAfFilter = new GroupFilter(resources);
         mBeautyFilter = new MagicBeautyFilter();
+        mBigEyesThinFaceFilter = new BigEyesThinFaceFilter();
 
         NoFilter clearFilter = new NoFilter(resources);
         addFilter(clearFilter);
@@ -114,6 +121,7 @@ public class CameraRenderer implements GLSurfaceView.Renderer {
         mBeFilter.create();
         mAfFilter.create();
         mBeautyFilter.init();
+        mBigEyesThinFaceFilter.init();
 
 
         if (recordingEnabled) {
@@ -151,6 +159,8 @@ public class CameraRenderer implements GLSurfaceView.Renderer {
         drawFilter.setSize(mPreviewWidth, mPreviewHeight);
         mBeautyFilter.onDisplaySizeChanged(mPreviewWidth, mPreviewHeight);
         mBeautyFilter.onInputSizeChanged(mPreviewWidth, mPreviewHeight);
+        mBigEyesThinFaceFilter.onDisplaySizeChanged(mPreviewWidth, mPreviewHeight);
+        mBigEyesThinFaceFilter.onInputSizeChanged(mPreviewWidth, mPreviewHeight);
 
         MatrixUtils.getShowMatrix(SM, mPreviewWidth, mPreviewHeight, width, height);
         showFilter.setMatrix(SM);
@@ -179,10 +189,13 @@ public class CameraRenderer implements GLSurfaceView.Renderer {
         }
         mProcessFilter.draw();
 
+        EasyGlUtils.bindFrameTexture(fFrame[0], fTexture[0]);
+        GLES20.glViewport(0, 0, mPreviewWidth, mPreviewHeight);
+        mBigEyesThinFaceFilter.onDrawFrame(mProcessFilter.getOutputTexture());
+        EasyGlUtils.unBindFrameBuffer();
 
-        mAfFilter.setTextureId(mProcessFilter.getOutputTexture());
+        mAfFilter.setTextureId(fTexture[0]);
         mAfFilter.draw();
-
 
         if (recordingEnabled) {
             /**说明是录制状态*/
@@ -276,6 +289,37 @@ public class CameraRenderer implements GLSurfaceView.Renderer {
     }
 
     /**
+     * 面部特征点回调
+     *
+     * @param landmarks
+     */
+    @Override
+    public void onDetectFacePoint(int status, int[] landmarks, int imageWidth, int imageHeight) {
+        if (status == 0) {
+            mBigEyesThinFaceFilter.setLandMask(landmarks, imageWidth, imageHeight);
+//            Log.d("FaceDetectCameraView", "render time:" + System.currentTimeMillis());
+        }
+    }
+
+    /**
+     * 设置大眼范围
+     *
+     * @param scale
+     */
+    public void setEyesScale(float scale) {
+        mBigEyesThinFaceFilter.setEyesScale(scale);
+    }
+
+    /**
+     * 设置瘦脸范围
+     *
+     * @param scale
+     */
+    public void setFaceScale(float scale) {
+        mBigEyesThinFaceFilter.setFaceScale(scale);
+    }
+
+    /**
      * 根据摄像头设置纹理映射坐标
      */
     public void setCameraId(int id) {
@@ -296,6 +340,15 @@ public class CameraRenderer implements GLSurfaceView.Renderer {
 
     public SurfaceTexture getTexture() {
         return mSurfaceTextrue;
+    }
+
+    /**
+     * 最终绘制到view上的TextureID
+     *
+     * @return
+     */
+    public int getPreviewTextureID() {
+        return mAfFilter.getOutputTexture();
     }
 
     public void onPause(boolean auto) {

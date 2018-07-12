@@ -3,7 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="video.com.relavideodemo.MainActivity">
+    tools:context="video.com.relavideodemo.surface.MainActivity">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -33,6 +33,26 @@
             android:text="preview"
             android:textAllCaps="false" />
 
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:onClick="AgoraPushActivity"
+            android:text="AgoraPushActivity"
+            android:textAllCaps="false" />
+
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:onClick="RtmpPreviewActivity"
+            android:text="RtmpPreviewActivity"
+            android:textAllCaps="false" />
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:onClick="FaceDetectorActivity"
+            android:text="FaceDetectorActivity"
+            android:textAllCaps="false" />
+
         <ImageView
             android:id="@+id/filter_image"
             android:layout_width="200dp"
@@ -52,13 +72,6 @@
             android:id="@+id/container"
             android:layout_width="match_parent"
             android:layout_height="400dp" />
-
-        <Button
-            android:onClick="playVideo"
-            android:textAllCaps="false"
-            android:text="list play video"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
     </LinearLayout>
 
 

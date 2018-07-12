@@ -5,6 +5,8 @@ import android.graphics.Rect;
 import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
 import android.util.Log;
+import android.util.SparseIntArray;
+import android.view.Surface;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -30,22 +32,34 @@ public class CameraController implements ICamera {
      * 相机实体
      */
     private Camera mCamera;
-    /**
-     * 预览的尺寸
-     */
-    private Camera.Size preSize;
-    /**
-     * 实际的尺寸
-     */
-    private Camera.Size picSize;
 
-    private Point mPreSize;
-    private Point mPicSize;
+    /**
+     * 屏幕旋转角度
+     */
+    private int displayOrientation;
+    /**
+     * 相机旋转角度
+     */
+    private int cameraOrientation = 0;
+
+    private static final SparseIntArray ORIENTATIONS = new SparseIntArray();
+
+    static {
+        ORIENTATIONS.append(Surface.ROTATION_0, 0);
+        ORIENTATIONS.append(Surface.ROTATION_90, 90);
+        ORIENTATIONS.append(Surface.ROTATION_180, 180);
+        ORIENTATIONS.append(Surface.ROTATION_270, 270);
+    }
+
+    private Camera.Size mPreSize;
 
     public Camera getmCamera() {
         return mCamera;
     }
 
+    public void setDisplayOrientation(int displayOrientation) {
+        this.displayOrientation = displayOrientation;
+    }
 
     public CameraController() {
         /**初始化一个默认的格式大小*/
@@ -65,18 +79,39 @@ public class CameraController implements ICamera {
             if (focusModes.contains(Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO)) {
                 param.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO);
             }
-            preSize = getPropPreviewSize(param.getSupportedPreviewSizes(), mConfig.rate,
+
+            int rotation = ORIENTATIONS.get(displayOrientation);
+            rotation = getCameraDisplayOrientation(rotation, cameraId);
+            mCamera.setDisplayOrientation(rotation);
+            cameraOrientation = rotation;
+            if (displayOrientation == Surface.ROTATION_0) {
+                if (cameraOrientation == 90 || cameraOrientation == 270) {
+                    cameraOrientation = (cameraOrientation + 180) % 360;
+                }
+            }
+
+            Camera.Size preSize = getPropPreviewSize(param.getSupportedPreviewSizes(), mConfig.rate,
                     mConfig.minPreviewWidth);
-            picSize = getPropPictureSize(param.getSupportedPictureSizes(), mConfig.rate,
+            Camera.Size picSize = getPropPictureSize(param.getSupportedPictureSizes(), mConfig.rate,
                     mConfig.minPictureWidth);
-            param.setPictureSize(picSize.width, picSize.height);
+
             param.setPreviewSize(preSize.width, preSize.height);
+            param.setPictureSize(picSize.width, picSize.height);
+
+            List<int[]> a = param.getSupportedPreviewFpsRange();
+            int minFps = a.get(0)[0];
+            int maxFps = a.get(0)[1];
+            for (int i = 0; i < a.size(); i++) {
+                int fps = a.get(i)[0];
+                if (fps >= 15000 && minFps > fps) {
+                    minFps = fps;
+                    maxFps = a.get(i)[1];
+                }
+            }
+            param.setPreviewFpsRange(minFps, maxFps);
 
             mCamera.setParameters(param);
-            Camera.Size pre = param.getPreviewSize();
-            Camera.Size pic = param.getPictureSize();
-            mPicSize = new Point(pic.height, pic.width);
-            mPreSize = new Point(pre.height, pre.width);
+            mPreSize = mCamera.getParameters().getPreviewSize();
         }
     }
 
@@ -100,12 +135,20 @@ public class CameraController implements ICamera {
     @Override
     public void setOnPreviewFrameCallback(final PreviewFrameCallback callback) {
         if (mCamera != null) {
-            mCamera.setPreviewCallback(new Camera.PreviewCallback() {
+            mCamera.addCallbackBuffer(new byte[mPreSize.width * mPreSize.height * 3 / 2]);
+            mCamera.setPreviewCallbackWithBuffer(new Camera.PreviewCallback() {
                 @Override
                 public void onPreviewFrame(byte[] data, Camera camera) {
-                    callback.onPreviewFrame(data, mPreSize.x, mPreSize.y);
+                    callback.onPreviewFrame(data, cameraOrientation, mPreSize.width, mPreSize.height);
+                    mCamera.addCallbackBuffer(data);
                 }
             });
+//            mCamera.setPreviewCallback(new Camera.PreviewCallback() {
+//                @Override
+//                public void onPreviewFrame(byte[] data, Camera camera) {
+//                    callback.onPreviewFrame(data, cameraOrientation, mPreSize.width, mPreSize.height);
+//                }
+//            });
         }
     }
 
@@ -117,18 +160,14 @@ public class CameraController implements ICamera {
     }
 
     @Override
-    public Point getPreviewSize() {
+    public Camera.Size getPreviewSize() {
         return mPreSize;
-    }
-
-    @Override
-    public Point getPictureSize() {
-        return mPicSize;
     }
 
     @Override
     public boolean close() {
         if (mCamera != null) {
+            mCamera.setPreviewCallback(null);
             mCamera.stopPreview();
             mCamera.release();
             mCamera = null;
@@ -184,6 +223,20 @@ public class CameraController implements ICamera {
 
     }
 
+    private int getCameraDisplayOrientation(int degrees, int cameraId) {
+        Camera.CameraInfo info = new Camera.CameraInfo();
+        Camera.getCameraInfo(cameraId, info);
+        int rotation = 0;
+        if (info.facing == Camera.CameraInfo.CAMERA_FACING_FRONT) {
+            rotation = (info.orientation + degrees) % 360;
+            rotation = (360 - rotation) % 360; // compensate the mirror
+        } else { // back-facing
+            rotation = (info.orientation - degrees + 360) % 360;
+        }
+
+        return rotation;
+    }
+
     private Camera.Size getPropPictureSize(List<Camera.Size> list, float th, int minWidth) {
         Collections.sort(list, sizeComparator);
         int i = 0;
@@ -225,14 +278,9 @@ public class CameraController implements ICamera {
     }
 
     private Comparator<Camera.Size> sizeComparator = new Comparator<Camera.Size>() {
+        @Override
         public int compare(Camera.Size lhs, Camera.Size rhs) {
-            if (lhs.height == rhs.height) {
-                return 0;
-            } else if (lhs.height > rhs.height) {
-                return 1;
-            } else {
-                return -1;
-            }
+            return Long.signum((long) lhs.width * lhs.height - (long) rhs.width * rhs.height);
         }
     };
 }

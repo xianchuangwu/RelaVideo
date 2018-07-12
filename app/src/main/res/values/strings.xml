@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">RelaVideoDemo</string>
+    <string name="app_name">RelaVideo</string>
 
     <string-array name="music_category">
         <item>最新</item>

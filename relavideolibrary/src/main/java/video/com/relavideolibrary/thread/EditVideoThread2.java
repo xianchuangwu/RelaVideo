@@ -40,7 +40,7 @@ import video.com.relavideolibrary.RelaVideoSDK;
 import video.com.relavideolibrary.Utils.Constant;
 import video.com.relavideolibrary.Utils.FileManager;
 import video.com.relavideolibrary.Utils.codec.Mp3ToAACWithClip;
-import video.com.relavideolibrary.jni.AudioJniUtils;
+import video.com.relavideolibrary.jni.RelaVideoJniUtils;
 import video.com.relavideolibrary.manager.VideoManager;
 
 /**
@@ -795,7 +795,7 @@ public class EditVideoThread2 extends Thread implements ExtractDecodeEditEncodeM
         if (allAudioBytes.length == 1)
             return realMixAudio;
 
-        return AudioJniUtils.audioMix(allAudioBytes[0], allAudioBytes[1], realMixAudio, firstVol, secondVol);
+        return RelaVideoJniUtils.audioMix(allAudioBytes[0], allAudioBytes[1], realMixAudio, firstVol, secondVol);
     }
 
     private ArrayList<byte[]> chunkPCMDataContainer;

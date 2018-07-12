@@ -12,9 +12,8 @@ android {
 
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
 
-        // 此处很重要，指定APP只使用 armeabi,armeabi-v7a和arm64-v8a的库
         ndk {
-            abiFilters 'armeabi-v7a', 'arm64-v8a', 'armeabi'
+            abiFilters 'armeabi-v7a','arm64-v8a'
         }
     }
     buildTypes {
@@ -52,11 +51,13 @@ dependencies {
     api project(':gpuimage')
     implementation 'com.github.bumptech.glide:glide:3.7.0'
     implementation 'com.github.bumptech.glide:okhttp3-integration:1.4.0@aar'
-    implementation 'com.ksyun.media:libksylive-java:2.4.2'
-    implementation 'com.ksyun.media:libksylive-armv7a:2.4.2'
-    implementation 'com.ksyun.media:libksylive-arm64:2.4.2'//v5没有jcenter库，直接将so文件放在lib里了
+    api 'com.ksyun.media:libksyplayer-java:2.1.2'
+    api 'com.ksyun.media:libksyplayer-armv7a:2.1.2'
+    api 'com.ksyun.media:libksyplayer-arm64:2.1.2'
     implementation 'com.airbnb.android:lottie:2.0.0-beta4'
-    implementation files('libs/libksyhttpcache.jar')
-//    implementation 'com.writingminds:FFmpegAndroid:0.3.2'
+    api files('libs/libksyhttpcache.jar')
+    //    implementation 'com.writingminds:FFmpegAndroid:0.3.2'
     implementation 'com.googlecode.mp4parser:isoparser:1.1.22'
+    api files('libs/facesdk.jar')
+    implementation files('libs/baidu_license.jar')
 }
