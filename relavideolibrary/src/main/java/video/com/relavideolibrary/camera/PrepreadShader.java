@@ -152,6 +152,7 @@ public enum PrepreadShader {
                         + " gl_FragColor.rgb = mix(gl_FragColor.rgb, rouguang, params.b);\n"
                         + " vec3 satcolor = gl_FragColor.rgb * saturateMatrix;\n"
                         + " gl_FragColor.rgb = mix(gl_FragColor.rgb, satcolor, params.a);\n"
+//                        + " gl_FragColor = texture2D(inputImageTexture, textureCoordinate);\n"
                         + " }\n" + "";
                 break;
             case F_BIG_EYE_AND_THIN_FACE:

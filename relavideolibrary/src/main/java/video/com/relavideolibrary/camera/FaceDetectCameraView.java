@@ -29,6 +29,7 @@ public class FaceDetectCameraView extends CameraView implements Handler.Callback
         super(context, attrs);
         mCamera.setDisplayOrientation(((Activity) context).getWindowManager().getDefaultDisplay().getRotation());
         faceDetectManager = new FaceDetectManager(context, new Handler(this));
+        //test open
 //        setEyesScale(100);
 //        setFaceScale(100);
     }
@@ -65,17 +66,17 @@ public class FaceDetectCameraView extends CameraView implements Handler.Callback
     @Override
     public void onResume() {
         super.onResume();
-        if (mDetectStoped) {
-            faceDetectManager.start();
-            mDetectStoped = false;
-        }
+//        if (mDetectStoped) {
+//            faceDetectManager.start();
+//            mDetectStoped = false;
+//        }
     }
 
     @Override
     public void onPause() {
         super.onPause();
-        faceDetectManager.stop();
-        mDetectStoped = true;
+//        faceDetectManager.stop();
+//        mDetectStoped = true;
     }
 
     /**

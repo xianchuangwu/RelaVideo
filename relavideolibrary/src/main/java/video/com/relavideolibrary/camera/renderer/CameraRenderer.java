@@ -6,7 +6,6 @@ import android.opengl.EGL14;
 import android.opengl.GLES11Ext;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
-import android.util.Log;
 import android.view.MotionEvent;
 
 import javax.microedition.khronos.egl.EGLConfig;
@@ -96,8 +95,8 @@ public class CameraRenderer implements GLSurfaceView.Renderer, OnFaceDetectPoint
         mBeautyFilter = new MagicBeautyFilter();
         mBigEyesThinFaceFilter = new BigEyesThinFaceFilter();
 
-        NoFilter clearFilter = new NoFilter(resources);
-        addFilter(clearFilter);
+//        NoFilter clearFilter = new NoFilter(resources);
+//        addFilter(clearFilter);
 
         recordingEnabled = false;
     }
@@ -122,7 +121,6 @@ public class CameraRenderer implements GLSurfaceView.Renderer, OnFaceDetectPoint
         mAfFilter.create();
         mBeautyFilter.init();
         mBigEyesThinFaceFilter.init();
-
 
         if (recordingEnabled) {
             recordingStatus = RECORDING_RESUMED;
@@ -189,10 +187,10 @@ public class CameraRenderer implements GLSurfaceView.Renderer, OnFaceDetectPoint
         }
         mProcessFilter.draw();
 
-        EasyGlUtils.bindFrameTexture(fFrame[0], fTexture[0]);
-        GLES20.glViewport(0, 0, mPreviewWidth, mPreviewHeight);
-        mBigEyesThinFaceFilter.onDrawFrame(mProcessFilter.getOutputTexture());
-        EasyGlUtils.unBindFrameBuffer();
+//        EasyGlUtils.bindFrameTexture(fFrame[0], fTexture[0]);
+//        GLES20.glViewport(0, 0, mPreviewWidth, mPreviewHeight);
+//        mBigEyesThinFaceFilter.onDrawFrame(mProcessFilter.getOutputTexture());
+//        EasyGlUtils.unBindFrameBuffer();
 
         mAfFilter.setTextureId(fTexture[0]);
         mAfFilter.draw();

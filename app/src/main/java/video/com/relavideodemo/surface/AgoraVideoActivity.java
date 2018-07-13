@@ -2,8 +2,8 @@ package video.com.relavideodemo.surface;
 
 import android.Manifest;
 import android.content.Context;
-import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -32,6 +32,7 @@ import io.agora.rtc.video.VideoCanvas;
 import io.reactivex.functions.Consumer;
 import video.com.relavideodemo.SmallAdapter;
 import video.com.relavideodemo.UserInfo;
+import video.com.relavideolibrary.Utils.FileManager;
 import video.com.relavideolibrary.camera.CameraView;
 
 public class AgoraVideoActivity extends AppCompatActivity {
@@ -154,23 +155,24 @@ public class AgoraVideoActivity extends AppCompatActivity {
 //        if (checkSelfPermission(Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
 //
 //        }
+        video.com.relavideolibrary.camera.utils.Constants.getInstance().setContext(this);
         new RxPermissions(this).request(Manifest.permission.CAMERA, Manifest.permission.RECORD_AUDIO, Manifest.permission.WRITE_EXTERNAL_STORAGE)
                 .subscribe(new Consumer<Boolean>() {
-            @Override
-            public void accept(Boolean aBoolean) throws Exception {
-                if (aBoolean) {
-                    mSmallView = findViewById(R.id.video_view_list);
-                    mSmallView.setHasFixedSize(true);
-                    GridLayoutManager glm = new GridLayoutManager(AgoraVideoActivity.this, 3);
-                    mSmallAdapter = new SmallAdapter(AgoraVideoActivity.this, getSmallVideoUser(mUserInfo, mBigUserId));
-                    mSmallView.setLayoutManager(glm);
-                    mSmallView.setAdapter(mSmallAdapter);
+                    @Override
+                    public void accept(Boolean aBoolean) throws Exception {
+                        if (aBoolean) {
+                            mSmallView = findViewById(R.id.video_view_list);
+                            mSmallView.setHasFixedSize(true);
+                            GridLayoutManager glm = new GridLayoutManager(AgoraVideoActivity.this, 3);
+                            mSmallAdapter = new SmallAdapter(AgoraVideoActivity.this, getSmallVideoUser(mUserInfo, mBigUserId));
+                            mSmallView.setLayoutManager(glm);
+                            mSmallView.setAdapter(mSmallAdapter);
 
-                    executorService = Executors.newSingleThreadExecutor();
-                    initAgoraEngineAndJoinChannel();
-                }
-            }
-        });
+                            executorService = Executors.newSingleThreadExecutor();
+                            initAgoraEngineAndJoinChannel();
+                        }
+                    }
+                });
 
 
     }
@@ -285,10 +287,13 @@ public class AgoraVideoActivity extends AppCompatActivity {
     private void joinChannel() {
         mRtcEngine.setClientRole(Constants.CLIENT_ROLE_BROADCASTER);
         mRtcEngine.joinChannel(null, "CustomizedVideoSourceChannel1", "Extra Optional Data", 0); // if you do not specify the uid, we will generate the uid for you
+
+
     }
 
     // Tutorial Step 6
     private void leaveChannel() {
+
         if (mRtcEngine != null) {
             mRtcEngine.removePublishStreamUrl(mPublishUrl);
             mRtcEngine.leaveChannel();
@@ -429,5 +434,24 @@ public class AgoraVideoActivity extends AppCompatActivity {
         }
 
         return users;
+    }
+
+    public void startRecorder(View view) {
+        executorService.execute(new Runnable() {
+            @Override
+            public void run() {
+                mCustomizedCameraRenderer.setSavePath(FileManager.getOtherFile("agora-test.mp4"));
+                mCustomizedCameraRenderer.startRecord();
+            }
+        });
+    }
+
+    public void stopRecorder(View view) {
+        executorService.execute(new Runnable() {
+            @Override
+            public void run() {
+                mCustomizedCameraRenderer.stopRecord();
+            }
+        });
     }
 }
