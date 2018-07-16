@@ -127,6 +127,12 @@ public class CameraView extends GLSurfaceView implements GLSurfaceView.Renderer,
         }
     }
 
+    public void onPause() {
+        if (mCamera != null) {
+            mCamera.close();
+        }
+    }
+
     public void onDestroy() {
         if (mCamera != null) {
             mCamera.close();
@@ -142,14 +148,6 @@ public class CameraView extends GLSurfaceView implements GLSurfaceView.Renderer,
      */
     public void onFocus(Point point, Camera.AutoFocusCallback callback) {
         mCamera.onFocus(point, callback);
-    }
-
-    public int getCameraId() {
-        return cameraId;
-    }
-
-    public int getBeautyLevel() {
-        return mCameraRenderer.getBeautyLevel();
     }
 
     public void changeBeautyLevel(final int level) {
@@ -181,24 +179,6 @@ public class CameraView extends GLSurfaceView implements GLSurfaceView.Renderer,
 
     public void setSavePath(String path) {
         mCameraRenderer.setSavePath(path);
-    }
-
-    public void resume(final boolean auto) {
-        queueEvent(new Runnable() {
-            @Override
-            public void run() {
-                mCameraRenderer.onResume(auto);
-            }
-        });
-    }
-
-    public void pause(final boolean auto) {
-        queueEvent(new Runnable() {
-            @Override
-            public void run() {
-                mCameraRenderer.onPause(auto);
-            }
-        });
     }
 
     public void onTouch(final MotionEvent event) {

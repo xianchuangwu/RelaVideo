@@ -95,8 +95,8 @@ public class CameraRenderer implements GLSurfaceView.Renderer, OnFaceDetectPoint
         mBeautyFilter = new MagicBeautyFilter();
         mBigEyesThinFaceFilter = new BigEyesThinFaceFilter();
 
-//        NoFilter clearFilter = new NoFilter(resources);
-//        addFilter(clearFilter);
+        NoFilter clearFilter = new NoFilter(resources);
+        addFilter(clearFilter);
 
         recordingEnabled = false;
     }
@@ -347,31 +347,6 @@ public class CameraRenderer implements GLSurfaceView.Renderer, OnFaceDetectPoint
      */
     public int getPreviewTextureID() {
         return mAfFilter.getOutputTexture();
-    }
-
-    public void onPause(boolean auto) {
-        if (auto) {
-            videoEncoder.pauseRecording();
-            if (recordingStatus == RECORDING_ON) {
-                recordingStatus = RECORDING_PAUSED;
-            }
-            return;
-        }
-        if (recordingStatus == RECORDING_ON) {
-            recordingStatus = RECORDING_PAUSE;
-        }
-    }
-
-    public void onResume(boolean auto) {
-        if (auto) {
-            if (recordingStatus == RECORDING_PAUSED) {
-                recordingStatus = RECORDING_RESUME;
-            }
-            return;
-        }
-        if (recordingStatus == RECORDING_PAUSED) {
-            recordingStatus = RECORDING_RESUME;
-        }
     }
 
     /**

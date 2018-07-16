@@ -154,8 +154,13 @@ public class RecordingActivity extends BaseActivity implements View.OnClickListe
     @Override
     protected void onPause() {
         super.onPause();
-        cameraView.onDestroy();
+        cameraView.onPause();
+    }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        cameraView.onDestroy();
     }
 
     @Override

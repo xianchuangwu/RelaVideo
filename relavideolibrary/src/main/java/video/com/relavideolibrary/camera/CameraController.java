@@ -53,10 +53,6 @@ public class CameraController implements ICamera {
 
     private Camera.Size mPreSize;
 
-    public Camera getmCamera() {
-        return mCamera;
-    }
-
     public void setDisplayOrientation(int displayOrientation) {
         this.displayOrientation = displayOrientation;
     }
