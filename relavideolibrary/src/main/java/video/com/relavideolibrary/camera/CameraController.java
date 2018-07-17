@@ -7,6 +7,7 @@ import android.hardware.Camera;
 import android.util.Log;
 import android.util.SparseIntArray;
 import android.view.Surface;
+import android.widget.Toast;
 
 import java.io.IOException;
 import java.util.ArrayList;

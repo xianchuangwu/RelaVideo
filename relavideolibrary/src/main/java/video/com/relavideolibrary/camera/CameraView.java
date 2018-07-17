@@ -1,5 +1,6 @@
 package video.com.relavideolibrary.camera;
 
+import android.app.Activity;
 import android.content.Context;
 import android.graphics.Point;
 import android.graphics.SurfaceTexture;
@@ -7,8 +8,10 @@ import android.hardware.Camera;
 import android.opengl.GLSurfaceView;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import java.util.Locale;
 
@@ -69,22 +72,44 @@ public class CameraView extends GLSurfaceView implements GLSurfaceView.Renderer,
     }
 
     private void open(int cameraId) {
-        mCamera.close();
-        mCamera.open(cameraId);
-        mCameraRenderer.setCameraId(cameraId);
-        final Camera.Size previewSize = mCamera.getPreviewSize();
-        renderWidth = previewSize.height;
-        renderHeight = previewSize.width;
-        SurfaceTexture texture = mCameraRenderer.getTexture();
-        texture.setOnFrameAvailableListener(this);
-        mCamera.setOnPreviewFrameCallback(this);
-        mCamera.setPreviewTexture(texture);
-        mCamera.preview();
+        try {
+            mCamera.close();
+            mCamera.open(cameraId);
+            mCameraRenderer.setCameraId(cameraId);
+            final Camera.Size previewSize = mCamera.getPreviewSize();
+            renderWidth = previewSize.height;
+            renderHeight = previewSize.width;
+            SurfaceTexture texture = mCameraRenderer.getTexture();
+            texture.setOnFrameAvailableListener(this);
+            mCamera.setOnPreviewFrameCallback(this);
+            mCamera.setPreviewTexture(texture);
+            mCamera.preview();
+        } catch (Exception e) {
+            e.printStackTrace();
+            try {
+                ((Activity) mContext).runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Toast toast = Toast.makeText(mContext, "相机打开失败", Toast.LENGTH_SHORT);
+                        toast.setGravity(Gravity.CENTER, 0, 0);
+                        toast.show();
+
+                    }
+                });
+            } catch (Exception e1) {
+                e1.printStackTrace();
+            }
+
+        }
     }
 
     public void switchCamera() {
         cameraId = cameraId == 0 ? 1 : 0;
         open(cameraId);
+    }
+
+    public int getCameraId() {
+        return cameraId;
     }
 
     @Override
