@@ -329,8 +329,8 @@ public class MainActivity extends AppCompatActivity implements FilterDataCallbac
             @Override
             public void accept(Boolean aBoolean) throws Exception {
                 if (aBoolean) {
-                    startActivity(new Intent(MainActivity.this, FaceDetectorActivity.class));
-//                    startActivity(new Intent(MainActivity.this, TestActivity.class));
+//                    startActivity(new Intent(MainActivity.this, FaceDetectorActivity.class));
+                    startActivity(new Intent(MainActivity.this, TestActivity.class));
                 }
             }
         });

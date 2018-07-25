@@ -67,6 +67,8 @@ dependencies {
     //    implementation 'com.github.lsjwzh.RecyclerViewPager:lib:v1.1.1'
     implementation 'io.agora.rtc:full-sdk:2.2.0'
     implementation project(path: ':relavideolibrary')
+    implementation files('libs/bdplayer.jar')
+    implementation files('libs/agent_lss_4.6.0-20180417.jar')
 }
 
 //configurations.all {

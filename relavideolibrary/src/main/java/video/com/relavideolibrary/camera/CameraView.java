@@ -6,6 +6,7 @@ import android.graphics.Point;
 import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
 import android.opengl.GLSurfaceView;
+import android.os.Build;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.Gravity;
@@ -22,14 +23,17 @@ import javax.microedition.khronos.egl.EGLDisplay;
 import javax.microedition.khronos.opengles.GL10;
 
 import video.com.relavideolibrary.camera.renderer.CameraRenderer;
+import video.com.relavideolibrary.camera.utils.BrightnessTools;
 
 
 /**
- * Created by cj on 2017/8/1.
- * desc
+ * Created by chad
+ * Time 18/7/24
+ * Email: wuxianchuang@foxmail.com
+ * Description:
  */
 
-public class CameraView extends GLSurfaceView implements GLSurfaceView.Renderer, SurfaceTexture.OnFrameAvailableListener, ICamera.PreviewFrameCallback {
+public class CameraView extends GLSurfaceView implements GLSurfaceView.Renderer, SurfaceTexture.OnFrameAvailableListener, ICameraController.PreviewFrameCallback {
     private static final String LOG_TAG = "CameraView";
 
     private Context mContext;
@@ -37,13 +41,18 @@ public class CameraView extends GLSurfaceView implements GLSurfaceView.Renderer,
     private EGLContext mEGLCurrentContext;
 
     protected CameraRenderer mCameraRenderer;
-    protected CameraController mCamera;
+
+    protected ICameraController mCameraController;
 
     private int renderWidth = 0, renderHeight = 0;
 
     private boolean isSetParm = false;
 
-    private int cameraId;
+    private int cameraId = ICameraController.CAMERA_FACING_BACK;
+
+    private OnFrameAvailableListener mOnFrameAvailableHandler;
+
+    private OnEGLContextListener mOnEGLContextHandler;
 
     public CameraView(Context context) {
         this(context, null);
@@ -67,49 +76,16 @@ public class CameraView extends GLSurfaceView implements GLSurfaceView.Renderer,
         /**初始化Camera的绘制类*/
         mCameraRenderer = new CameraRenderer(getResources());
         /**初始化相机的管理类*/
-        mCamera = new CameraController();
-
-    }
-
-    private void open(int cameraId) {
-        try {
-            mCamera.close();
-            mCamera.open(cameraId);
-            mCameraRenderer.setCameraId(cameraId);
-            final Camera.Size previewSize = mCamera.getPreviewSize();
-            renderWidth = previewSize.height;
-            renderHeight = previewSize.width;
-            SurfaceTexture texture = mCameraRenderer.getTexture();
-            texture.setOnFrameAvailableListener(this);
-            mCamera.setOnPreviewFrameCallback(this);
-            mCamera.setPreviewTexture(texture);
-            mCamera.preview();
-        } catch (Exception e) {
-            e.printStackTrace();
-            try {
-                ((Activity) mContext).runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        Toast toast = Toast.makeText(mContext, "相机打开失败", Toast.LENGTH_SHORT);
-                        toast.setGravity(Gravity.CENTER, 0, 0);
-                        toast.show();
-
-                    }
-                });
-            } catch (Exception e1) {
-                e1.printStackTrace();
-            }
-
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            mCameraController = new Camera2Controller(mContext);
+            Log.d("CameraView", "Camera2Control");
+        } else {
+            mCameraController = new Camera1Controller(mContext);
+            Log.d("CameraView", "Camera1Control");
         }
-    }
+//        mCameraController = new Camera1Controller(mContext);
+        initBrightness();
 
-    public void switchCamera() {
-        cameraId = cameraId == 0 ? 1 : 0;
-        open(cameraId);
-    }
-
-    public int getCameraId() {
-        return cameraId;
     }
 
     @Override
@@ -141,6 +117,17 @@ public class CameraView extends GLSurfaceView implements GLSurfaceView.Renderer,
         }
     }
 
+    @Override
+    public void onFrameAvailable(SurfaceTexture surfaceTexture) {
+        this.requestRender();
+    }
+
+
+    @Override
+    public void onPreviewFrame(byte[] data, int rotation, int width, int height) {
+
+    }
+
     /**
      * 每次Activity onResume时被调用,第一次不会打开相机
      */
@@ -153,14 +140,14 @@ public class CameraView extends GLSurfaceView implements GLSurfaceView.Renderer,
     }
 
     public void onPause() {
-        if (mCamera != null) {
-            mCamera.close();
+        if (mCameraController != null) {
+            mCameraController.close();
         }
     }
 
     public void onDestroy() {
-        if (mCamera != null) {
-            mCamera.close();
+        if (mCameraController != null) {
+            mCameraController.close();
             if (getParent() != null && getParent() instanceof ViewGroup) {
                 ((ViewGroup) getParent()).removeView(this);
             }
@@ -168,11 +155,68 @@ public class CameraView extends GLSurfaceView implements GLSurfaceView.Renderer,
         mEGLCurrentContext = null;
     }
 
+    private void open(@ICameraController.CameraFacing int cameraId) {
+        try {
+            mCameraController.close();
+            mCameraController.open(cameraId);
+            mCameraRenderer.setCameraId(cameraId);
+            final ICameraController.Config.Size previewSize = mCameraController.getPreviewSize();
+            renderWidth = previewSize.height;
+            renderHeight = previewSize.width;
+            SurfaceTexture texture = mCameraRenderer.getTexture();
+            texture.setOnFrameAvailableListener(this);
+            mCameraController.setOnPreviewFrameCallback(this);
+            mCameraController.setPreviewTexture(texture);
+            mCameraController.preview();
+        } catch (Exception e) {
+            e.printStackTrace();
+            try {
+                ((Activity) mContext).runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Toast toast = Toast.makeText(mContext, "相机打开失败", Toast.LENGTH_SHORT);
+                        toast.setGravity(Gravity.CENTER, 0, 0);
+                        toast.show();
+                    }
+                });
+            } catch (Exception e1) {
+                e1.printStackTrace();
+            }
+        }
+    }
+
+    /**
+     * 初始化屏幕亮度，不到200自动调整到200
+     */
+    private void initBrightness() {
+        int brightness = BrightnessTools.getScreenBrightness(mContext);
+        if (brightness < 200) {
+            BrightnessTools.setBrightness((Activity) mContext, 200);
+        }
+    }
+
+    public void switchCamera() {
+        cameraId = cameraId == 0 ? 1 : 0;
+        open(cameraId);
+    }
+
+    public int getCameraId() {
+        return cameraId;
+    }
+
+    public void setOnEGLContextHandler(OnEGLContextListener listener) {
+        this.mOnEGLContextHandler = listener;
+    }
+
+    public void setOnFrameAvailableHandler(OnFrameAvailableListener listener) {
+        this.mOnFrameAvailableHandler = listener;
+    }
+
     /**
      * 摄像头聚焦
      */
     public void onFocus(Point point, Camera.AutoFocusCallback callback) {
-        mCamera.onFocus(point, callback);
+        mCameraController.onFocus(point, callback);
     }
 
     public void changeBeautyLevel(final int level) {
@@ -221,35 +265,13 @@ public class CameraView extends GLSurfaceView implements GLSurfaceView.Renderer,
         }
     }
 
-    @Override
-    public void onFrameAvailable(SurfaceTexture surfaceTexture) {
-        this.requestRender();
-    }
-
-    public void setOnEGLContextHandler(OnEGLContextListener listener) {
-        this.mOnEGLContextHandler = listener;
-    }
-
-    public void setOnFrameAvailableHandler(OnFrameAvailableListener listener) {
-        this.mOnFrameAvailableHandler = listener;
-    }
-
-    @Override
-    public void onPreviewFrame(byte[] data, int rotation, int width, int height) {
-
-    }
-
     public interface OnFrameAvailableListener {
         void onFrameAvailable(EGLContext eglContext, int textureId, int width, int height);
     }
 
-    private OnFrameAvailableListener mOnFrameAvailableHandler;
-
     public interface OnEGLContextListener {
         void onEGLContextReady();
     }
-
-    private OnEGLContextListener mOnEGLContextHandler;
 
     private static class MyContextFactory implements EGLContextFactory {
         private static int EGL_CONTEXT_CLIENT_VERSION = 0x3098;

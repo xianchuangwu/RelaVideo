@@ -6,8 +6,8 @@
     android:background="@color/white"
     tools:context="video.com.relavideodemo.surface.TestActivity">
 
-    <SurfaceView
-        android:id="@+id/texture"
+    <video.com.relavideolibrary.camera.CameraView
+        android:id="@+id/cameraView"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 </android.support.constraint.ConstraintLayout>

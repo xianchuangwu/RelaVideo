@@ -3,7 +3,6 @@ package video.com.relavideodemo.surface;
 import android.Manifest;
 import android.content.Context;
 import android.os.Bundle;
-import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;

@@ -27,7 +27,7 @@ public class FaceDetectCameraView extends CameraView implements Handler.Callback
 
     public FaceDetectCameraView(Context context, AttributeSet attrs) {
         super(context, attrs);
-        mCamera.setDisplayOrientation(((Activity) context).getWindowManager().getDefaultDisplay().getRotation());
+        mCameraController.setDisplayOrientation(((Activity) context).getWindowManager().getDefaultDisplay().getRotation());
         faceDetectManager = new FaceDetectManager(context, new Handler(this));
         //test open
 //        setEyesScale(100);
