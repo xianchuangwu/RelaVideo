@@ -83,7 +83,6 @@ public class CameraView extends GLSurfaceView implements GLSurfaceView.Renderer,
             mCameraController = new Camera1Controller(mContext);
             Log.d("CameraView", "Camera1Control");
         }
-//        mCameraController = new Camera1Controller(mContext);
         initBrightness();
 
     }

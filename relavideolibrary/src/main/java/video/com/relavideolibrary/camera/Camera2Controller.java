@@ -21,6 +21,7 @@ import android.media.ImageReader;
 import android.os.Build;
 import android.os.Handler;
 import android.os.HandlerThread;
+import android.os.Looper;
 import android.support.annotation.IntDef;
 import android.support.annotation.NonNull;
 import android.support.v4.content.ContextCompat;
@@ -105,6 +106,8 @@ public class Camera2Controller implements ICameraController {
 
     private Semaphore cameraLock = new Semaphore(1);
 
+    private Handler handler = new Handler(Looper.getMainLooper());
+
     private CameraDevice mCameraDevice;
     private ImageReader mImageReader;
     private CaptureRequest.Builder mCaptureRequestBuilder;
@@ -141,90 +144,12 @@ public class Camera2Controller implements ICameraController {
 
     @Override
     public void preview() {
-        //设置SurfaceTexture的默认尺寸
-        mSurfaceTexture.setDefaultBufferSize(mPreviewSize.width, mPreviewSize.height);
-        //根据mSurfaceTexture创建Surface
-        Surface surface = new Surface(mSurfaceTexture);
-        try {
-            //创建preview捕获请求
-            mCaptureRequestBuilder = mCameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW);
-            //将此请求输出目标设为我们创建的Surface对象，这个Surface对象也必须添加给createCaptureSession才行
-            mCaptureRequestBuilder.addTarget(surface);
-
-            mImageReader = ImageReader.newInstance(mPreviewSize.width, mPreviewSize.height, ImageFormat.YUV_420_888, 15);
-            mImageReader.setOnImageAvailableListener(new ImageReader.OnImageAvailableListener() {
-                @Override
-                public void onImageAvailable(ImageReader reader) {
-                    Image image = reader.acquireNextImage();
-                    ByteBuffer buffer = image.getPlanes()[0].getBuffer();
-                    byte[] data = new byte[buffer.remaining()];
-                    buffer.get(data);
-//                    byte[] data = YUV_420_888_toRGBIntrinsics(image);
-
-                    int rotation = ORIENTATION.get(displayOrientation);
-                    if (mCameraId == CAMERA_FACING_FRONT) {
-                        if (rotation == 90 || rotation == 270) {
-                            rotation = (rotation + 180) % 360;
-                        }
-                    }
-
-                    Log.e("xx", "sensorOrientation" + image.getWidth() + " " + image.getHeight());
-                    int fmt = reader.getImageFormat();
-                    Log.e("xx", "bob image fmt:" + fmt + " lenght->" + data.length);
-
-                    if (frameCallback != null) {
-                        frameCallback.onPreviewFrame(data, rotation, image.getWidth(), image.getHeight());
-                    }
-                    image.close();
-                }
-            }, mCameraHandler);
-
-            mCaptureRequestBuilder.addTarget(mImageReader.getSurface());
-
-            //创建捕获会话，第一个参数是捕获数据的输出Surface列表，第二个参数是CameraCaptureSession的状态回调接口，当它创建好后会回调onConfigured方法，第三个参数用来确定Callback在哪个线程执行，为null的话就在当前线程执行
-            mCameraDevice.createCaptureSession(Arrays.asList(surface, mImageReader.getSurface()), new CameraCaptureSession.StateCallback() {
-                @Override
-                public void onConfigured(@NonNull CameraCaptureSession session) {
-                    // The camera is already closed
-                    if (null == mCameraDevice) {
-                        return;
-                    }
-                    try {
-                        // 自动对焦
-                        mCaptureRequestBuilder.set(CaptureRequest.CONTROL_AF_MODE, CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE);
-                        //FPS
-                        if (fpsRanges != null) {
-                            Integer minFps = fpsRanges[0].getLower();
-                            int selectIndex = 0;
-                            for (int i = 0; i < fpsRanges.length; i++) {
-                                Log.d("fpsRanges", "min: " + fpsRanges[i].getLower() + ",max: " + fpsRanges[i].getUpper());
-                                if (fpsRanges[i].getLower() >= 15 && minFps > fpsRanges[i].getLower()) {
-                                    minFps = fpsRanges[i].getLower();
-                                    selectIndex = i;
-                                }
-                            }
-                            mCaptureRequestBuilder.set(CaptureRequest.CONTROL_AE_TARGET_FPS_RANGE, fpsRanges[selectIndex]);
-                        }
-                        //闪光灯
-                        updateFlashMode(Camera2Controller.this.flashMode, mCaptureRequestBuilder);
-                        //创建捕获请求
-                        mCaptureRequest = mCaptureRequestBuilder.build();
-                        mCameraCaptureSession = session;
-                        //设置重复捕获数据的请求，之后surface绑定的SurfaceTexture中就会一直有数据到达，然后就会回调SurfaceTexture.OnFrameAvailableListener接口
-                        mCameraCaptureSession.setRepeatingRequest(mCaptureRequest, null, mCameraHandler);
-                    } catch (CameraAccessException e) {
-                        e.printStackTrace();
-                    }
-                }
-
-                @Override
-                public void onConfigureFailed(@NonNull CameraCaptureSession session) {
-                    Toast.makeText(mContext, "Camera2 参数配置错误", Toast.LENGTH_SHORT).show();
-                }
-            }, mCameraHandler);
-        } catch (CameraAccessException e) {
-            e.printStackTrace();
-        }
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                createCameraPreviewSession();
+            }
+        }, 500);
     }
 
     @Override
@@ -351,6 +276,92 @@ public class Camera2Controller implements ICameraController {
             mCameraDevice = null;
         }
     };
+
+    private void createCameraPreviewSession() {
+        //设置SurfaceTexture的默认尺寸
+        mSurfaceTexture.setDefaultBufferSize(mPreviewSize.width, mPreviewSize.height);
+        //根据mSurfaceTexture创建Surface
+        Surface surface = new Surface(mSurfaceTexture);
+        try {
+            //创建preview捕获请求
+            mCaptureRequestBuilder = mCameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW);
+            //将此请求输出目标设为我们创建的Surface对象，这个Surface对象也必须添加给createCaptureSession才行
+            mCaptureRequestBuilder.addTarget(surface);
+
+            mImageReader = ImageReader.newInstance(mPreviewSize.width, mPreviewSize.height, ImageFormat.YUV_420_888, 15);
+            mImageReader.setOnImageAvailableListener(new ImageReader.OnImageAvailableListener() {
+                @Override
+                public void onImageAvailable(ImageReader reader) {
+                    Image image = reader.acquireNextImage();
+                    ByteBuffer buffer = image.getPlanes()[0].getBuffer();
+                    byte[] data = new byte[buffer.remaining()];
+                    buffer.get(data);
+
+                    int rotation = ORIENTATION.get(displayOrientation);
+                    if (mCameraId == CAMERA_FACING_FRONT) {
+                        if (rotation == 90 || rotation == 270) {
+                            rotation = (rotation + 180) % 360;
+                        }
+                    }
+
+//                    Log.e("xx", "sensorOrientation" + image.getWidth() + " " + image.getHeight());
+//                    int fmt = reader.getImageFormat();
+//                    Log.e("xx", "bob image fmt:" + fmt + " lenght->" + data.length);
+
+                    if (frameCallback != null) {
+                        frameCallback.onPreviewFrame(data, rotation, image.getWidth(), image.getHeight());
+                    }
+                    image.close();
+                }
+            }, mCameraHandler);
+
+            mCaptureRequestBuilder.addTarget(mImageReader.getSurface());
+
+            //创建捕获会话，第一个参数是捕获数据的输出Surface列表，第二个参数是CameraCaptureSession的状态回调接口，当它创建好后会回调onConfigured方法，第三个参数用来确定Callback在哪个线程执行，为null的话就在当前线程执行
+            mCameraDevice.createCaptureSession(Arrays.asList(surface, mImageReader.getSurface()), new CameraCaptureSession.StateCallback() {
+                @Override
+                public void onConfigured(@NonNull CameraCaptureSession session) {
+                    // The camera is already closed
+                    if (null == mCameraDevice) {
+                        return;
+                    }
+                    try {
+                        // 自动对焦
+                        mCaptureRequestBuilder.set(CaptureRequest.CONTROL_AF_MODE, CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE);
+                        //FPS
+                        if (fpsRanges != null) {
+                            Integer minFps = fpsRanges[0].getLower();
+                            int selectIndex = 0;
+                            for (int i = 0; i < fpsRanges.length; i++) {
+                                Log.d("fpsRanges", "min: " + fpsRanges[i].getLower() + ",max: " + fpsRanges[i].getUpper());
+                                if (fpsRanges[i].getLower() >= 15 && minFps > fpsRanges[i].getLower()) {
+                                    minFps = fpsRanges[i].getLower();
+                                    selectIndex = i;
+                                }
+                            }
+                            mCaptureRequestBuilder.set(CaptureRequest.CONTROL_AE_TARGET_FPS_RANGE, fpsRanges[selectIndex]);
+                        }
+                        //闪光灯
+                        updateFlashMode(Camera2Controller.this.flashMode, mCaptureRequestBuilder);
+                        //创建捕获请求
+                        mCaptureRequest = mCaptureRequestBuilder.build();
+                        mCameraCaptureSession = session;
+                        //设置重复捕获数据的请求，之后surface绑定的SurfaceTexture中就会一直有数据到达，然后就会回调SurfaceTexture.OnFrameAvailableListener接口
+                        mCameraCaptureSession.setRepeatingRequest(mCaptureRequest, null, mCameraHandler);
+                    } catch (CameraAccessException e) {
+                        e.printStackTrace();
+                    }
+                }
+
+                @Override
+                public void onConfigureFailed(@NonNull CameraCaptureSession session) {
+                    Toast.makeText(mContext, "Camera2 参数配置错误", Toast.LENGTH_SHORT).show();
+                }
+            }, mCameraHandler);
+        } catch (CameraAccessException e) {
+            e.printStackTrace();
+        }
+    }
 
     private void updateFlashMode(@FlashMode int flashMode, CaptureRequest.Builder builder) {
         switch (flashMode) {
