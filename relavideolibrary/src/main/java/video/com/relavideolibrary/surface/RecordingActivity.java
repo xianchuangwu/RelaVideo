@@ -32,7 +32,6 @@ import video.com.relavideolibrary.Utils.FileManager;
 import video.com.relavideolibrary.Utils.ScreenUtils;
 import video.com.relavideolibrary.Utils.codec.MulitVideoMuxer;
 import video.com.relavideolibrary.camera.CameraView;
-import video.com.relavideolibrary.camera.utils.Constants;
 import video.com.relavideolibrary.manager.VideoManager;
 import video.com.relavideolibrary.model.VideoBean;
 import video.com.relavideolibrary.view.RecordingButton;
@@ -102,7 +101,6 @@ public class RecordingActivity extends BaseActivity implements View.OnClickListe
         delete.setEnabled(false);
         findViewById(R.id.beautiful).setOnClickListener(this);
 
-        Constants.getInstance().setContext(getApplicationContext());
         executorService = Executors.newSingleThreadExecutor();
     }
 

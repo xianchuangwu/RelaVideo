@@ -2,6 +2,7 @@ package video.com.relavideolibrary.camera;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.pm.ActivityInfo;
 import android.graphics.Point;
 import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
@@ -30,7 +31,7 @@ import video.com.relavideolibrary.camera.utils.BrightnessTools;
  * Created by chad
  * Time 18/7/24
  * Email: wuxianchuang@foxmail.com
- * Description:
+ * Description: 对相机结合GLSurfaceView做渲染预览进行封装，使用CameraView必须遵循生命周期{@link CameraView#onResume(),CameraView#onPause(),CameraView#onDestroy()}
  */
 
 public class CameraView extends GLSurfaceView implements GLSurfaceView.Renderer, SurfaceTexture.OnFrameAvailableListener, ICameraController.PreviewFrameCallback {
@@ -84,6 +85,8 @@ public class CameraView extends GLSurfaceView implements GLSurfaceView.Renderer,
             Log.d("CameraView", "Camera1Control");
         }
         initBrightness();
+        /**设置相机采集页面为竖屏*/
+        ((Activity) mContext).setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
 
     }
 

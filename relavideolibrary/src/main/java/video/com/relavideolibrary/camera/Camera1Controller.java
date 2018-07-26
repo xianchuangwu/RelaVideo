@@ -28,7 +28,7 @@ import video.com.relavideolibrary.camera.utils.Constants;
  * Created by chad
  * Time 18/7/24
  * Email: wuxianchuang@foxmail.com
- * Description: 5.0以下相机API的封装,包括预览和录制尺寸、闪光灯、曝光、聚焦、摄像头切换等
+ * Description: 5.0以下相机API的封装
  */
 @SuppressWarnings("deprecation")
 @TargetApi(Build.VERSION_CODES.JELLY_BEAN)

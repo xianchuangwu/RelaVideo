@@ -154,7 +154,6 @@ public class AgoraVideoActivity extends AppCompatActivity {
 //        if (checkSelfPermission(Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
 //
 //        }
-        video.com.relavideolibrary.camera.utils.Constants.getInstance().setContext(this);
         new RxPermissions(this).request(Manifest.permission.CAMERA, Manifest.permission.RECORD_AUDIO, Manifest.permission.WRITE_EXTERNAL_STORAGE)
                 .subscribe(new Consumer<Boolean>() {
                     @Override

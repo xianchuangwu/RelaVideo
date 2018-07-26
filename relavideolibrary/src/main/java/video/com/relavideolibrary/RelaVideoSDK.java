@@ -10,6 +10,7 @@ import java.util.Map;
 import baidu.facedetect.Config;
 import baidu.facedetect.FaceEnvironment;
 import baidu.facedetect.FaceSDKManager;
+import video.com.relavideolibrary.camera.utils.Constants;
 import video.com.relavideolibrary.interfaces.FilterDataCallback;
 import video.com.relavideolibrary.interfaces.MusicCategoryCallback;
 import video.com.relavideolibrary.interfaces.MusicListCallback;
@@ -29,6 +30,7 @@ public class RelaVideoSDK {
 
     public static void init(Context context) {
         RelaVideoSDK.context = context;
+        Constants.getInstance().setContext(context);
 
         // 为了android和ios 区分授权，appId=appname_face_android ,其中appname为申请sdk时的应用名
         // 应用上下文

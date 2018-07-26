@@ -93,8 +93,4 @@ public interface ICameraController {
     interface PreviewFrameCallback {
         void onPreviewFrame(byte[] bytes, int rotation, int width, int height);
     }
-
-    interface PermissionCallback {
-        boolean onRequestPermission();
-    }
 }
