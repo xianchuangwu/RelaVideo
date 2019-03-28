@@ -4,7 +4,7 @@ android {
     compileSdkVersion 27
     buildToolsVersion '27.0.3'
     defaultConfig {
-        applicationId "com.thel"
+        applicationId "com.rela_video"
         minSdkVersion 21
         targetSdkVersion 27
         versionCode 1
@@ -12,27 +12,7 @@ android {
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
 
         ndk {
-            abiFilters 'armeabi-v7a','arm64-v8a'
-        }
-    }
-    signingConfigs {
-
-        def password = "123456"
-        def alias = "thel"
-        def filePath = "/Users/wuxianchuang/Desktop/AndroidStudioProjects/Rela/theL_android/app/thel"
-        //如  ../facesharp.jks//签名文件路径
-
-        debug {
-            keyAlias alias
-            keyPassword password
-            storeFile file(filePath)
-            storePassword(password)
-        }
-        release {
-            keyAlias alias
-            keyPassword password
-            storeFile file(filePath)
-            storePassword(password)
+            abiFilters 'armeabi-v7a'
         }
     }
     buildTypes {
@@ -69,6 +49,12 @@ dependencies {
     implementation project(path: ':relavideolibrary')
     implementation files('libs/bdplayer.jar')
     implementation files('libs/agent_lss_4.6.0-20180417.jar')
+    implementation 'com.isseiaoki:simplecropview:1.1.8'
+//    implementation 'com.liyi.view:image-viewer:2.1.2'
+    implementation 'com.github.bumptech.glide:glide:3.8.0'
+//    implementation 'com.liyi.view:flowview:1.1.0'
+//    implementation 'com.liyi.view:auto-gridview:1.0.8'
+    implementation 'com.github.chrisbanes:PhotoView:2.1.4'
 }
 
 //configurations.all {

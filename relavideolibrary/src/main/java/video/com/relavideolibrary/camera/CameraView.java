@@ -84,6 +84,7 @@ public class CameraView extends GLSurfaceView implements GLSurfaceView.Renderer,
             mCameraController = new Camera1Controller(mContext);
             Log.d("CameraView", "Camera1Control");
         }
+//        mCameraController = new Camera1Controller(mContext);
         initBrightness();
         /**设置相机采集页面为竖屏*/
         ((Activity) mContext).setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);

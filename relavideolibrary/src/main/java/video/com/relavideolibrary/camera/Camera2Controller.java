@@ -313,6 +313,8 @@ public class Camera2Controller implements ICameraController {
             }, mCameraHandler);
         } catch (CameraAccessException e) {
             e.printStackTrace();
+        } catch (NullPointerException e) {
+            e.printStackTrace();
         }
     }
 

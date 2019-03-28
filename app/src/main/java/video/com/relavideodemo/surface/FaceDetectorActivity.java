@@ -6,11 +6,10 @@ import android.support.v7.app.AppCompatActivity;
 import com.thel.R;
 
 import video.com.relavideolibrary.camera.CameraView;
-import video.com.relavideolibrary.camera.FaceDetectCameraView;
 
 public class FaceDetectorActivity extends AppCompatActivity {
 
-    private FaceDetectCameraView cameraView;
+    private CameraView cameraView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

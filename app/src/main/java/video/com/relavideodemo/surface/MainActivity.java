@@ -72,14 +72,14 @@ public class MainActivity extends AppCompatActivity implements FilterDataCallbac
                 .addMusicCategory(this)
                 .addMusicList(this);
 
-        if (bigGiftView == null) {
-            FrameLayout container = findViewById(R.id.container);
-            bigGiftView = new RelaBigGiftView(this, "http://live-yf-hdl.huomaotv.cn/live/bcfpxN35275.flv?from=huomaoroom");
-            FrameLayout.LayoutParams layoutParams = new FrameLayout.LayoutParams(-1, -1);
-            container.addView(bigGiftView, layoutParams);
-        } else {
-            bigGiftView.reload("http://pro.thel.co/gift/video/1514199928405jendak.mp4");
-        }
+//        if (bigGiftView == null) {
+//            FrameLayout container = findViewById(R.id.container);
+//            bigGiftView = new RelaBigGiftView(this, "http://live-yf-hdl.huomaotv.cn/live/bcfpxN35275.flv?from=huomaoroom");
+//            FrameLayout.LayoutParams layoutParams = new FrameLayout.LayoutParams(-1, -1);
+//            container.addView(bigGiftView, layoutParams);
+//        } else {
+//            bigGiftView.reload("http://pro.thel.co/gift/video/1514199928405jendak.mp4");
+//        }
 
 //        handler.sendEmptyMessageDelayed(0, 2000);
     }
@@ -334,5 +334,9 @@ public class MainActivity extends AppCompatActivity implements FilterDataCallbac
                 }
             }
         });
+    }
+
+    public void imagePreview(View view) {
+        startActivity(new Intent(this,ImagePreviewActivity.class));
     }
 }

@@ -6,7 +6,7 @@ buildscript {
         google()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.1.3'
+        classpath 'com.android.tools.build:gradle:3.3.2'
         classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.4'
         classpath 'com.github.dcendents:android-maven-gradle-plugin:1.5'
 
@@ -19,7 +19,10 @@ allprojects {
     repositories {
         jcenter()
         google()
-        maven { url "https://jitpack.io" }
+        // 此句maven是为因为项目中使用了jitpack上的开源项目PhotoView
+        maven { url 'https://jitpack.io' }
+        // 如果添加依赖时，报找不到项目时（项目正在审核），可以添加此句maven地址，如果找到项目，可不必添加
+        maven { url "https://dl.bintray.com/albertlii/android-maven/" }
     }
 }
 
