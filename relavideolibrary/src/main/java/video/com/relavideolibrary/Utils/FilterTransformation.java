@@ -3,9 +3,12 @@ package video.com.relavideolibrary.Utils;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.support.annotation.NonNull;
 
 import com.bumptech.glide.load.engine.bitmap_recycle.BitmapPool;
 import com.bumptech.glide.load.resource.bitmap.BitmapTransformation;
+
+import java.security.MessageDigest;
 
 import jp.co.cyberagent.android.gpuimage.GPUImage;
 import jp.co.cyberagent.android.gpuimage.GPUImageLookupFilter;
@@ -23,7 +26,7 @@ public class FilterTransformation extends BitmapTransformation {
     private int filterId;
 
     public FilterTransformation(Context context, int filterId) {
-        super(context);
+        super();
         this.context = context;
         this.filterId = filterId;
     }
@@ -44,7 +47,7 @@ public class FilterTransformation extends BitmapTransformation {
     }
 
     @Override
-    public String getId() {
-        return getClass().getName();
+    public void updateDiskCacheKey(@NonNull MessageDigest messageDigest) {
+
     }
 }

@@ -7,7 +7,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
-import com.bumptech.glide.signature.StringSignature;
+import com.bumptech.glide.request.RequestOptions;
+import com.bumptech.glide.signature.ObjectKey;
 
 import java.util.Collection;
 
@@ -38,7 +39,9 @@ public class FilterAdapter extends BaseRecyclerAdapter<FilterBean> {
     public void dataBinding(final BaseViewHolder holder, final FilterBean item, final int position) {
         Glide.with(mContext)
                 .load(VideoManager.getInstance().getVideoBean().videoPath)
-                .signature(new StringSignature(String.valueOf(item.filterId)))
+                .apply(new RequestOptions()
+                        .signature(new ObjectKey(String.valueOf(item.filterId)))
+                        .encodeQuality(70))
                 .transform(new FilterTransformation(mContext, item.filterId))
                 .into((ImageView) holder.getView(R.id.filter_image));
 

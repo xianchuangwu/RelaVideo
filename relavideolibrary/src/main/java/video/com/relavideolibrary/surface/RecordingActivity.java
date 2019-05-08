@@ -17,7 +17,9 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.RequestBuilder;
 import com.bumptech.glide.load.resource.bitmap.CenterCrop;
+import com.bumptech.glide.request.RequestOptions;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -133,14 +135,16 @@ public class RecordingActivity extends BaseActivity implements View.OnClickListe
                 }
                 if (!TextUtils.isEmpty(firstVideoUrl)) {
                     final String finalFirstVideoUrl = firstVideoUrl;
+
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
+                            RequestOptions requestOptions = new RequestOptions().transform(new CenterCrop()
+                                    , new CornerTransformation(RecordingActivity.this, 10))
+                                    .placeholder(R.mipmap.ic_default);
                             Glide.with(RecordingActivity.this)
                                     .load(finalFirstVideoUrl)
-                                    .transform(new CenterCrop(RecordingActivity.this)
-                                            , new CornerTransformation(RecordingActivity.this, 10))
-                                    .placeholder(R.mipmap.ic_default)
+                                    .apply(requestOptions)
                                     .into(gallery);
                         }
                     });

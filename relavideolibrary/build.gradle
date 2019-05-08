@@ -2,7 +2,6 @@ apply plugin: 'com.android.library'
 
 android {
     compileSdkVersion 27
-    buildToolsVersion '27.0.3'
 
     defaultConfig {
         minSdkVersion 19
@@ -49,8 +48,8 @@ dependencies {
     testImplementation 'junit:junit:4.12'
     implementation 'com.squareup.retrofit2:converter-gson:2.1.0'
     api project(':gpuimage')
-    implementation 'com.github.bumptech.glide:glide:3.7.0'
-    implementation 'com.github.bumptech.glide:okhttp3-integration:1.4.0@aar'
+    implementation 'com.github.bumptech.glide:glide:4.9.0'
+    annotationProcessor 'com.github.bumptech.glide:compiler:4.9.0'
     api 'com.ksyun.media:libksyplayer-java:2.1.2'
     api 'com.ksyun.media:libksyplayer-armv7a:2.1.2'
     implementation 'com.airbnb.android:lottie:2.0.0-beta4'

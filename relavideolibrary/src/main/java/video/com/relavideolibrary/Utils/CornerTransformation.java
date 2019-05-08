@@ -7,9 +7,12 @@ import android.graphics.BitmapShader;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.RectF;
+import android.support.annotation.NonNull;
 
 import com.bumptech.glide.load.engine.bitmap_recycle.BitmapPool;
 import com.bumptech.glide.load.resource.bitmap.BitmapTransformation;
+
+import java.security.MessageDigest;
 
 /**
  * Created by chad
@@ -27,7 +30,7 @@ public class CornerTransformation extends BitmapTransformation {
     }
 
     public CornerTransformation(Context context, int dp) {
-        super(context);
+        super();
         this.radius = Resources.getSystem().getDisplayMetrics().density * dp;
     }
 
@@ -48,7 +51,7 @@ public class CornerTransformation extends BitmapTransformation {
     }
 
     @Override
-    public String getId() {
-        return getClass().getName();
+    public void updateDiskCacheKey(@NonNull MessageDigest messageDigest) {
+
     }
 }

@@ -1,5 +1,6 @@
 package video.com.relavideodemo.surface;
 
+import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -12,9 +13,8 @@ import android.view.View;
 import android.widget.ImageView;
 
 import com.bumptech.glide.Glide;
-import com.bumptech.glide.load.resource.drawable.GlideDrawable;
-import com.bumptech.glide.request.animation.GlideAnimation;
-import com.bumptech.glide.request.target.SimpleTarget;
+import com.bumptech.glide.request.target.BitmapImageViewTarget;
+import com.bumptech.glide.request.transition.Transition;
 import com.thel.R;
 
 import java.util.ArrayList;
@@ -105,7 +105,7 @@ public class ImagePreviewActivity extends AppCompatActivity {
             @Override
             public void displayImage(final int position, String src, final ImageView imageView) {
                 final ScaleImageView scaleImageView = (ScaleImageView) imageView.getParent();
-                Glide.with(ImagePreviewActivity.this).load(src).centerCrop().into(new SimpleTarget<GlideDrawable>() {
+                Glide.with(ImagePreviewActivity.this).asBitmap().load(src).centerCrop().into(new BitmapImageViewTarget(imageView) {
 
                     @Override
                     public void onLoadStarted(@Nullable Drawable placeholder) {
@@ -115,9 +115,10 @@ public class ImagePreviewActivity extends AppCompatActivity {
                     }
 
                     @Override
-                    public void onResourceReady(GlideDrawable resource, GlideAnimation<? super GlideDrawable> glideAnimation) {
+                    public void onResourceReady (@NonNull Bitmap resource,
+                                                 @Nullable Transition<? super Bitmap> transition) {
                         scaleImageView.removeProgressView();
-                        imageView.setImageDrawable(resource);
+                        imageView.setImageBitmap(resource);
                     }
                 });
             }
@@ -153,7 +154,7 @@ public class ImagePreviewActivity extends AppCompatActivity {
             mViewList.get(position).setImageWidth(imageView.getWidth());
             mViewList.get(position).setImageHeight(imageView.getHeight());
             imagePreivew.setViewData(mViewList);
-            Glide.with(mContext).load(item).centerCrop().crossFade().into(imageView);
+            Glide.with(mContext).load(item).centerCrop().into(imageView);
 
             imageView.setOnClickListener(new View.OnClickListener() {
                 @Override

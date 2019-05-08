@@ -161,7 +161,7 @@ public class GalleryVideoAdapter extends BaseRecyclerAdapter<MediaModel> {
 
         if (!item.isCallStarted) {
 
-            Glide.with(mContext).load(item.url).asBitmap().into((ImageView) holder.getView(R.id.imageViewFromMediaChooserGridItemRowView));
+            Glide.with(mContext).load(Uri.fromFile(new File(item.url))).into((ImageView) holder.getView(R.id.imageViewFromMediaChooserGridItemRowView));
         }
 
         ImageView checkedView = holder.getView(R.id.selected);
