@@ -11,28 +11,35 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_centerInParent="true"
-        android:background="@color/gallery_video_gray"
-        android:scaleType="centerCrop"
-        tools:src="@mipmap/ic_launcher" />
+        android:background="@drawable/gallery_item_bg"
+        tools:src="@mipmap/release_addpage_btn_shoot_video" />
 
     <ImageView
         android:id="@+id/selected"
         android:layout_width="21dp"
         android:layout_height="21dp"
         android:layout_alignParentRight="true"
-        android:layout_marginRight="7dp"
         android:layout_marginTop="7dp"
-        android:src="@mipmap/ic_selected"
-        android:visibility="invisible" />
+        android:layout_marginRight="7dp"
+        android:src="@mipmap/release_addpage_check_nor" />
 
     <Chronometer
         android:id="@+id/video_duration"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
-        android:layout_alignParentEnd="true"
         android:layout_centerVertical="true"
         android:padding="5dp"
         android:textColor="@color/white"
         android:textSize="12sp" />
+
+    <ImageView
+        android:id="@+id/take"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#CCFFFFFF"
+        android:scaleType="fitCenter"
+        android:src="@mipmap/release_addpage_btn_shoot_video"
+        android:visibility="gone" />
+
 </RelativeLayout>

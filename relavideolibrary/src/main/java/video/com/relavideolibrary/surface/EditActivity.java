@@ -55,6 +55,7 @@ import jp.co.cyberagent.android.gpuimage.GPUImageLookupFilter;
 import video.com.relavideolibrary.BaseActivity;
 import video.com.relavideolibrary.CallbackManager;
 import video.com.relavideolibrary.R;
+import video.com.relavideolibrary.RelaVideoSDK;
 import video.com.relavideolibrary.Utils.Constant;
 import video.com.relavideolibrary.Utils.FileManager;
 import video.com.relavideolibrary.Utils.ScreenUtils;
@@ -356,6 +357,9 @@ public class EditActivity extends BaseActivity implements TextureView.SurfaceTex
                 bundle.putString(Constant.BundleConstants.RESULT_VIDEO_THUMB, imagePath);
                 bundle.putString(Constant.BundleConstants.RESULT_VIDEO_MAIN_COLOR, mLoadColor);
                 intent.putExtras(bundle);
+                if (RelaVideoSDK.resultListener != null) {
+                    RelaVideoSDK.resultListener.onRelaVideoActivityResult(intent);
+                }
                 setResult(Activity.RESULT_OK, intent);
                 finish();
             }

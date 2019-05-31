@@ -9,13 +9,12 @@
         android:id="@+id/translucent_view"
         android:layout_width="match_parent"
         android:layout_height="24dp"
-        android:background="@color/rela_color" />
+        android:background="@color/white" />
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_below="@id/translucent_view"
-        android:layout_marginBottom="50dp"
         android:gravity="center_horizontal"
         android:orientation="vertical">
 
@@ -23,7 +22,7 @@
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="@dimen/dp_toolbar"
-            android:background="@color/rela_color">
+            android:background="@color/white">
 
             <RelativeLayout
                 android:id="@+id/cancel"
@@ -35,8 +34,22 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:scaleType="centerInside"
-                    android:src="@mipmap/ic_whiteback" />
+                    android:src="@mipmap/ic_blackback" />
             </RelativeLayout>
+
+            <TextView
+                android:id="@+id/complete"
+                android:layout_width="wrap_content"
+                android:layout_height="28dp"
+                android:layout_alignParentRight="true"
+                android:layout_centerVertical="true"
+                android:layout_marginEnd="8dp"
+                android:background="@drawable/done_btn_bg"
+                android:gravity="center"
+                android:paddingLeft="17dp"
+                android:paddingRight="17dp"
+                android:text="@string/complete"
+                android:textColor="@color/white" />
         </RelativeLayout>
 
         <RelativeLayout
@@ -50,44 +63,44 @@
 
             <ImageView
                 android:id="@+id/play"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_width="60dp"
+                android:layout_height="60dp"
                 android:layout_centerInParent="true"
                 android:src="@mipmap/ic_play"
                 android:visibility="invisible" />
         </RelativeLayout>
     </LinearLayout>
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:orientation="vertical">
+    <!--<LinearLayout-->
+    <!--android:layout_width="match_parent"-->
+    <!--android:layout_height="wrap_content"-->
+    <!--android:layout_alignParentBottom="true"-->
+    <!--android:orientation="vertical">-->
 
-        <ImageView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:src="@mipmap/ic_shadow" />
+    <!--<ImageView-->
+    <!--android:layout_width="match_parent"-->
+    <!--android:layout_height="wrap_content"-->
+    <!--android:src="@mipmap/ic_shadow" />-->
 
-        <LinearLayout
-            android:id="@id/bottom"
-            android:layout_width="match_parent"
-            android:layout_height="50dp"
-            android:layout_alignParentBottom="true"
-            android:orientation="vertical"
-            android:padding="5dp">
+    <!--<LinearLayout-->
+    <!--android:id="@id/bottom"-->
+    <!--android:layout_width="match_parent"-->
+    <!--android:layout_height="50dp"-->
+    <!--android:layout_alignParentBottom="true"-->
+    <!--android:orientation="vertical"-->
+    <!--android:padding="5dp">-->
 
-            <TextView
-                android:id="@+id/complete"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:background="@drawable/preview_btn_bg"
-                android:gravity="center"
-                android:text="@string/complete"
-                android:textColor="@color/white" />
+    <!--<TextView-->
+    <!--android:id="@+id/complete"-->
+    <!--android:layout_width="match_parent"-->
+    <!--android:layout_height="match_parent"-->
+    <!--android:background="@drawable/preview_btn_bg"-->
+    <!--android:gravity="center"-->
+    <!--android:text="@string/complete"-->
+    <!--android:textColor="@color/white" />-->
 
-        </LinearLayout>
-    </LinearLayout>
+    <!--</LinearLayout>-->
+    <!--</LinearLayout>-->
 
 
 </RelativeLayout>

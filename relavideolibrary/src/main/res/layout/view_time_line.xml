@@ -25,13 +25,16 @@
         <TextView
             android:id="@+id/btSave"
             android:layout_width="wrap_content"
-            android:layout_height="match_parent"
+            android:layout_height="28dp"
             android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"
+            android:layout_marginEnd="8dp"
+            android:background="@drawable/done_btn_bg"
             android:gravity="center"
             android:paddingLeft="17dp"
             android:paddingRight="17dp"
             android:text="@string/complete"
-            android:textColor="@color/black" />
+            android:textColor="@color/white" />
 
     </RelativeLayout>
 
@@ -39,8 +42,8 @@
         android:id="@+id/layout_surface_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginBottom="110dp"
         android:layout_marginTop="@dimen/dp_toolbar"
+        android:layout_marginBottom="110dp"
         android:background="@android:color/white"
         android:gravity="center">
 
@@ -52,8 +55,8 @@
 
         <ImageView
             android:id="@+id/icon_video_play"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
             android:layout_centerInParent="true"
             android:background="@mipmap/ic_play" />
 

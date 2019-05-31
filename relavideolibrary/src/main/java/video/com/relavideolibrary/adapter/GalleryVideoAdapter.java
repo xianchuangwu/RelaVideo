@@ -1,5 +1,6 @@
 package video.com.relavideolibrary.adapter;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -17,6 +18,9 @@ import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.resource.bitmap.CenterCrop;
+import com.bumptech.glide.load.resource.bitmap.RoundedCorners;
+import com.bumptech.glide.request.RequestOptions;
 
 import java.io.File;
 import java.util.Collection;
@@ -24,9 +28,12 @@ import java.util.Collection;
 import video.com.relavideolibrary.BaseRecyclerAdapter;
 import video.com.relavideolibrary.BaseViewHolder;
 import video.com.relavideolibrary.R;
+import video.com.relavideolibrary.Utils.CenterCropRoundCornerTransform;
 import video.com.relavideolibrary.Utils.Constant;
+import video.com.relavideolibrary.Utils.DensityUtils;
 import video.com.relavideolibrary.Utils.ScreenUtils;
 import video.com.relavideolibrary.model.MediaModel;
+import video.com.relavideolibrary.surface.RecordingActivity;
 
 /**
  * Created by chad
@@ -39,6 +46,7 @@ public class GalleryVideoAdapter extends BaseRecyclerAdapter<MediaModel> {
 
     private int mScreenWidth;
     private final BitmapFactory.Options options;
+    private boolean hasSelect = false;
 
     public GalleryVideoAdapter(@LayoutRes int layoutId, RecyclerView recyclerView, Collection<MediaModel> list) {
         super(layoutId, recyclerView, list);
@@ -51,9 +59,27 @@ public class GalleryVideoAdapter extends BaseRecyclerAdapter<MediaModel> {
     @Override
     public void dataBinding(BaseViewHolder holder, final MediaModel item, final int position) {
 
+        holder.getView(R.id.take).setVisibility(position == 0 ? View.VISIBLE : View.GONE);
+        if (hasSelect) {
+            if (item.status) {
+                holder.itemView.setAlpha(1f);
+                holder.itemView.setEnabled(true);
+            } else {
+                holder.itemView.setAlpha(0.5f);
+                holder.itemView.setEnabled(false);
+            }
+        } else {
+            holder.itemView.setAlpha(1f);
+            holder.itemView.setEnabled(true);
+        }
+
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if (position == 0) {
+                    ((Activity) mContext).startActivityForResult(new Intent(mContext, RecordingActivity.class), Constant.IntentCode.REQUEST_CODE_RECORDING);
+                    return;
+                }
                 long duration = 0;
                 if (!item.status) {
                     File file = new File(item.url);
@@ -121,18 +147,21 @@ public class GalleryVideoAdapter extends BaseRecyclerAdapter<MediaModel> {
                         return;
                     }
                 }
-
                 if (!item.status) {//未选中
                     for (int i = 0; i < mData.size(); i++) {
                         if (i != position)
                             mData.get(i).status = false;
-                        else mData.get(i).status = true;
+                        else {
+                            mData.get(i).status = true;
+                            hasSelect = true;
+                        }
                     }
                     notifyDataSetChanged();
                     if (selectCallback != null) selectCallback.selected(item.url, duration);
                 } else {
+                    hasSelect = false;
                     item.status = !item.status;
-                    notifyItemChanged(position);
+                    notifyDataSetChanged();
                     if (selectCallback != null) selectCallback.selected("", 0);
                 }
             }
@@ -141,14 +170,17 @@ public class GalleryVideoAdapter extends BaseRecyclerAdapter<MediaModel> {
         holder.itemView.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View v) {
-                File file = new File(item.url);
-                if (!file.exists()) {
-                    Toast.makeText(mContext, mContext.getString(R.string.unknow_error), Toast.LENGTH_SHORT).show();
-                    return true;
+                if (position != 0) {
+                    File file = new File(item.url);
+                    if (!file.exists()) {
+                        Toast.makeText(mContext, mContext.getString(R.string.unknow_error), Toast.LENGTH_SHORT).show();
+                        return true;
+                    }
+                    Intent intent = new Intent(Intent.ACTION_VIEW);
+                    intent.setDataAndType(Uri.fromFile(file), "video/*");
+                    mContext.startActivity(intent);
                 }
-                Intent intent = new Intent(Intent.ACTION_VIEW);
-                intent.setDataAndType(Uri.fromFile(file), "video/*");
-                mContext.startActivity(intent);
+
                 return false;
             }
         });
@@ -160,16 +192,12 @@ public class GalleryVideoAdapter extends BaseRecyclerAdapter<MediaModel> {
         itemView.setLayoutParams(itemViewParams);
 
         if (!item.isCallStarted) {
-
-            Glide.with(mContext).load(Uri.fromFile(new File(item.url))).into((ImageView) holder.getView(R.id.imageViewFromMediaChooserGridItemRowView));
+            RequestOptions options = new RequestOptions().transform(new CenterCrop(), new RoundedCorners(DensityUtils.dp2px(4)));
+            Glide.with(mContext).load(Uri.fromFile(new File(item.url))).apply(options).into((ImageView) holder.getView(R.id.imageViewFromMediaChooserGridItemRowView));
         }
 
         ImageView checkedView = holder.getView(R.id.selected);
-        if (item.status) {
-            checkedView.setVisibility(View.VISIBLE);
-        } else {
-            checkedView.setVisibility(View.INVISIBLE);
-        }
+        checkedView.setImageResource(item.status ? R.mipmap.ic_selected : R.mipmap.release_addpage_check_nor);
 
         Chronometer videoDuration = holder.getView(R.id.video_duration);
         videoDuration.setBase(SystemClock.elapsedRealtime() - item.duration);

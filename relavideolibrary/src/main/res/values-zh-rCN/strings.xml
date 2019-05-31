@@ -2,6 +2,7 @@
 <resources>
     <string name="next">下一步</string>
     <string name="photo">照片</string>
+    <string name="video">视频</string>
     <string name="cancel">取消</string>
     <string name="preview">预览</string>
     <string name="complete">完成</string>

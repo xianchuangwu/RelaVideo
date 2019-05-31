@@ -9,14 +9,14 @@
         android:id="@+id/translucent_view"
         android:layout_width="match_parent"
         android:layout_height="24dp"
-        android:background="@color/rela_color" />
+        android:background="@color/white" />
 
     <RelativeLayout
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="@dimen/dp_toolbar"
         android:layout_below="@id/translucent_view"
-        android:background="@color/rela_color">
+        android:background="@color/white">
 
         <TextView
             android:id="@+id/cancel"
@@ -26,8 +26,8 @@
             android:paddingLeft="17dp"
             android:paddingRight="17dp"
             android:text="@string/cancel"
-            android:textColor="@color/white"
-            android:textSize="15sp" />
+            android:textColor="#FF626666"
+            android:textSize="16sp" />
 
         <TextView
             android:id="@+id/title"
@@ -37,8 +37,8 @@
             android:gravity="center"
             android:paddingLeft="17dp"
             android:paddingRight="17dp"
-            android:text="@string/photo"
-            android:textColor="@color/white"
+            android:text="@string/video"
+            android:textColor="#FF313333"
             android:textSize="15sp" />
     </RelativeLayout>
 
@@ -51,26 +51,39 @@
     <RelativeLayout
         android:id="@+id/btn_container"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="48dp"
         android:layout_alignParentBottom="true"
-        android:padding="12dp"
-        android:visibility="invisible">
+        android:background="#CCFFFFFF"
+        android:padding="10dp">
 
-        <Button
+        <TextView
             android:id="@+id/preview"
-            android:layout_width="70dp"
-            android:layout_height="35dp"
-            android:background="@mipmap/ic_square"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:alpha="0.5"
+            android:paddingLeft="12dp"
+            android:paddingTop="4dp"
+            android:paddingRight="12dp"
+            android:paddingBottom="4dp"
             android:text="@string/preview"
-            android:textColor="@color/white" />
+            android:textColor="@color/black"
+            android:textSize="14sp" />
 
-        <Button
+        <TextView
             android:id="@+id/complete"
-            android:layout_width="70dp"
-            android:layout_height="35dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:layout_alignParentRight="true"
-            android:background="@mipmap/ic_square"
+            android:layout_centerVertical="true"
+            android:alpha="0.5"
+            android:background="@drawable/done_btn_bg"
+            android:paddingLeft="12dp"
+            android:paddingTop="4dp"
+            android:paddingRight="12dp"
+            android:paddingBottom="4dp"
             android:text="@string/complete"
-            android:textColor="@color/white" />
+            android:textColor="@color/white"
+            android:textSize="14sp" />
     </RelativeLayout>
 </RelativeLayout>

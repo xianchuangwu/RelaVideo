@@ -14,6 +14,7 @@ import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
@@ -28,8 +29,6 @@ import video.com.relavideolibrary.model.VideoBean;
 import video.com.relavideolibrary.service.ScanningVideoService;
 
 public class GalleryActivity extends BaseActivity implements ScanningVideoService.QueryMediaStoreListener, View.OnClickListener, GalleryVideoAdapter.SelectCallback {
-
-    private RelativeLayout btn_container;
 
     private RecyclerView recyclerView;
 
@@ -73,7 +72,6 @@ public class GalleryActivity extends BaseActivity implements ScanningVideoServic
         findViewById(R.id.complete).setOnClickListener(this);
         findViewById(R.id.cancel).setOnClickListener(this);
         recyclerView = findViewById(R.id.recycler);
-        btn_container = findViewById(R.id.btn_container);
 
         bindService(new Intent(this, ScanningVideoService.class), serviceConnection, Context.BIND_AUTO_CREATE);
     }
@@ -86,6 +84,8 @@ public class GalleryActivity extends BaseActivity implements ScanningVideoServic
 
     @Override
     public void queryVideo(final ArrayList<MediaModel> mGalleryModelList) {
+        //插入一个空的MediaModel站位，作为拍照按钮
+        mGalleryModelList.set(0, new MediaModel("", false, 0, 0));
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
@@ -141,19 +141,30 @@ public class GalleryActivity extends BaseActivity implements ScanningVideoServic
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == Constant.IntentCode.REQUEST_CODE_PREVIEW && resultCode == Activity.RESULT_OK) {
             complete();
-        } else if (requestCode == Constant.IntentCode.REQUEST_CODE_CUT && resultCode == Activity.RESULT_OK) {
+        } /*else if (requestCode == Constant.IntentCode.REQUEST_CODE_CUT && resultCode == Activity.RESULT_OK) {
             selectVideoPath = data.getStringExtra(Constant.BundleConstants.CUT_VIDEO_PATH);
             VideoBean videoBean = new VideoBean();
             videoBean.videoPath = selectVideoPath;
             VideoManager.getInstance().setVideoBean(videoBean);
             setResult(Constant.IntentCode.RESULT_CODE_GALLERY_OK);
             finish();
+        } */ else if (requestCode == Constant.IntentCode.REQUEST_CODE_RECORDING && resultCode == Activity.RESULT_OK) {
+            finish();
+        } else if (requestCode == Constant.IntentCode.REQUEST_CODE_EDIT && resultCode == Activity.RESULT_OK) {
+            //从编辑页回来，清空视频管理类
+            VideoManager.getInstance().clean();
+            finish();
         }
     }
 
     @Override
     public void selected(String path, long duration) {
-        btn_container.setVisibility(TextUtils.isEmpty(path) ? View.INVISIBLE : View.VISIBLE);
+        TextView preview = findViewById(R.id.preview);
+        TextView complete = findViewById(R.id.complete);
+        preview.setAlpha(TextUtils.isEmpty(path) ? 0.5f : 1f);
+        complete.setAlpha(TextUtils.isEmpty(path) ? 0.5f : 1f);
+        preview.setEnabled(!TextUtils.isEmpty(path));
+        complete.setEnabled(!TextUtils.isEmpty(path));
         selectVideoPath = path;
         selectVideoDuration = duration;
     }
@@ -161,15 +172,19 @@ public class GalleryActivity extends BaseActivity implements ScanningVideoServic
     private void complete() {
         if (!TextUtils.isEmpty(selectVideoPath)) {
             //超过最大时长限制，跳到裁剪页
-            if (selectVideoDuration > Constant.VideoConfig.MAX_VIDEO_DURATION) {
-                CutActivity.startCut(this, selectVideoPath);
-            } else {
-                VideoBean videoBean = new VideoBean();
-                videoBean.videoPath = selectVideoPath;
-                VideoManager.getInstance().setVideoBean(videoBean);
-                setResult(Constant.IntentCode.RESULT_CODE_GALLERY_OK);
-                finish();
-            }
+//            if (selectVideoDuration > Constant.VideoConfig.MAX_VIDEO_DURATION) {
+//                CutActivity.startCut(this, selectVideoPath);
+//            } else {
+//                VideoBean videoBean = new VideoBean();
+//                videoBean.videoPath = selectVideoPath;
+//                VideoManager.getInstance().setVideoBean(videoBean);
+//                setResult(Constant.IntentCode.RESULT_CODE_GALLERY_OK);
+//                finish();
+//            }
+            VideoBean bean = new VideoBean();
+            bean.videoPath = selectVideoPath;
+            VideoManager.getInstance().setVideoBean(bean);
+            startActivityForResult(new Intent(GalleryActivity.this, EditActivity.class), Constant.IntentCode.REQUEST_CODE_EDIT);
         } else {
             Toast.makeText(this, "video path empty", Toast.LENGTH_SHORT).show();
         }

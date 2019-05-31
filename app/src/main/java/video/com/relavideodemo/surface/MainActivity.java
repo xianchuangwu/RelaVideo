@@ -39,6 +39,8 @@ import video.com.relavideolibrary.interfaces.MusicListCallback;
 import video.com.relavideolibrary.interfaces.MusicListSyncDataCallback;
 import video.com.relavideolibrary.model.FilterBean;
 import video.com.relavideolibrary.model.MusicCategoryBean;
+import video.com.relavideolibrary.onRelaVideoActivityResultListener;
+import video.com.relavideolibrary.surface.GalleryActivity;
 import video.com.relavideolibrary.surface.RecordingActivity;
 import video.com.relavideolibrary.view.RelaBigGiftView;
 
@@ -161,6 +163,25 @@ public class MainActivity extends AppCompatActivity implements FilterDataCallbac
             }
         });
 
+    }
+
+    public void gallery(View view) {
+        RxPermissions rxPermissions = new RxPermissions(this);
+        rxPermissions.request(Manifest.permission.CAMERA
+                , Manifest.permission.RECORD_AUDIO
+                , Manifest.permission.READ_EXTERNAL_STORAGE
+                , Manifest.permission.WRITE_EXTERNAL_STORAGE).subscribe(new Consumer<Boolean>() {
+            @Override
+            public void accept(Boolean aBoolean) throws Exception {
+                if (aBoolean) {
+                    RelaVideoSDK.startVideoGalleryActivity(MainActivity.this, new onRelaVideoActivityResultListener() {
+                        @Override
+                        public void onRelaVideoActivityResult(Intent data) {
+                        }
+                    });
+                }
+            }
+        });
     }
 
     @Override

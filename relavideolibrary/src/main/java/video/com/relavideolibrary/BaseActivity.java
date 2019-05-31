@@ -11,6 +11,7 @@ import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.view.Window;
@@ -114,12 +115,17 @@ public class BaseActivity extends AppCompatActivity implements DialogInterface.O
     }
 
     public void setTranslucentBar() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            //5.0 以上直接设置状态栏颜色
-            View decorView = getWindow().getDecorView();
-            int option = View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN;
-            decorView.setSystemUiVisibility(option);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            //6.0修改状态栏字体色
+            getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                    | View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
             getWindow().setStatusBarColor(Color.TRANSPARENT);
+        } else {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                //5.0 以上直接设置状态栏颜色
+                getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN);
+                getWindow().setStatusBarColor(ContextCompat.getColor(this, R.color.white_10_alpha));
+            }
         }
     }
 

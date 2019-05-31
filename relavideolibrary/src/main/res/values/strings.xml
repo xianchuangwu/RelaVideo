@@ -3,6 +3,7 @@
 
     <string name="next">Next</string>
     <string name="photo">Photo</string>
+    <string name="video">Video</string>
     <string name="cancel">Cancel</string>
     <string name="preview">Preview</string>
     <string name="complete">Complete</string>

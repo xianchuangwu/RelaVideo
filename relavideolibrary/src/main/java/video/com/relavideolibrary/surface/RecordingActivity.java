@@ -193,7 +193,8 @@ public class RecordingActivity extends BaseActivity implements View.OnClickListe
             });
         } else if (id == R.id.gallery) {
             ScreenUtils.preventViewMultipleTouch(v, 2000);
-            startActivityForResult(new Intent(this, GalleryActivity.class), Constant.IntentCode.REQUEST_CODE_GALLERY);
+//            startActivityForResult(new Intent(this, GalleryActivity.class), Constant.IntentCode.REQUEST_CODE_GALLERY);
+            finish();
         } else if (id == R.id.delete) {
             if (recordingLine.delete()) {
                 outputList.remove(outputList.size() - 1);
@@ -232,9 +233,10 @@ public class RecordingActivity extends BaseActivity implements View.OnClickListe
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == Constant.IntentCode.REQUEST_CODE_GALLERY && resultCode == Constant.IntentCode.RESULT_CODE_GALLERY_OK) {
+        /*if (requestCode == Constant.IntentCode.REQUEST_CODE_GALLERY && resultCode == Constant.IntentCode.RESULT_CODE_GALLERY_OK) {
             startActivityForResult(new Intent(this, EditActivity.class), Constant.IntentCode.REQUEST_CODE_EDIT);
-        } else if (requestCode == Constant.IntentCode.REQUEST_CODE_EDIT) {
+        } else*/
+        if (requestCode == Constant.IntentCode.REQUEST_CODE_EDIT) {
             if (resultCode == Activity.RESULT_OK) {
                 if (data.getExtras() != null) {
                     Intent intent = getIntent();
