@@ -1,37 +1,37 @@
 -- Merging decision tree log ---
 manifest
-ADDED from /Users/wuxianchuang/Desktop/AndroidStudioProjects/RelaVideo/gpuimage/AndroidManifest.xml:2:1-4:12
-INJECTED from /Users/wuxianchuang/Desktop/AndroidStudioProjects/RelaVideo/gpuimage/AndroidManifest.xml:2:1-4:12
-INJECTED from /Users/wuxianchuang/Desktop/AndroidStudioProjects/RelaVideo/gpuimage/AndroidManifest.xml:2:1-4:12
-INJECTED from /Users/wuxianchuang/Desktop/AndroidStudioProjects/RelaVideo/gpuimage/AndroidManifest.xml:2:1-4:12
-INJECTED from /Users/wuxianchuang/Desktop/AndroidStudioProjects/RelaVideo/gpuimage/AndroidManifest.xml:2:1-4:12
-INJECTED from /Users/wuxianchuang/Desktop/AndroidStudioProjects/RelaVideo/gpuimage/AndroidManifest.xml:2:1-4:12
-INJECTED from /Users/wuxianchuang/Desktop/AndroidStudioProjects/RelaVideo/gpuimage/AndroidManifest.xml:2:1-4:12
+ADDED from /Users/wuxianchuang/AndroidStudioProjects/Rela/RelaVideo/gpuimage/AndroidManifest.xml:2:1-4:12
+INJECTED from /Users/wuxianchuang/AndroidStudioProjects/Rela/RelaVideo/gpuimage/AndroidManifest.xml:2:1-4:12
+INJECTED from /Users/wuxianchuang/AndroidStudioProjects/Rela/RelaVideo/gpuimage/AndroidManifest.xml:2:1-4:12
+INJECTED from /Users/wuxianchuang/AndroidStudioProjects/Rela/RelaVideo/gpuimage/AndroidManifest.xml:2:1-4:12
+INJECTED from /Users/wuxianchuang/AndroidStudioProjects/Rela/RelaVideo/gpuimage/AndroidManifest.xml:2:1-4:12
+INJECTED from /Users/wuxianchuang/AndroidStudioProjects/Rela/RelaVideo/gpuimage/AndroidManifest.xml:2:1-4:12
+INJECTED from /Users/wuxianchuang/AndroidStudioProjects/Rela/RelaVideo/gpuimage/AndroidManifest.xml:2:1-4:12
 	package
-		ADDED from /Users/wuxianchuang/Desktop/AndroidStudioProjects/RelaVideo/gpuimage/AndroidManifest.xml:3:5-48
-		INJECTED from /Users/wuxianchuang/Desktop/AndroidStudioProjects/RelaVideo/gpuimage/AndroidManifest.xml
-		INJECTED from /Users/wuxianchuang/Desktop/AndroidStudioProjects/RelaVideo/gpuimage/AndroidManifest.xml
+		ADDED from /Users/wuxianchuang/AndroidStudioProjects/Rela/RelaVideo/gpuimage/AndroidManifest.xml:3:5-48
+		INJECTED from /Users/wuxianchuang/AndroidStudioProjects/Rela/RelaVideo/gpuimage/AndroidManifest.xml
+		INJECTED from /Users/wuxianchuang/AndroidStudioProjects/Rela/RelaVideo/gpuimage/AndroidManifest.xml
 	android:versionName
-		INJECTED from /Users/wuxianchuang/Desktop/AndroidStudioProjects/RelaVideo/gpuimage/AndroidManifest.xml
-		ADDED from /Users/wuxianchuang/Desktop/AndroidStudioProjects/RelaVideo/gpuimage/AndroidManifest.xml:2:1-4:12
-		INJECTED from /Users/wuxianchuang/Desktop/AndroidStudioProjects/RelaVideo/gpuimage/AndroidManifest.xml
+		INJECTED from /Users/wuxianchuang/AndroidStudioProjects/Rela/RelaVideo/gpuimage/AndroidManifest.xml
+		ADDED from /Users/wuxianchuang/AndroidStudioProjects/Rela/RelaVideo/gpuimage/AndroidManifest.xml:2:1-4:12
+		INJECTED from /Users/wuxianchuang/AndroidStudioProjects/Rela/RelaVideo/gpuimage/AndroidManifest.xml
 	xmlns:android
-		ADDED from /Users/wuxianchuang/Desktop/AndroidStudioProjects/RelaVideo/gpuimage/AndroidManifest.xml:2:1-4:12
+		ADDED from /Users/wuxianchuang/AndroidStudioProjects/Rela/RelaVideo/gpuimage/AndroidManifest.xml:2:1-4:12
 	android:versionCode
-		INJECTED from /Users/wuxianchuang/Desktop/AndroidStudioProjects/RelaVideo/gpuimage/AndroidManifest.xml
-		ADDED from /Users/wuxianchuang/Desktop/AndroidStudioProjects/RelaVideo/gpuimage/AndroidManifest.xml:2:1-4:12
-		INJECTED from /Users/wuxianchuang/Desktop/AndroidStudioProjects/RelaVideo/gpuimage/AndroidManifest.xml
+		INJECTED from /Users/wuxianchuang/AndroidStudioProjects/Rela/RelaVideo/gpuimage/AndroidManifest.xml
+		ADDED from /Users/wuxianchuang/AndroidStudioProjects/Rela/RelaVideo/gpuimage/AndroidManifest.xml:2:1-4:12
+		INJECTED from /Users/wuxianchuang/AndroidStudioProjects/Rela/RelaVideo/gpuimage/AndroidManifest.xml
 uses-sdk
-INJECTED from /Users/wuxianchuang/Desktop/AndroidStudioProjects/RelaVideo/gpuimage/AndroidManifest.xml reason: use-sdk injection requested
-INJECTED from /Users/wuxianchuang/Desktop/AndroidStudioProjects/RelaVideo/gpuimage/AndroidManifest.xml
-INJECTED from /Users/wuxianchuang/Desktop/AndroidStudioProjects/RelaVideo/gpuimage/AndroidManifest.xml
-INJECTED from /Users/wuxianchuang/Desktop/AndroidStudioProjects/RelaVideo/gpuimage/AndroidManifest.xml
-INJECTED from /Users/wuxianchuang/Desktop/AndroidStudioProjects/RelaVideo/gpuimage/AndroidManifest.xml
+INJECTED from /Users/wuxianchuang/AndroidStudioProjects/Rela/RelaVideo/gpuimage/AndroidManifest.xml reason: use-sdk injection requested
+INJECTED from /Users/wuxianchuang/AndroidStudioProjects/Rela/RelaVideo/gpuimage/AndroidManifest.xml
+INJECTED from /Users/wuxianchuang/AndroidStudioProjects/Rela/RelaVideo/gpuimage/AndroidManifest.xml
+INJECTED from /Users/wuxianchuang/AndroidStudioProjects/Rela/RelaVideo/gpuimage/AndroidManifest.xml
+INJECTED from /Users/wuxianchuang/AndroidStudioProjects/Rela/RelaVideo/gpuimage/AndroidManifest.xml
 	android:targetSdkVersion
-		INJECTED from /Users/wuxianchuang/Desktop/AndroidStudioProjects/RelaVideo/gpuimage/AndroidManifest.xml
-		ADDED from /Users/wuxianchuang/Desktop/AndroidStudioProjects/RelaVideo/gpuimage/AndroidManifest.xml
-		INJECTED from /Users/wuxianchuang/Desktop/AndroidStudioProjects/RelaVideo/gpuimage/AndroidManifest.xml
+		INJECTED from /Users/wuxianchuang/AndroidStudioProjects/Rela/RelaVideo/gpuimage/AndroidManifest.xml
+		ADDED from /Users/wuxianchuang/AndroidStudioProjects/Rela/RelaVideo/gpuimage/AndroidManifest.xml
+		INJECTED from /Users/wuxianchuang/AndroidStudioProjects/Rela/RelaVideo/gpuimage/AndroidManifest.xml
 	android:minSdkVersion
-		INJECTED from /Users/wuxianchuang/Desktop/AndroidStudioProjects/RelaVideo/gpuimage/AndroidManifest.xml
-		ADDED from /Users/wuxianchuang/Desktop/AndroidStudioProjects/RelaVideo/gpuimage/AndroidManifest.xml
-		INJECTED from /Users/wuxianchuang/Desktop/AndroidStudioProjects/RelaVideo/gpuimage/AndroidManifest.xml
+		INJECTED from /Users/wuxianchuang/AndroidStudioProjects/Rela/RelaVideo/gpuimage/AndroidManifest.xml
+		ADDED from /Users/wuxianchuang/AndroidStudioProjects/Rela/RelaVideo/gpuimage/AndroidManifest.xml
+		INJECTED from /Users/wuxianchuang/AndroidStudioProjects/Rela/RelaVideo/gpuimage/AndroidManifest.xml

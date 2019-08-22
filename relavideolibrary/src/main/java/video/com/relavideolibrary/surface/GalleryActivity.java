@@ -85,7 +85,7 @@ public class GalleryActivity extends BaseActivity implements ScanningVideoServic
     @Override
     public void queryVideo(final ArrayList<MediaModel> mGalleryModelList) {
         //插入一个空的MediaModel站位，作为拍照按钮
-        mGalleryModelList.set(0, new MediaModel("", false, 0, 0));
+        mGalleryModelList.add(0, new MediaModel("", false, 0, 0));
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
@@ -114,6 +114,16 @@ public class GalleryActivity extends BaseActivity implements ScanningVideoServic
             @Override
             public void run() {
                 dismissDialog();
+            }
+        });
+    }
+
+    @Override
+    public void loadError() {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                Toast.makeText(GalleryActivity.this, getString(R.string.unknow_error), Toast.LENGTH_SHORT).show();
             }
         });
     }

@@ -38,6 +38,8 @@ public class ScanningVideoService extends Service {
         void loadingStart();
 
         void loadingStop();
+
+        void loadError();
     }
 
     public class ScanningVideoBinder extends Binder {
@@ -128,7 +130,9 @@ public class ScanningVideoService extends Service {
 //                    if (queryMediaStoreListener != null)
 //                        queryMediaStoreListener.queryVideoFolder(bufferVideo, allVideoCount);
                 } else {
-                    Toast.makeText(context, context.getString(R.string.unknow_error), Toast.LENGTH_SHORT).show();
+                    if (queryMediaStoreListener != null) {
+                        queryMediaStoreListener.loadError();
+                    }
                 }
 
             } finally {
@@ -170,6 +174,8 @@ public class ScanningVideoService extends Service {
                     mCursor = context.getContentResolver().query(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, PROJECTION_BUCKET, searchParams, null, orderByVideo + " DESC");
                 }
 
+                Log.i(TAG, "count: " + mCursor.getCount());
+                mGalleryModelList = new ArrayList<>();
                 if (mCursor.getCount() > 0) {
                     mIDColumnIndex = mCursor.getColumnIndex(PROJECTION_BUCKET[0]);
                     mDataColumnIndex = mCursor.getColumnIndex(PROJECTION_BUCKET[1]);
@@ -178,7 +184,6 @@ public class ScanningVideoService extends Service {
                     //move position to first element
                     mCursor.moveToFirst();
 
-                    mGalleryModelList = new ArrayList<>();
 
                     for (int i = 0; i < mCursor.getCount(); i++) {
                         mCursor.moveToPosition(i);
@@ -187,8 +192,6 @@ public class ScanningVideoService extends Service {
                         long duration = mCursor.getLong(mDurationColumnIndex);
                         mGalleryModelList.add(new MediaModel(url, false, duration, id));
                     }
-                } else {
-                    Toast.makeText(context, context.getString(R.string.unknow_error), Toast.LENGTH_SHORT).show();
                 }
 
                 if (queryMediaStoreListener != null) {
@@ -229,7 +232,9 @@ public class ScanningVideoService extends Service {
                     Log.d(TAG, bucketName + "文件夹的视频总数:" + ss.length);
                     return ss.length;
                 } else {
-                    Toast.makeText(context, context.getString(R.string.unknow_error), Toast.LENGTH_SHORT).show();
+                    if (queryMediaStoreListener != null) {
+                        queryMediaStoreListener.loadError();
+                    }
                 }
 
             } catch (Exception e) {
