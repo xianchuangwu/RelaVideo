@@ -167,9 +167,7 @@ public class MainActivity extends AppCompatActivity implements FilterDataCallbac
 
     public void gallery(View view) {
         RxPermissions rxPermissions = new RxPermissions(this);
-        rxPermissions.request(Manifest.permission.CAMERA
-                , Manifest.permission.RECORD_AUDIO
-                , Manifest.permission.READ_EXTERNAL_STORAGE
+        rxPermissions.request(Manifest.permission.READ_EXTERNAL_STORAGE
                 , Manifest.permission.WRITE_EXTERNAL_STORAGE).subscribe(new Consumer<Boolean>() {
             @Override
             public void accept(Boolean aBoolean) throws Exception {

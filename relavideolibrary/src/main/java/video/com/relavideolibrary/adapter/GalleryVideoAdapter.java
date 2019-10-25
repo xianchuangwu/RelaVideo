@@ -32,6 +32,7 @@ import video.com.relavideolibrary.Utils.CenterCropRoundCornerTransform;
 import video.com.relavideolibrary.Utils.Constant;
 import video.com.relavideolibrary.Utils.DensityUtils;
 import video.com.relavideolibrary.Utils.ScreenUtils;
+import video.com.relavideolibrary.Utils.SystemUtils;
 import video.com.relavideolibrary.model.MediaModel;
 import video.com.relavideolibrary.surface.RecordingActivity;
 
@@ -77,7 +78,23 @@ public class GalleryVideoAdapter extends BaseRecyclerAdapter<MediaModel> {
             @Override
             public void onClick(View v) {
                 if (position == 0) {
-                    ((Activity) mContext).startActivityForResult(new Intent(mContext, RecordingActivity.class), Constant.IntentCode.REQUEST_CODE_RECORDING);
+                    SystemUtils.requestCameraPermission((Activity) mContext, new SystemUtils.PermissionCallback() {
+                        @Override
+                        public void granted() {
+
+                            ((Activity) mContext).startActivityForResult(new Intent(mContext, RecordingActivity.class), Constant.IntentCode.REQUEST_CODE_RECORDING);
+                        }
+
+                        @Override
+                        public void denied() {
+
+                        }
+
+                        @Override
+                        public void gotoSetting() {
+
+                        }
+                    });
                     return;
                 }
                 long duration = 0;
@@ -133,11 +150,10 @@ public class GalleryVideoAdapter extends BaseRecyclerAdapter<MediaModel> {
                             Toast.makeText(mContext, "暂不支持非44100采样率视频!", Toast.LENGTH_SHORT).show();
                             return;
                         } */
-                        /*if (duration > Constant.VideoConfig.MAX_VIDEO_DURATION) {
+                        if (duration > Constant.VideoConfig.MAX_VIDEO_DURATION) {
                             Toast.makeText(mContext, mContext.getString(R.string.video_max_duration), Toast.LENGTH_SHORT).show();
                             return;
-                        } else*/
-                        if (duration < Constant.VideoConfig.MIN_VIDEO_DURATION) {
+                        } else if (duration < Constant.VideoConfig.MIN_VIDEO_DURATION) {
                             Toast.makeText(mContext, mContext.getString(R.string.video_min_duration), Toast.LENGTH_SHORT).show();
                             return;
                         }
